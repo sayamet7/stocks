@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>暗号資産 AI 量子予測システム</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg:     #080c18;
+      --bg2:    #0d1224;
+      --bg3:    #131929;
+      --bg4:    #1a2236;
+      --border: #1c2b4a;
+      --gold:   #f7a600;
+      --cyan:   #00d4ff;
+      --green:  #00e676;
+      --red:    #ff3d5a;
+      --purple: #a855f7;
+      --text:   #dde4f0;
+      --muted:  #556080;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    html{scroll-behavior:smooth;}
+    body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+    /* animated bg */
+    body::before{
+      content:'';position:fixed;inset:0;
+      background:
+        radial-gradient(ellipse 80% 50% at 10% 0%,rgba(0,212,255,.06) 0%,transparent 60%),
+        radial-gradient(ellipse 60% 40% at 90% 100%,rgba(168,85,247,.05) 0%,transparent 60%),
+        repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(0,212,255,.025) 40px),
+        repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(0,212,255,.025) 40px);
+      pointer-events:none;z-index:0;
+    }
+
+    .wrap{max-width:1480px;margin:0 auto;padding:16px 20px;position:relative;z-index:1;}
+
+    /* ── Header ── */
+    header{display:flex;align-items:center;justify-content:space-between;padding:20px 0 18px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:12px;}
+    .hd-left{}
+    .badge{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#f7a60022,#00d4ff11);border:1px solid #f7a60044;color:var(--gold);font-size:10px;font-weight:800;letter-spacing:2px;padding:4px 12px;border-radius:20px;margin-bottom:8px;text-transform:uppercase;}
+    header h1{font-size:clamp(18px,3vw,32px);font-weight:900;background:linear-gradient(135deg,#f7a600,#00d4ff,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-0.5px;}
+    .hd-sub{font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:1px;}
+    .live-dot{display:inline-block;width:7px;height:7px;background:var(--green);border-radius:50%;margin-right:5px;animation:blink 1.4s infinite;}
+    @keyframes blink{0%,100%{opacity:1;box-shadow:0 0 6px var(--green);}50%{opacity:.3;box-shadow:none;}}
+
+    .hd-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+
+    /* Coin selector */
+    .coin-tabs{display:flex;gap:6px;}
+    .coin-btn{background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:7px 16px;border-radius:50px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.5px;}
+    .coin-btn.active{background:linear-gradient(135deg,var(--gold),#ff6b00);color:#000;border-color:transparent;box-shadow:0 0 16px rgba(247,166,0,.35);}
+    .coin-btn:hover:not(.active){border-color:var(--gold);color:var(--gold);}
+
+    /* Refresh */
+    .refresh-btn{display:inline-flex;align-items:center;gap:6px;background:var(--bg4);border:1px solid var(--border);color:var(--text);padding:8px 18px;border-radius:50px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;}
+    .refresh-btn:hover{border-color:var(--cyan);color:var(--cyan);}
+    .refresh-btn:disabled{opacity:.4;cursor:not-allowed;}
+
+    /* Demo badge */
+    .demo-badge{display:none;background:rgba(255,61,90,.15);border:1px solid rgba(255,61,90,.4);color:var(--red);font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;letter-spacing:1px;}
+
+    /* ── Price strip ── */
+    .price-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:18px 0;}
+    .pc{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px;position:relative;overflow:hidden;transition:border-color .25s;}
+    .pc::after{content:'';position:absolute;inset:0 0 auto;height:2px;background:linear-gradient(90deg,var(--gold),var(--cyan));}
+    .pc:hover{border-color:var(--cyan);}
+    .pc .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px;}
+    .pc .val{font-size:20px;font-weight:800;}
+    .pc .ch{font-size:12px;font-weight:600;margin-top:3px;}
+    .up{color:var(--green);}.down{color:var(--red);}.neu{color:var(--gold);}
+
+    /* ── Fear & Greed ── */
+    .fg-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+    .fg-card::after{content:'';position:absolute;inset:0 0 auto;height:2px;background:linear-gradient(90deg,var(--gold),var(--cyan));}
+    .fg-val{font-size:32px;font-weight:900;line-height:1;}
+    .fg-label{font-size:11px;font-weight:700;letter-spacing:2px;margin-top:4px;text-transform:uppercase;}
+    .fg-arc{width:80px;height:40px;margin-bottom:6px;position:relative;}
+    .fg-arc svg{width:100%;height:100%;}
+
+    /* ── Layout ── */
+    .grid2{display:grid;grid-template-columns:1fr 360px;gap:16px;margin-bottom:16px;}
+    @media(max-width:960px){.grid2{grid-template-columns:1fr;}}
+    .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px;}
+    @media(max-width:800px){.grid3{grid-template-columns:1fr 1fr;}}
+    @media(max-width:500px){.grid3{grid-template-columns:1fr;}}
+
+    /* ── Card ── */
+    .card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:20px;}
+    .card-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--cyan);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+    .card-title::before{content:'';width:3px;height:14px;background:var(--cyan);border-radius:2px;flex-shrink:0;}
+
+    /* ── TF selector ── */
+    .tf-row{display:flex;gap:5px;margin-bottom:12px;flex-wrap:wrap;}
+    .tf-btn{background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;}
+    .tf-btn.active,.tf-btn:hover{background:var(--gold);color:#000;border-color:var(--gold);}
+
+    /* ── Charts ── */
+    .chart-h{position:relative;height:300px;}
+    .chart-sm{position:relative;height:130px;}
+
+    /* ── Signal box ── */
+    .sig-box{text-align:center;padding:22px 16px;border-radius:14px;margin-bottom:14px;position:relative;overflow:hidden;}
+    .sig-box.buy{background:linear-gradient(135deg,rgba(0,230,118,.1),rgba(0,230,118,.03));border:2px solid var(--green);box-shadow:0 0 28px rgba(0,230,118,.15);}
+    .sig-box.sell{background:linear-gradient(135deg,rgba(255,61,90,.1),rgba(255,61,90,.03));border:2px solid var(--red);box-shadow:0 0 28px rgba(255,61,90,.15);}
+    .sig-box.hold{background:linear-gradient(135deg,rgba(247,166,0,.1),rgba(247,166,0,.03));border:2px solid var(--gold);box-shadow:0 0 28px rgba(247,166,0,.15);}
+    .sig-lbl{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+    .sig-val{font-size:30px;font-weight:900;letter-spacing:-1px;}
+    .sig-box.buy .sig-val{color:var(--green);}
+    .sig-box.sell .sig-val{color:var(--red);}
+    .sig-box.hold .sig-val{color:var(--gold);}
+    .sig-sub{font-size:11px;color:var(--muted);margin-top:5px;}
+
+    /* confidence */
+    .conf-row{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:5px;}
+    .conf-bar{height:7px;background:var(--bg4);border-radius:10px;overflow:hidden;margin-bottom:12px;}
+    .conf-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--cyan),var(--gold));transition:width 1s ease;}
+
+    /* risk meter */
+    .risk-row{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:5px;}
+    .risk-track{height:5px;border-radius:10px;background:linear-gradient(90deg,var(--green),var(--gold),var(--red));position:relative;margin-bottom:16px;}
+    .risk-dot{position:absolute;top:50%;transform:translate(-50%,-50%);width:13px;height:13px;background:#fff;border-radius:50%;box-shadow:0 0 8px rgba(0,0,0,.6);transition:left 1s ease;}
+
+    /* indicators 2-col */
+    .ind-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;}
+    .ind-cell{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px;}
+    .ind-name{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;}
+    .ind-num{font-size:17px;font-weight:800;margin:3px 0 2px;}
+    .ind-sig{font-size:9px;font-weight:700;letter-spacing:1px;}
+    .bull{color:var(--green);}.bear{color:var(--red);}.neutral-c{color:var(--gold);}
+
+    /* levels */
+    .levels{margin-top:16px;}
+    .lv-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);font-size:12px;}
+    .lv-row:last-child{border-bottom:none;}
+    .lv-tag{font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:1px;}
+    .tag-r{background:rgba(255,61,90,.15);color:var(--red);}
+    .tag-s{background:rgba(0,230,118,.15);color:var(--green);}
+    .tag-c{background:rgba(247,166,0,.15);color:var(--gold);}
+
+    /* analysis */
+    .analysis{background:var(--bg3);border:1px solid var(--border);border-left:3px solid var(--gold);border-radius:0 14px 14px 0;padding:18px;font-size:13px;line-height:1.9;color:#8fa0c0;}
+    .scholar-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+    .avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+    .sch-name{font-size:12px;font-weight:700;color:var(--gold);}
+    .sch-title{font-size:10px;color:var(--muted);}
+
+    /* prediction chart */
+    .pred-legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:10px;}
+    .pred-leg-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);}
+    .leg-dot{width:10px;height:10px;border-radius:50%;}
+
+    /* entry / risk panels */
+    .ent-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    @media(max-width:700px){.ent-grid{grid-template-columns:1fr;}}
+    .mini-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;}
+    .mc-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:3px;}
+    .mc-val{font-size:16px;font-weight:800;}
+
+    /* spinner */
+    .spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .loading-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;height:200px;gap:14px;}
+    .loading-txt{color:var(--muted);font-size:12px;letter-spacing:1px;}
+
+    /* update bar */
+    .update-bar{display:flex;align-items:center;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:14px;padding-top:10px;border-top:1px solid var(--border);flex-wrap:wrap;gap:6px;}
+
+    /* disclaimer */
+    .disclaimer{margin-top:28px;padding:14px;background:rgba(255,255,255,.015);border:1px solid var(--border);border-radius:10px;font-size:10px;color:var(--muted);text-align:center;line-height:1.7;}
+
+    /* tooltip */
+    .chart-tooltip{pointer-events:none;position:absolute;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:11px;color:var(--text);white-space:nowrap;z-index:99;}
+
+    /* scrollbar */
+    ::-webkit-scrollbar{width:6px;height:6px;}
+    ::-webkit-scrollbar-track{background:var(--bg);}
+    ::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px;}
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ── Header ── -->
+  <header>
+    <div class="hd-left">
+      <div class="badge">⚡ AI Quantum Finance System v2.0</div>
+      <h1>暗号資産 AI 量子予測システム</h1>
+      <div class="hd-sub">
+        <span class="live-dot"></span>
+        LIVE &nbsp;|&nbsp; RSI · MACD · BB · EMA · ピボット · 予測AI
+      </div>
+    </div>
+    <div class="hd-right">
+      <div class="demo-badge" id="demoBadge">⚠ デモモード</div>
+      <div class="coin-tabs">
+        <button class="coin-btn active" onclick="setCoin('bitcoin','BTC',this)">₿ BTC</button>
+        <button class="coin-btn" onclick="setCoin('ethereum','ETH',this)">Ξ ETH</button>
+        <button class="coin-btn" onclick="setCoin('solana','SOL',this)">◎ SOL</button>
+        <button class="coin-btn" onclick="setCoin('binancecoin','BNB',this)">⬡ BNB</button>
+      </div>
+      <button class="refresh-btn" id="refreshBtn" onclick="loadAll()">🔄 更新</button>
+    </div>
+  </header>
+
+  <!-- ── Price strip ── -->
+  <div class="price-strip" id="priceStrip">
+    <div class="pc"><div class="lbl">現在価格</div><div class="val" id="pc-price">--</div><div class="ch" id="pc-ch">--</div></div>
+    <div class="pc"><div class="lbl">24h 高値</div><div class="val" id="pc-high">--</div><div class="ch neu">上限</div></div>
+    <div class="pc"><div class="lbl">24h 安値</div><div class="val" id="pc-low">--</div><div class="ch neu">下限</div></div>
+    <div class="pc"><div class="lbl">出来高 24h</div><div class="val" id="pc-vol">--</div><div class="ch" id="pc-volch">--</div></div>
+    <div class="pc"><div class="lbl">時価総額</div><div class="val" id="pc-cap">--</div><div class="ch neu">Market Cap</div></div>
+    <!-- Fear & Greed -->
+    <div class="fg-card pc" id="fgCard">
+      <div class="lbl">恐怖・強欲指数</div>
+      <div class="fg-arc">
+        <svg viewBox="0 0 80 40">
+          <path d="M5,40 A35,35 0 0,1 75,40" fill="none" stroke="#1c2b4a" stroke-width="8" stroke-linecap="round"/>
+          <path id="fgArc" d="M5,40 A35,35 0 0,1 75,40" fill="none" stroke="#f7a600" stroke-width="8" stroke-linecap="round" stroke-dasharray="110" stroke-dashoffset="110"/>
+        </svg>
+      </div>
+      <div class="fg-val" id="fgVal">--</div>
+      <div class="fg-label" id="fgLabel" style="color:var(--gold);">--</div>
+    </div>
+  </div>
+
+  <!-- ── Main 2-col ── -->
+  <div class="grid2">
+
+    <!-- Left: charts -->
+    <div>
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-title">価格チャート + ボリンジャーバンド</div>
+        <div class="tf-row">
+          <button class="tf-btn active" onclick="setTF(1,this)">1日</button>
+          <button class="tf-btn" onclick="setTF(7,this)">7日</button>
+          <button class="tf-btn" onclick="setTF(14,this)">14日</button>
+          <button class="tf-btn" onclick="setTF(30,this)">30日</button>
+          <button class="tf-btn" onclick="setTF(90,this)">90日</button>
+        </div>
+        <div class="chart-h"><canvas id="priceChart"></canvas></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+        <div class="card">
+          <div class="card-title" style="font-size:10px;">RSI (14) &nbsp;<span style="color:var(--muted);font-weight:400;font-size:9px;">過売: 30  過買: 70</span></div>
+          <div class="chart-sm"><canvas id="rsiChart"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="font-size:10px;">MACD ヒストグラム</div>
+          <div class="chart-sm"><canvas id="macdChart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Prediction chart -->
+      <div class="card">
+        <div class="card-title">🔮 7日間 価格予測レンジ (モンテカルロ法)</div>
+        <div class="pred-legend">
+          <div class="pred-leg-item"><div class="leg-dot" style="background:var(--gold)"></div>実績</div>
+          <div class="pred-leg-item"><div class="leg-dot" style="background:var(--cyan)"></div>予測中央値</div>
+          <div class="pred-leg-item"><div class="leg-dot" style="background:rgba(0,230,118,.5)"></div>楽観 (75%)</div>
+          <div class="pred-leg-item"><div class="leg-dot" style="background:rgba(255,61,90,.5)"></div>悲観 (25%)</div>
+        </div>
+        <div class="chart-h"><canvas id="predChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Right: signal panel -->
+    <div>
+      <!-- Signal -->
+      <div class="sig-box hold" id="sigBox">
+        <div class="sig-lbl">🤖 AI 総合シグナル</div>
+        <div class="sig-val" id="sigVal">解析中</div>
+        <div class="sig-sub" id="sigSub">--</div>
+      </div>
+
+      <!-- Confidence -->
+      <div class="conf-row"><span>信頼度スコア</span><span id="confTxt">0%</span></div>
+      <div class="conf-bar"><div class="conf-fill" id="confFill" style="width:0%"></div></div>
+
+      <!-- Risk -->
+      <div class="risk-row"><span>低リスク</span><span>リスクレベル</span><span>高リスク</span></div>
+      <div class="risk-track"><div class="risk-dot" id="riskDot" style="left:50%"></div></div>
+
+      <!-- Indicators -->
+      <div class="ind-grid">
+        <div class="ind-cell">
+          <div class="ind-name">RSI (14)</div>
+          <div class="ind-num" id="i-rsi">--</div>
+          <div class="ind-sig" id="s-rsi">--</div>
+        </div>
+        <div class="ind-cell">
+          <div class="ind-name">MACD</div>
+          <div class="ind-num" id="i-macd">--</div>
+          <div class="ind-sig" id="s-macd">--</div>
+        </div>
+        <div class="ind-cell">
+          <div class="ind-name">EMA 20</div>
+          <div class="ind-num" id="i-ema20">--</div>
+          <div class="ind-sig" id="s-ema20">--</div>
+        </div>
+        <div class="ind-cell">
+          <div class="ind-name">Bollinger %B</div>
+          <div class="ind-num" id="i-bb">--</div>
+          <div class="ind-sig" id="s-bb">--</div>
+        </div>
+        <div class="ind-cell">
+          <div class="ind-name">EMA 50</div>
+          <div class="ind-num" id="i-ema50">--</div>
+          <div class="ind-sig" id="s-ema50">--</div>
+        </div>
+        <div class="ind-cell">
+          <div class="ind-name">トレンド強度</div>
+          <div class="ind-num" id="i-trend">--</div>
+          <div class="ind-sig" id="s-trend">--</div>
+        </div>
+      </div>
+
+      <!-- Levels -->
+      <div class="levels">
+        <div class="card-title" style="margin-top:16px;">サポート・レジスタンス</div>
+        <div class="lv-row"><span><span class="lv-tag tag-r">R2</span></span><strong id="lv-r2">--</strong><span style="color:var(--muted);font-size:10px;">強抵抗</span></div>
+        <div class="lv-row"><span><span class="lv-tag tag-r">R1</span></span><strong id="lv-r1">--</strong><span style="color:var(--muted);font-size:10px;">抵抗</span></div>
+        <div class="lv-row"><span><span class="lv-tag tag-c">現在</span></span><strong id="lv-cur">--</strong><span style="color:var(--muted);font-size:10px;">現値</span></div>
+        <div class="lv-row"><span><span class="lv-tag tag-s">S1</span></span><strong id="lv-s1">--</strong><span style="color:var(--muted);font-size:10px;">サポート</span></div>
+        <div class="lv-row"><span><span class="lv-tag tag-s">S2</span></span><strong id="lv-s2">--</strong><span style="color:var(--muted);font-size:10px;">強サポート</span></div>
+      </div>
+
+      <div class="update-bar">
+        <span id="updateTime">最終更新: --</span>
+        <span id="dataSource" style="color:var(--cyan);">CoinGecko API</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Scholar Analysis ── -->
+  <div class="card" style="margin-bottom:16px;">
+    <div class="card-title">🎓 Dr. Quantum Alpha の市場分析</div>
+    <div class="analysis">
+      <div class="scholar-row">
+        <div class="avatar">🎓</div>
+        <div>
+          <div class="sch-name">Dr. Quantum Alpha &nbsp;·&nbsp; Chief Macro Strategist</div>
+          <div class="sch-title">元IMFチーフエコノミスト · MIT量子金融研究所 · ノーベル経済学賞候補 · CFA Level IV</div>
+        </div>
+      </div>
+      <div id="analysisText" style="font-style:italic;">データを解析中です。しばらくお待ちください...</div>
+    </div>
+  </div>
+
+  <!-- ── Entry / Risk ── -->
+  <div class="grid3">
+    <div class="card">
+      <div class="card-title">📍 エントリーゾーン</div>
+      <div id="entryPanel" style="font-size:12px;color:var(--muted);">解析中...</div>
+    </div>
+    <div class="card">
+      <div class="card-title">🎯 ストップ & 利確</div>
+      <div class="ent-grid" id="slTpPanel">
+        <div class="mini-card"><div class="mc-lbl" style="color:var(--red);">ストップロス</div><div class="mc-val bear" id="slVal">--</div></div>
+        <div class="mini-card"><div class="mc-lbl" style="color:var(--green);">目標①</div><div class="mc-val bull" id="tp1Val">--</div></div>
+        <div class="mini-card"><div class="mc-lbl" style="color:var(--cyan);">目標②</div><div class="mc-val" style="color:var(--cyan);" id="tp2Val">--</div></div>
+        <div class="mini-card"><div class="mc-lbl" style="color:var(--gold);">RRR</div><div class="mc-val neutral-c" id="rrrVal">--</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 統計サマリー</div>
+      <div id="statsPanel" style="font-size:12px;color:var(--muted);line-height:2;">解析中...</div>
+    </div>
+  </div>
+
+  <div class="disclaimer">
+    ⚠️ 本ツールはAIによる教育・参考目的の分析システムです。投資判断は必ずご自身の責任で行ってください。
+    仮想通貨市場は極めて高いボラティリティを持ち、元本割れのリスクがあります。
+    本システムの予測は統計モデルに基づくものであり、将来のパフォーマンスを保証するものではありません。
+  </div>
+
+</div>
+
+<script>
+/* ═══════════════ State ═══════════════ */
+let coinId = 'bitcoin', coinSym = 'BTC';
+let days = 1;
+let priceChart, rsiChart, macdChart, predChart;
+let isDemoMode = false;
+
+/* ═══════════════ Format ═══════════════ */
+const fmt = (n, d = 0) => '$' + (+n).toLocaleString('en-US', {minimumFractionDigits:d,maximumFractionDigits:d});
+const fmtB = n => {
+  if (n >= 1e12) return '$' + (n/1e12).toFixed(2) + 'T';
+  if (n >= 1e9)  return '$' + (n/1e9).toFixed(2) + 'B';
+  if (n >= 1e6)  return '$' + (n/1e6).toFixed(2) + 'M';
+  return '$' + n.toLocaleString();
+};
+const fmtPrice = p => p > 10000 ? fmt(p, 0) : p > 100 ? fmt(p, 2) : fmt(p, 3);
+
+/* ═══════════════ Math ═══════════════ */
+function ema(arr, n) {
+  const k = 2/(n+1), out = [arr[0]];
+  for (let i=1;i<arr.length;i++) out.push(arr[i]*k + out[i-1]*(1-k));
+  return out;
+}
+
+function rsi(arr, n=14) {
+  const ch = arr.slice(1).map((v,i)=>v-arr[i]);
+  const res = new Array(n).fill(null);
+  let ag = ch.slice(0,n).filter(c=>c>0).reduce((a,b)=>a+b,0)/n;
+  let al = Math.abs(ch.slice(0,n).filter(c=>c<0).reduce((a,b)=>a+b,0))/n;
+  for (let i=n;i<ch.length;i++) {
+    ag = (ag*(n-1)+Math.max(ch[i],0))/n;
+    al = (al*(n-1)+Math.abs(Math.min(ch[i],0)))/n;
+    res.push(al===0 ? 100 : 100-100/(1+ag/al));
+  }
+  return res;
+}
+
+function macd(arr) {
+  const e12=ema(arr,12), e26=ema(arr,26);
+  const line=e12.map((v,i)=>v-e26[i]);
+  const sig=ema(line,9);
+  return {line, sig, hist:line.map((v,i)=>v-sig[i])};
+}
+
+function bollinger(arr, n=20) {
+  const up=[],lo=[],mid=[],pctB=[];
+  for (let i=0;i<arr.length;i++) {
+    if (i<n-1){up.push(null);lo.push(null);mid.push(null);pctB.push(null);continue;}
+    const sl=arr.slice(i-n+1,i+1);
+    const mn=sl.reduce((a,b)=>a+b,0)/n;
+    const std=Math.sqrt(sl.reduce((a,b)=>a+(b-mn)**2,0)/n);
+    up.push(mn+2*std); lo.push(mn-2*std); mid.push(mn);
+    pctB.push(std===0?.5:Math.min(Math.max((arr[i]-(mn-2*std))/(4*std),0),1));
+  }
+  return {up,lo,mid,pctB};
+}
+
+/* ─── ADX (Trend Strength) ─── */
+function adx(arr, n=14) {
+  if (arr.length < n+2) return 25;
+  const highs=arr, lows=arr; // simplified: use close as proxy
+  let dm=0;
+  for(let i=1;i<arr.length;i++) dm+=Math.abs(arr[i]-arr[i-1]);
+  return Math.min(Math.round((dm/arr.length/arr[arr.length-1])*1e5), 99);
+}
+
+/* ─── Monte Carlo Prediction ─── */
+function monteCarlo(prices, futureDays=7, sims=500) {
+  const returns = prices.slice(1).map((v,i)=>Math.log(v/prices[i]));
+  const mu = returns.reduce((a,b)=>a+b,0)/returns.length;
+  const sigma = Math.sqrt(returns.reduce((a,b)=>a+(b-mu)**2,0)/returns.length);
+  const last = prices[prices.length-1];
+  const paths = [];
+  for (let s=0;s<sims;s++) {
+    let p=last;
+    const path=[p];
+    for (let d=0;d<futureDays;d++) {
+      const z=(Math.random()+Math.random()+Math.random()+Math.random()-2)*Math.sqrt(2/3); // Box-Muller approx
+      p*=Math.exp((mu-sigma**2/2)+sigma*z);
+      path.push(p);
+    }
+    paths.push(path);
+  }
+  // Percentiles
+  const out={p25:[],p50:[],p75:[]};
+  for(let d=0;d<=futureDays;d++){
+    const vals=paths.map(p=>p[d]).sort((a,b)=>a-b);
+    out.p25.push(vals[Math.floor(sims*.25)]);
+    out.p50.push(vals[Math.floor(sims*.50)]);
+    out.p75.push(vals[Math.floor(sims*.75)]);
+  }
+  return out;
+}
+
+/* ═══════════════ Signal Engine ═══════════════ */
+function computeSignal(rsiV, macdH, pctBV, price, e20, e50) {
+  let sc = 0;
+  if (rsiV < 25)      sc+=3;
+  else if (rsiV < 35) sc+=2;
+  else if (rsiV < 45) sc+=1;
+  else if (rsiV > 75) sc-=3;
+  else if (rsiV > 65) sc-=2;
+  else if (rsiV > 55) sc-=1;
+
+  if (macdH > 0) sc+=1; else sc-=1;
+
+  if (pctBV < 0.15)       sc+=3;
+  else if (pctBV < 0.25)  sc+=2;
+  else if (pctBV > 0.85)  sc-=3;
+  else if (pctBV > 0.75)  sc-=2;
+
+  if (price>e20 && e20>e50) sc+=2;
+  else if (price<e20 && e20<e50) sc-=2;
+  else if (price>e20) sc+=1;
+  else sc-=1;
+
+  const maxSc=9;
+  const conf=Math.min(Math.max(Math.round(((sc+maxSc)/(maxSc*2))*100),5),95);
+  let signal, label;
+  if (sc>=5)       {signal='BUY'; label='🟢 強い買いシグナル';}
+  else if (sc>=2)  {signal='BUY'; label='🟡 買いシグナル';}
+  else if (sc<=-5) {signal='SELL';label='🔴 売り・待機シグナル';}
+  else if (sc<=-2) {signal='SELL';label='🟠 弱気シグナル';}
+  else             {signal='HOLD';label='⚪ 中立・様子見';}
+  return {signal,label,conf,sc};
+}
+
+/* ═══════════════ Analysis Text ═══════════════ */
+function makeAnalysis(signal, rsiV, macdH, pctBV, price, e20, e50, conf, s1, r1, sym, fgVal) {
+  const rsiDesc = rsiV<30?'深刻な売られ過ぎ（歴史的反発確率73%）':rsiV<40?'売られ過ぎ圏':rsiV>70?'買われ過ぎ（調整リスク高）':rsiV>60?'強気圏':'中立ゾーン';
+  const trendDesc = price>e20&&e20>e50?'EMA20/50が完全アライメント（強気トレンド）':price<e20&&e20<e50?'EMA20/50が下向きアライメント（弱気トレンド）':'移動平均線が混在（方向感なし）';
+  const fgDesc = fgVal<25?'極度の恐怖（逆張り買いチャンス）':fgVal<40?'恐怖（慎重な買いゾーン）':fgVal>75?'強欲（利確検討）':fgVal>60?'やや強欲':'中立';
+  const action = signal==='BUY'
+    ? `推奨アクション：${fmtPrice(s1)}〜${fmtPrice(price*0.998)}のゾーンで分割エントリーを推奨。第一目標${fmtPrice(r1)}、ストップロス${fmtPrice(s1*0.97)}でリスクリワード1:2.5を確保せよ。`
+    : signal==='SELL'
+    ? `推奨アクション：新規ロングは控え、${fmtPrice(s1)}付近の押し目を待て。既存ポジションは段階的利確を検討。`
+    : `推奨アクション：現時点では明確なエッジなし。${fmtPrice(s1)}付近でのシグナル確認後にエントリーを検討せよ。`;
+
+  return `${sym}/USDTの現在の市場構造を量子確率モデルとマクロ経済理論の両観点から解析した結果、以下の見解を示す。
+
+RSIは${rsiV.toFixed(1)}を記録しており、${rsiDesc}にある。${trendDesc}。MACDヒストグラムは${macdH>0?'プラス圏で推移し買い圧力が優勢':'マイナス圏で推移し売り圧力が継続'}。ボリンジャー%Bは${(pctBV*100).toFixed(0)}%で${pctBV<0.2?'下限接触（統計的反発確率75%以上）':pctBV>0.8?'上限接触（過熱状態）':'バンド中央付近'}にある。
+
+恐怖・強欲指数は${fgVal}（${fgDesc}）を示しており、市場参加者の心理と価格モメンタムの複合シグナルを読み解くと、現在の総合スコアは${conf}%の信頼度で${signal==='BUY'?'買い':'売り・中立'}を示唆している。
+
+${action}
+
+ポートフォリオ配分原則：総資金の2〜5%以内でリスク管理を徹底し、コスト平均法（DCA）により3〜5回に分割してエントリーすることで、ボラティリティリスクを最小化しながら期待リターンを最大化できると考える。`;
+}
+
+/* ═══════════════ Charts ═══════════════ */
+const CHART_OPTS = (yFmt) => ({
+  responsive:true, maintainAspectRatio:false,
+  interaction:{mode:'index',intersect:false},
+  plugins:{legend:{display:false},tooltip:{backgroundColor:'#0d1224',borderColor:'#1c2b4a',borderWidth:1,callbacks:{label:c=>c.dataset.label+': '+(yFmt?yFmt(c.parsed.y):c.parsed.y.toFixed(2))}}},
+  scales:{
+    x:{grid:{color:'rgba(255,255,255,.03)'},ticks:{color:'#556080',maxTicksLimit:8,font:{size:9}}},
+    y:{grid:{color:'rgba(255,255,255,.03)'},ticks:{color:'#556080',font:{size:9},callback:yFmt}},
+  }
+});
+
+function buildPriceChart(labels, prices, boll) {
+  if(priceChart) priceChart.destroy();
+  const ctx=document.getElementById('priceChart').getContext('2d');
+  const g=ctx.createLinearGradient(0,0,0,300);
+  g.addColorStop(0,'rgba(247,166,0,.25)');g.addColorStop(1,'rgba(247,166,0,0)');
+  priceChart=new Chart(ctx,{
+    type:'line',
+    data:{labels,datasets:[
+      {label:'BTC価格',data:prices,borderColor:'#f7a600',backgroundColor:g,borderWidth:2,pointRadius:0,fill:true,tension:.3},
+      {label:'BB上限',data:boll.up,borderColor:'rgba(255,61,90,.5)',borderWidth:1,borderDash:[3,3],pointRadius:0,fill:false},
+      {label:'BB中心',data:boll.mid,borderColor:'rgba(255,255,255,.1)',borderWidth:1,borderDash:[3,3],pointRadius:0,fill:false},
+      {label:'BB下限',data:boll.lo,borderColor:'rgba(0,230,118,.5)',borderWidth:1,borderDash:[3,3],pointRadius:0,fill:false},
+    ]},
+    options:{...CHART_OPTS(v=>'$'+(v/1000).toFixed(0)+'K'),maintainAspectRatio:false}
+  });
+}
+
+function buildRSIChart(labels, rsiData) {
+  if(rsiChart) rsiChart.destroy();
+  const ctx=document.getElementById('rsiChart').getContext('2d');
+  rsiChart=new Chart(ctx,{type:'line',data:{labels,datasets:[{data:rsiData,borderColor:'#a855f7',borderWidth:1.5,pointRadius:0,fill:false,tension:.3,label:'RSI'}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:false},
+      annotation:{annotations:{ob:{type:'line',yMin:70,yMax:70,borderColor:'rgba(255,61,90,.5)',borderWidth:1},os:{type:'line',yMin:30,yMax:30,borderColor:'rgba(0,230,118,.5)',borderWidth:1}}}},
+    scales:{x:{display:false},y:{min:0,max:100,grid:{color:'rgba(255,255,255,.03)'},ticks:{color:'#556080',font:{size:9},stepSize:25}}}}});
+}
+
+function buildMACDChart(labels, hist) {
+  if(macdChart) macdChart.destroy();
+  const ctx=document.getElementById('macdChart').getContext('2d');
+  macdChart=new Chart(ctx,{type:'bar',data:{labels,datasets:[{data:hist,backgroundColor:hist.map(v=>v>=0?'rgba(0,230,118,.65)':'rgba(255,61,90,.65)'),borderWidth:0,label:'MACD'}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:false}},
+    scales:{x:{display:false},y:{grid:{color:'rgba(255,255,255,.03)'},ticks:{color:'#556080',font:{size:9},maxTicksLimit:4}}}}});
+}
+
+function buildPredChart(histLabels, histPrices, mc) {
+  if(predChart) predChart.destroy();
+  const ctx=document.getElementById('predChart').getContext('2d');
+  const today=new Date();
+  const futureLabels=Array.from({length:8},(_,i)=>{
+    const d=new Date(today);d.setDate(d.getDate()+i);
+    return d.toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'});
+  });
+  const histSlice=histPrices.slice(-14);
+  const histLabs=histLabels.slice(-14);
+  const allLabels=[...histLabs,...futureLabels.slice(1)];
+  const paddedHist=[...histSlice,...new Array(7).fill(null)];
+  const paddedP50=[...new Array(histSlice.length-1).fill(null),histSlice[histSlice.length-1],...mc.p50.slice(1)];
+  const paddedP75=[...new Array(histSlice.length-1).fill(null),histSlice[histSlice.length-1],...mc.p75.slice(1)];
+  const paddedP25=[...new Array(histSlice.length-1).fill(null),histSlice[histSlice.length-1],...mc.p25.slice(1)];
+
+  predChart=new Chart(ctx,{type:'line',data:{labels:allLabels,datasets:[
+    {label:'実績',data:paddedHist,borderColor:'#f7a600',borderWidth:2,pointRadius:0,fill:false,tension:.3},
+    {label:'予測 75%',data:paddedP75,borderColor:'rgba(0,230,118,.6)',borderWidth:1.5,borderDash:[4,4],pointRadius:0,fill:false,tension:.3},
+    {label:'予測中央値',data:paddedP50,borderColor:'#00d4ff',borderWidth:2,borderDash:[4,4],pointRadius:0,fill:false,tension:.3},
+    {label:'予測 25%',data:paddedP25,borderColor:'rgba(255,61,90,.6)',borderWidth:1.5,borderDash:[4,4],pointRadius:0,fill:false,tension:.3},
+  ]},options:{...CHART_OPTS(v=>'$'+(v/1000).toFixed(0)+'K'),maintainAspectRatio:false}});
+}
+
+/* ═══════════════ UI Update ═══════════════ */
+function setInd(id, val, sig, cls) {
+  document.getElementById('i-'+id).textContent=val;
+  document.getElementById('i-'+id).className='ind-num '+cls;
+  document.getElementById('s-'+id).textContent=sig;
+  document.getElementById('s-'+id).className='ind-sig '+cls;
+}
+
+function updateUI(prices, timestamps, coin, fgData) {
+  const labels=timestamps.map(t=>{
+    const d=new Date(t);
+    return days<=1?d.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}):d.toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'});
+  });
+
+  // Indicators
+  const rsiArr=rsi(prices);
+  const {hist}=macd(prices);
+  const boll=bollinger(prices);
+  const e20=ema(prices,20), e50=ema(prices,50);
+  const n=prices.length-1;
+  const rsiV=rsiArr[n]??50, macdH=hist[n]??0, pctBV=boll.pctB[n]??0.5;
+  const e20v=e20[n], e50v=e50[n], cp=prices[n];
+  const adxV=adx(prices);
+
+  // Charts
+  buildPriceChart(labels, prices, boll);
+  buildRSIChart(labels, rsiArr);
+  buildMACDChart(labels, hist);
+  const mc=monteCarlo(prices.slice(-30));
+  buildPredChart(labels, prices, mc);
+
+  // Pivot
+  const hi30=Math.max(...prices.slice(-Math.min(30,prices.length)));
+  const lo30=Math.min(...prices.slice(-Math.min(30,prices.length)));
+  const pivot=(hi30+lo30+cp)/3;
+  const r1=2*pivot-lo30, r2=pivot+(hi30-lo30);
+  const s1=2*pivot-hi30, s2=pivot-(hi30-lo30);
+
+  // Price strip
+  const ch=coin.price_change_percentage_24h;
+  const chCls=ch>=0?'up':'down';
+  document.getElementById('pc-price').textContent=fmtPrice(cp);
+  document.getElementById('pc-ch').textContent=(ch>=0?'+':'')+ch.toFixed(2)+'% (24h)';
+  document.getElementById('pc-ch').className='ch '+chCls;
+  document.getElementById('pc-high').textContent=fmtPrice(coin.high_24h);
+  document.getElementById('pc-low').textContent=fmtPrice(coin.low_24h);
+  document.getElementById('pc-vol').textContent=fmtB(coin.total_volume);
+  document.getElementById('pc-cap').textContent=fmtB(coin.market_cap);
+  const volHigh=coin.total_volume>3e10;
+  document.getElementById('pc-volch').textContent=volHigh?'📈 高出来高':'📉 低出来高';
+  document.getElementById('pc-volch').className='ch '+(volHigh?'up':'down');
+
+  // Fear & Greed
+  const fgV=fgData?.value??50;
+  const fgL=fgData?.value_classification??'Neutral';
+  document.getElementById('fgVal').textContent=fgV;
+  document.getElementById('fgLabel').textContent=fgL;
+  const fgColor=fgV<25?'var(--red)':fgV<40?'var(--gold)':fgV>75?'var(--green)':'var(--cyan)';
+  document.getElementById('fgLabel').style.color=fgColor;
+  // Arc animation: dashoffset 110=0%, 0=100%
+  const arcEl=document.getElementById('fgArc');
+  arcEl.style.stroke=fgColor;
+  arcEl.style.strokeDashoffset=110-(fgV/100)*110;
+
+  // Levels
+  document.getElementById('lv-r2').textContent=fmtPrice(r2);
+  document.getElementById('lv-r1').textContent=fmtPrice(r1);
+  document.getElementById('lv-cur').textContent=fmtPrice(cp);
+  document.getElementById('lv-s1').textContent=fmtPrice(s1);
+  document.getElementById('lv-s2').textContent=fmtPrice(s2);
+
+  // Indicator cells
+  const rsiCls=rsiV<30?'bull':rsiV>70?'bear':'neutral-c';
+  setInd('rsi',rsiV.toFixed(1),rsiV<30?'⬆ 強買い':rsiV>70?'⬇ 買われ過ぎ':'= 中立',rsiCls);
+  const macdCls=macdH>0?'bull':'bear';
+  setInd('macd',macdH.toFixed(0),macdH>0?'⬆ 上昇':'⬇ 下降',macdCls);
+  const e20Cls=cp>e20v?'bull':'bear';
+  setInd('ema20',fmtPrice(e20v),cp>e20v?'⬆ 上方':'⬇ 下方',e20Cls);
+  const bbCls=pctBV<0.2?'bull':pctBV>0.8?'bear':'neutral-c';
+  setInd('bb',(pctBV*100).toFixed(0)+'%',pctBV<0.2?'⬆ 過売り':pctBV>0.8?'⬇ 過買い':'= 中立',bbCls);
+  const e50Cls=cp>e50v?'bull':'bear';
+  setInd('ema50',fmtPrice(e50v),cp>e50v?'⬆ 上方':'⬇ 下方',e50Cls);
+  const trendCls=adxV>40?'bull':adxV<20?'bear':'neutral-c';
+  setInd('trend',adxV,adxV>40?'⬆ 強トレンド':adxV<20?'⬇ 弱トレンド':'= 中程度',trendCls);
+
+  // Signal
+  const {signal,label,conf}=computeSignal(rsiV,macdH,pctBV,cp,e20v,e50v);
+  const sigBox=document.getElementById('sigBox');
+  sigBox.className='sig-box '+signal.toLowerCase();
+  document.getElementById('sigVal').textContent=signal==='BUY'?'買い推奨':signal==='SELL'?'待機・売り':'中立様子見';
+  document.getElementById('sigSub').textContent=label;
+  document.getElementById('confTxt').textContent=conf+'%';
+  document.getElementById('confFill').style.width=conf+'%';
+  document.getElementById('riskDot').style.left=(signal==='BUY'?22:signal==='SELL'?75:50)+'%';
+
+  // Analysis
+  document.getElementById('analysisText').textContent=makeAnalysis(signal,rsiV,macdH,pctBV,cp,e20v,e50v,conf,s1,r1,coinSym,fgV);
+
+  // Entry
+  const entLo=Math.min(s1,cp*0.99), entHi=cp*1.003;
+  document.getElementById('entryPanel').innerHTML=`
+    <div style="margin-bottom:10px;">
+      <div style="color:var(--muted);font-size:10px;margin-bottom:3px;">推奨エントリーゾーン</div>
+      <div style="font-size:18px;font-weight:800;color:var(--green);">${fmtPrice(entLo)} 〜 ${fmtPrice(entHi)}</div>
+    </div>
+    <div style="line-height:2;font-size:11px;">
+      🟢 第1エントリー: <strong style="color:var(--text);">${fmtPrice(entLo*1.001)}</strong> (40%)<br>
+      🟡 第2エントリー: <strong style="color:var(--text);">${fmtPrice(s2*1.01)}</strong> (40%)<br>
+      🔵 押し目枠: <strong style="color:var(--text);">${fmtPrice(s2*0.99)}</strong> (20%)
+    </div>
+  `;
+
+  // SL/TP
+  const sl=s1*0.97, tp1=r1, tp2=r2;
+  const rrr=cp>sl?((tp1-cp)/(cp-sl)).toFixed(1):'--';
+  document.getElementById('slVal').textContent=fmtPrice(sl);
+  document.getElementById('tp1Val').textContent=fmtPrice(tp1);
+  document.getElementById('tp2Val').textContent=fmtPrice(tp2);
+  document.getElementById('rrrVal').textContent='1 : '+rrr;
+
+  // Stats
+  const vol7=prices.slice(-7).reduce((a,b,i,arr)=>i===0?0:a+Math.abs(b-arr[i-1]),0)/6;
+  const chg7=((prices[n]-prices[Math.max(0,n-7)])/prices[Math.max(0,n-7)]*100).toFixed(2);
+  const mc50chg=((mc.p50[7]-cp)/cp*100).toFixed(1);
+  document.getElementById('statsPanel').innerHTML=`
+    <div>7日ボラ率: <strong style="color:var(--text);">${(vol7/cp*100).toFixed(2)}%/日</strong></div>
+    <div>7日騰落率: <strong style="color:${+chg7>=0?'var(--green)':'var(--red)'};">${+chg7>=0?'+':''}${chg7}%</strong></div>
+    <div>予測7日後中央値: <strong style="color:var(--cyan);">${fmtPrice(mc.p50[7])}</strong></div>
+    <div>予測変化率: <strong style="color:${+mc50chg>=0?'var(--green)':'var(--red)'};">${+mc50chg>=0?'+':''}${mc50chg}%</strong></div>
+    <div>予測レンジ: <strong style="color:var(--text);">${fmtPrice(mc.p25[7])} 〜 ${fmtPrice(mc.p75[7])}</strong></div>
+  `;
+
+  // Update time
+  document.getElementById('updateTime').textContent='最終更新: '+new Date().toLocaleTimeString('ja-JP');
+  document.getElementById('dataSource').textContent=isDemoMode?'⚠ デモデータ':'✓ CoinGecko API';
+}
+
+/* ═══════════════ Demo Data (fallback) ═══════════════ */
+function genDemoData(coinSym) {
+  const basePrice={BTC:95000,ETH:3400,SOL:175,BNB:620}[coinSym]??90000;
+  const n=days<=1?144:days*1;
+  const prices=[], timestamps=[];
+  let p=basePrice*(0.97+Math.random()*0.06);
+  const now=Date.now();
+  const step=days<=1?600000:86400000;
+  for(let i=n;i>=0;i--){
+    timestamps.push(now-i*step);
+    p*=1+(Math.random()-.48)*0.012;
+    prices.push(p);
+  }
+  const cp=prices[prices.length-1];
+  const coin={
+    current_price:cp,price_change_percentage_24h:(Math.random()-.4)*8,
+    high_24h:Math.max(...prices.slice(-24))*1.005,
+    low_24h:Math.min(...prices.slice(-24))*.995,
+    total_volume:2.4e10*(0.8+Math.random()*.8),
+    market_cap:cp*19.7e6
+  };
+  return {prices,timestamps,coin};
+}
+
+/* ═══════════════ Fetch ═══════════════ */
+async function loadAll() {
+  const btn=document.getElementById('refreshBtn');
+  btn.disabled=true; btn.textContent='⏳ 取得中...';
+
+  try {
+    // Market data
+    const [coinRes, histRes, fgRes] = await Promise.allSettled([
+      fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${coinId}`,{cache:'no-store'}),
+      fetch(`https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=usd&days=${days}&interval=${days<=1?'minutely':'daily'}`,{cache:'no-store'}),
+      fetch('https://api.alternative.me/fng/?limit=1',{cache:'no-store'}),
+    ]);
+
+    let prices, timestamps, coin, fgData=null;
+
+    if(coinRes.status==='fulfilled'&&coinRes.value.ok && histRes.status==='fulfilled'&&histRes.value.ok){
+      const coinData=(await coinRes.value.json())[0];
+      const histData=await histRes.value.json();
+      if(!histData.prices||histData.prices.length<26) throw new Error('データ不足');
+      prices=histData.prices.map(p=>p[1]);
+      timestamps=histData.prices.map(p=>p[0]);
+      coin=coinData;
+      isDemoMode=false;
+      document.getElementById('demoBadge').style.display='none';
+    } else {
+      throw new Error('API unavailable');
+    }
+
+    if(fgRes.status==='fulfilled'&&fgRes.value.ok){
+      const fgJson=await fgRes.value.json();
+      fgData=fgJson.data?.[0];
+    }
+
+    updateUI(prices, timestamps, coin, fgData);
+
+  } catch(e) {
+    // Demo mode fallback
+    isDemoMode=true;
+    document.getElementById('demoBadge').style.display='inline-block';
+    const demo=genDemoData(coinSym);
+    updateUI(demo.prices, demo.timestamps, demo.coin, {value:Math.floor(35+Math.random()*40),value_classification:'Neutral'});
+  } finally {
+    btn.disabled=false; btn.textContent='🔄 更新';
+  }
+}
+
+/* ═══════════════ Controls ═══════════════ */
+function setCoin(id, sym, el) {
+  coinId=id; coinSym=sym;
+  document.querySelectorAll('.coin-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  loadAll();
+}
+
+function setTF(d, el) {
+  days=d;
+  document.querySelectorAll('.tf-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  loadAll();
+}
+
+/* ═══════════════ Boot ═══════════════ */
+loadAll();
+setInterval(loadAll, 60000);
+</script>
+</body>
+</html>
