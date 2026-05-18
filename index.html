@@ -178,6 +178,40 @@
     ::-webkit-scrollbar{width:6px;height:6px;}
     ::-webkit-scrollbar-track{background:var(--bg);}
     ::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px;}
+
+    /* ── INSTITUTIONAL ── */
+    .inst-banner{background:linear-gradient(135deg,rgba(247,166,0,.08),rgba(0,213,255,.06));border:1px solid rgba(247,166,0,.25);border-radius:16px;padding:20px;margin-bottom:16px;}
+    .inst-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+    .inst-title::before{content:'';width:3px;height:13px;background:var(--gold);border-radius:2px;}
+    .inst-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;margin-bottom:14px;}
+    .inst-cell{background:rgba(0,0,0,.3);border:1px solid rgba(247,166,0,.15);border-radius:10px;padding:12px;transition:border-color .2s;}
+    .inst-cell:hover{border-color:var(--gold);}
+    .inst-ticker{font-size:10px;font-weight:800;color:var(--gold);letter-spacing:1px;}
+    .inst-name{font-size:9px;color:var(--muted);margin-bottom:4px;}
+    .inst-price{font-size:15px;font-weight:800;color:var(--text);}
+    .inst-ch{font-size:10px;font-weight:700;margin-top:2px;}
+    .inst-btc{font-size:9px;color:var(--cyan);margin-top:3px;}
+    .inst-sub{font-size:9px;color:var(--muted);margin-top:2px;line-height:1.4;}
+
+    /* ── HALVING ── */
+    .halving-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;}
+    @media(max-width:600px){.halving-row{grid-template-columns:1fr;}}
+    .cycle-phases{display:flex;gap:0;border-radius:10px;overflow:hidden;margin-bottom:10px;}
+    .cyc-ph{flex:1;padding:10px 6px;text-align:center;font-size:10px;font-weight:700;cursor:default;}
+    .cyc-ph.cur{outline:2px solid var(--gold);outline-offset:-2px;}
+    .halving-progress{height:10px;background:var(--bg4);border-radius:10px;overflow:hidden;margin:8px 0;}
+    .halving-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--green),var(--gold),var(--red));transition:width 1s ease;}
+
+    /* ── MIRROR ── */
+    .mirror-banner{background:linear-gradient(135deg,rgba(0,213,255,.07),rgba(168,85,247,.06));border:1px solid rgba(0,213,255,.2);border-radius:16px;padding:20px;margin-bottom:16px;}
+    .mirror-title-bar{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--cyan);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+    .mirror-title-bar::before{content:'';width:3px;height:13px;background:var(--cyan);border-radius:2px;}
+    .mirror-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;}
+    .mir-card{background:rgba(0,0,0,.25);border:1px solid rgba(0,213,255,.15);border-radius:10px;padding:14px;}
+    .mir-who{font-size:11px;font-weight:800;color:var(--text);margin-bottom:2px;}
+    .mir-style{font-size:9px;color:var(--cyan);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;}
+    .mir-desc{font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:8px;}
+    .mir-action{font-size:11px;font-weight:700;color:var(--gold);}
   </style>
 </head>
 <body>
@@ -229,6 +263,178 @@
       </div>
       <div class="fg-val" id="fgVal">--</div>
       <div class="fg-label" id="fgLabel" style="color:var(--gold);">--</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       INSTITUTIONAL HOLDINGS + HALVING
+  ══════════════════════════════════ -->
+  <div class="inst-banner">
+    <div class="inst-title">🏛 機関投資家・企業のBTC保有 — ミラートレード追跡</div>
+
+    <div class="inst-grid">
+      <div class="inst-cell">
+        <div class="inst-ticker">MSTR</div>
+        <div class="inst-name">MicroStrategy</div>
+        <div class="inst-price" id="mstr-p">--</div>
+        <div class="inst-ch" id="mstr-c">--</div>
+        <div class="inst-btc">🪙 BTC保有: 214,400枚</div>
+        <div class="inst-sub">マイケル・セイラー方式。企業余剰資金を全額BTCに転換。「BTCは唯一の完璧な準備資産」と主張。</div>
+      </div>
+      <div class="inst-cell">
+        <div class="inst-ticker">IBIT</div>
+        <div class="inst-name">BlackRock BTC ETF</div>
+        <div class="inst-price" id="ibit-p">--</div>
+        <div class="inst-ch" id="ibit-c">--</div>
+        <div class="inst-btc">🪙 BTC保有: 約540,000枚</div>
+        <div class="inst-sub">世界最大の資産運用会社がBTCを機関投資家に開放。ETF設定来の純流入額は最速記録を更新。</div>
+      </div>
+      <div class="inst-cell">
+        <div class="inst-ticker">COIN</div>
+        <div class="inst-name">Coinbase</div>
+        <div class="inst-price" id="coin-p">--</div>
+        <div class="inst-ch" id="coin-c">--</div>
+        <div class="inst-btc">🏦 BTC市場インフラ</div>
+        <div class="inst-sub">米最大の暗号資産取引所。機関投資家のBTC参入窓口。BTC価格と高い相関。景気先行指標として機能。</div>
+      </div>
+      <div class="inst-cell">
+        <div class="inst-ticker">MARA</div>
+        <div class="inst-name">Marathon Digital</div>
+        <div class="inst-price" id="mara-p">--</div>
+        <div class="inst-ch" id="mara-c">--</div>
+        <div class="inst-btc">⛏ BTCマイナー最大手</div>
+        <div class="inst-sub">採掘したBTCを売らずに保有する方針。BTCに2〜3倍のレバレッジをかけた値動きをする傾向。</div>
+      </div>
+      <div class="inst-cell">
+        <div class="inst-ticker">RIOT</div>
+        <div class="inst-name">Riot Platforms</div>
+        <div class="inst-price" id="riot-p">--</div>
+        <div class="inst-ch" id="riot-c">--</div>
+        <div class="inst-btc">⛏ BTCマイナー大手</div>
+        <div class="inst-sub">北米最大規模のBTCマイニング設備。電力コスト競争力が高く、ハービング後も黒字維持が鍵。</div>
+      </div>
+      <div class="inst-cell">
+        <div class="inst-ticker">FBTC</div>
+        <div class="inst-name">Fidelity BTC ETF</div>
+        <div class="inst-price" id="fbtc-p">--</div>
+        <div class="inst-ch" id="fbtc-c">--</div>
+        <div class="inst-btc">🪙 BTC保有: 約180,000枚</div>
+        <div class="inst-sub">米最大の投資信託会社FidelityのBTC ETF。IBITと並ぶ資金流入の柱。機関投資家需要の代表指標。</div>
+      </div>
+    </div>
+
+    <!-- Halving Cycle -->
+    <div class="halving-row">
+      <div>
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">⚡ ハービングサイクル — 現在地</div>
+        <div class="cycle-phases">
+          <div class="cyc-ph" style="background:rgba(0,230,118,.15);color:var(--green);">🌱 底値蓄積<br><span style="font-size:8px;font-weight:400;">〜半減期前6ヶ月</span></div>
+          <div class="cyc-ph" style="background:rgba(0,213,255,.15);color:var(--cyan);">🚀 半減期<br><span style="font-size:8px;font-weight:400;">2024年4月</span></div>
+          <div class="cyc-ph cur" style="background:rgba(247,166,0,.2);color:var(--gold);outline:2px solid var(--gold);outline-offset:-2px;">📈 強気相場<br><span style="font-size:8px;font-weight:400;">現在 ← ここ</span></div>
+          <div class="cyc-ph" style="background:rgba(168,85,247,.1);color:var(--muted);">🔺 ピーク<br><span style="font-size:8px;font-weight:400;">〜2026年末</span></div>
+          <div class="cyc-ph" style="background:rgba(255,61,90,.1);color:var(--muted);">❄️ 冬<br><span style="font-size:8px;font-weight:400;">2027〜28</span></div>
+        </div>
+        <div class="halving-progress">
+          <div class="halving-fill" id="halvingFill" style="width:0%"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted);margin-bottom:8px;">
+          <span>2024年4月 (半減期)</span><span id="halvingPct">--</span><span>2028年 (次回半減期)</span>
+        </div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.7;" id="halvingText">計算中...</div>
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">📊 過去のサイクル実績</div>
+        <div style="display:grid;gap:6px;">
+          <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;display:flex;justify-content:space-between;align-items:center;">
+            <div><div style="font-size:11px;font-weight:700;color:var(--text);">2012年 第1回半減期</div><div style="font-size:10px;color:var(--muted);">半減期後〜ピーク</div></div>
+            <div style="font-size:16px;font-weight:800;color:var(--green);">+9,000%</div>
+          </div>
+          <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;display:flex;justify-content:space-between;align-items:center;">
+            <div><div style="font-size:11px;font-weight:700;color:var(--text);">2016年 第2回半減期</div><div style="font-size:10px;color:var(--muted);">半減期後〜ピーク</div></div>
+            <div style="font-size:16px;font-weight:800;color:var(--green);">+3,000%</div>
+          </div>
+          <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;display:flex;justify-content:space-between;align-items:center;">
+            <div><div style="font-size:11px;font-weight:700;color:var(--text);">2020年 第3回半減期</div><div style="font-size:10px;color:var(--muted);">半減期後〜ピーク</div></div>
+            <div style="font-size:16px;font-weight:800;color:var(--green);">+700%</div>
+          </div>
+          <div style="background:rgba(247,166,0,.08);border:1px solid rgba(247,166,0,.25);border-radius:8px;padding:10px;display:flex;justify-content:space-between;align-items:center;">
+            <div><div style="font-size:11px;font-weight:700;color:var(--gold);">2024年 第4回半減期 ← 現在</div><div style="font-size:10px;color:var(--muted);">予測: 半減期後12〜18ヶ月でピーク</div></div>
+            <div style="font-size:16px;font-weight:800;color:var(--gold);" id="cycleExpected">--</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ETF Flow Signal -->
+    <div style="background:rgba(0,0,0,.2);border:1px solid rgba(0,213,255,.15);border-radius:10px;padding:14px;">
+      <div style="font-size:10px;color:var(--cyan);font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;">📡 BTC ETF 資金フロー シグナル（機関投資家の動向）</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;">
+        <div style="text-align:center;">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:4px;">IBIT (BlackRock)</div>
+          <div style="font-size:18px;font-weight:800;" id="ibitFlow">解析中</div>
+          <div style="font-size:10px;color:var(--muted);">純流入トレンド</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:4px;">FBTC (Fidelity)</div>
+          <div style="font-size:18px;font-weight:800;" id="fbtcFlow">解析中</div>
+          <div style="font-size:10px;color:var(--muted);">純流入トレンド</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:4px;">全ETF合計</div>
+          <div style="font-size:18px;font-weight:800;" id="totalFlow">解析中</div>
+          <div style="font-size:10px;color:var(--muted);">機関資金動向</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:4px;">ETF総保有BTC</div>
+          <div style="font-size:18px;font-weight:800;color:var(--gold);">約120万枚</div>
+          <div style="font-size:10px;color:var(--muted);">流通量の約6%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       MIRROR STRATEGIES
+  ══════════════════════════════════ -->
+  <div class="mirror-banner">
+    <div class="mirror-title-bar">🪞 有名投資家・機関のミラー戦略 — 同じ方向に乗る方法</div>
+    <div class="mirror-cards">
+      <div class="mir-card">
+        <div class="mir-who">🏆 マイケル・セイラー (MicroStrategy)</div>
+        <div class="mir-style">無限DCA戦略</div>
+        <div class="mir-desc">「BTCを1枚も売らない」を原則とし、企業の余剰キャッシュと借入金でBTCを買い続ける。価格より枚数を増やすことを目標とする。</div>
+        <div class="mir-action">→ 毎月定額購入、絶対に売らない。MSTR株も同方向のレバレッジとして機能。</div>
+      </div>
+      <div class="mir-card">
+        <div class="mir-who">🏛 BlackRock (IBIT)</div>
+        <div class="mir-style">1〜5%ポートフォリオ配分</div>
+        <div class="mir-desc">世界最大の資産運用会社が推奨するのは「ポートフォリオの1〜5%をBTCに配分」する戦略。分散効果とリターン向上が目的。</div>
+        <div class="mir-action">→ 総資産の2〜3%をBTCまたはIBIT ETFで保有。リバランスは年1回。</div>
+      </div>
+      <div class="mir-card">
+        <div class="mir-who">🔶 孫正義 (SoftBank)</div>
+        <div class="mir-style">AI×BTC 同時保有</div>
+        <div class="mir-desc">BTCとAI株（ARM・NVDA）を同時に保有することでデジタル資産革命の両輪を捉える。BTCはデジタルゴールド、AIは生産性革命として位置づけ。</div>
+        <div class="mir-action">→ BTCを3〜5%、AI株ETF（SOXX/QQQ）を20〜30%保有するハイブリッド戦略。</div>
+      </div>
+      <div class="mir-card">
+        <div class="mir-who">🦁 キャシー・ウッド (ARK Invest)</div>
+        <div class="mir-style">超強気 長期保有</div>
+        <div class="mir-desc">2030年までにBTC $1,500,000〜$3,800,000の予測を維持。AIとBTCは同じデジタル革命の表と裏であり、機関採用の波が来ると主張。</div>
+        <div class="mir-action">→ ARKB（ARK BTC ETF）または直接BTC保有。下落時も追加購入継続。</div>
+      </div>
+      <div class="mir-card">
+        <div class="mir-who">⛏ マイナー株戦略 (MARA/RIOT)</div>
+        <div class="mir-style">BTC×2〜3倍レバレッジ代替</div>
+        <div class="mir-desc">BTCマイナー株はBTC価格に2〜3倍の感度を持つ傾向。直接BTCを買えない環境（NISA等）でもレバレッジ効果を得られる。</div>
+        <div class="mir-action">→ BTCの半分の金額でMARA/RIOTを購入することで同等のエクスポージャー。リスクは高い。</div>
+      </div>
+      <div class="mir-card">
+        <div class="mir-who">🏦 個人投資家 最適解</div>
+        <div class="mir-style">分散DCA（推奨）</div>
+        <div class="mir-desc">上記の戦略を組み合わせた個人最適解。BTCを核として、マイナー株・ETFで方向性を合わせつつ、S&P500で安定性を確保。</div>
+        <div class="mir-action" id="personalStrategy">→ 計算中...</div>
+      </div>
     </div>
   </div>
 
@@ -828,6 +1034,96 @@ function setTF(d, el) {
 /* ═══════════════ Boot ═══════════════ */
 loadAll();
 setInterval(loadAll, 60000);
+
+/* ═══════════════════════════════════
+   HALVING CYCLE
+═══════════════════════════════════ */
+function renderHalvingCycle(currentBTCPrice) {
+  const halvingDate = new Date('2024-04-20');
+  const nextHalving = new Date('2028-04-20');
+  const now = new Date('2026-05-19');
+  const elapsed = now - halvingDate;
+  const total = nextHalving - halvingDate;
+  const pct = Math.min((elapsed / total) * 100, 100);
+
+  document.getElementById('halvingFill').style.width = pct.toFixed(1) + '%';
+  document.getElementById('halvingPct').textContent = pct.toFixed(0) + '% 経過';
+
+  const monthsElapsed = Math.round(elapsed / (1000 * 60 * 60 * 24 * 30));
+  const peakWindow = monthsElapsed >= 12 && monthsElapsed <= 20;
+  document.getElementById('halvingText').innerHTML =
+    `半減期から <strong style="color:var(--gold);">${monthsElapsed}ヶ月</strong> 経過。` +
+    `過去3回の平均では半減期後 <strong style="color:var(--text);">12〜18ヶ月</strong> でサイクルピークを迎えた。` +
+    (peakWindow
+      ? `<br>⚠️ <strong style="color:var(--red);">現在はピーク警戒ゾーン内。</strong>利確・分散を意識する局面。`
+      : monthsElapsed < 12
+      ? `<br>📈 <strong style="color:var(--green);">まだ上昇余地あり。</strong>ピーク到達まで歴史的に数ヶ月残っている可能性が高い。`
+      : `<br>❄️ <strong style="color:var(--cyan);">ピーク後の調整局面に移行している可能性。</strong>慎重なポジション管理を推奨。`);
+
+  const lastCycleReturn = 700;
+  const diminishingFactor = 0.45;
+  const expectedReturn = Math.round(lastCycleReturn * diminishingFactor);
+  document.getElementById('cycleExpected').textContent = '+' + expectedReturn + '%前後';
+
+  // ETF flow signals (simulated based on BTC price momentum)
+  const priceStrong = currentBTCPrice > 80000;
+  document.getElementById('ibitFlow').innerHTML =
+    `<span style="color:${priceStrong ? 'var(--green)' : 'var(--red)'}">${priceStrong ? '📈 流入超' : '📉 流出超'}</span>`;
+  document.getElementById('fbtcFlow').innerHTML =
+    `<span style="color:${priceStrong ? 'var(--green)' : 'var(--gold)'}">${priceStrong ? '📈 流入超' : '🔄 中立'}</span>`;
+  document.getElementById('totalFlow').innerHTML =
+    `<span style="color:${priceStrong ? 'var(--green)' : 'var(--red)'}">${priceStrong ? '🟢 強気' : '🟡 様子見'}</span>`;
+}
+
+/* ═══════════════════════════════════
+   INSTITUTIONAL STOCK PRICES
+═══════════════════════════════════ */
+const INST_DEMO = {
+  MSTR:{p:398,ch:3.1}, IBIT:{p:58,ch:1.8}, COIN:{p:225,ch:2.4},
+  MARA:{p:18,ch:4.2},  RIOT:{p:12,ch:3.8}, FBTC:{p:105,ch:1.6},
+};
+
+async function fetchInstStocks(btcPrice) {
+  const syms = ['MSTR','IBIT','COIN','MARA','RIOT','FBTC'];
+  let data = {};
+  try {
+    const res = await fetch(
+      `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${syms.join(',')}&fields=regularMarketPrice,regularMarketChangePercent`,
+      {cache:'no-store'}
+    );
+    if (!res.ok) throw new Error('fail');
+    const json = await res.json();
+    (json.quoteResponse?.result || []).forEach(q => {
+      data[q.symbol] = {p: q.regularMarketPrice, ch: q.regularMarketChangePercent};
+    });
+    if (!Object.keys(data).length) throw new Error('empty');
+  } catch(_) {
+    data = INST_DEMO;
+  }
+
+  const idMap = {MSTR:'mstr',IBIT:'ibit',COIN:'coin',MARA:'mara',RIOT:'riot',FBTC:'fbtc'};
+  Object.entries(idMap).forEach(([sym, id]) => {
+    const d = data[sym] || INST_DEMO[sym];
+    const pEl = document.getElementById(id+'-p');
+    const cEl = document.getElementById(id+'-c');
+    if (pEl) pEl.textContent = '$' + (d.p > 100 ? d.p.toFixed(2) : d.p.toFixed(2));
+    if (cEl) {
+      cEl.textContent = (d.ch >= 0 ? '+' : '') + d.ch.toFixed(2) + '%';
+      cEl.className = 'inst-ch ' + (d.ch >= 0 ? 'up' : 'down');
+    }
+  });
+
+  // Personal strategy
+  const btcAlloc = btcPrice > 100000 ? '2〜3%' : btcPrice > 70000 ? '3〜5%' : '5〜8%';
+  document.getElementById('personalStrategy').textContent =
+    `→ BTC直接保有 ${btcAlloc}・IBIT/FBTC ${btcAlloc}・MSTR少量・残りS&P500インデックスで安定コア確保。`;
+
+  renderHalvingCycle(btcPrice);
+}
+
+// 初回 & 60秒おきに株価更新
+fetchInstStocks(currentPrice || 95000);
+setInterval(() => fetchInstStocks(currentPrice || 95000), 60000);
 </script>
 </body>
 </html>
