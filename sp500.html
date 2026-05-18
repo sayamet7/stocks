@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>S&P500 長期予測ボード｜iDeCo・投資家心理・ニュース統合</title>
+  <title>S&P500 長期予測ボード｜AI・SoftBank・iDeCo統合分析</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     :root{
@@ -201,6 +201,60 @@
     ::-webkit-scrollbar{width:5px;height:5px;}
     ::-webkit-scrollbar-track{background:var(--bg);}
     ::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px;}
+
+    /* ── AI MEGATREND ── */
+    .ai-banner{background:linear-gradient(135deg,rgba(168,85,247,.1),rgba(29,111,250,.08),rgba(0,200,255,.06));border:1px solid rgba(168,85,247,.3);border-radius:16px;padding:20px;margin-bottom:16px;position:relative;overflow:hidden;}
+    .ai-banner::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 20px,rgba(168,85,247,.015) 21px);pointer-events:none;}
+    .ai-banner-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--purple);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+    .ai-banner-title::before{content:'';width:3px;height:13px;background:var(--purple);border-radius:2px;}
+    .mag7-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px;}
+    .mag7-cell{background:rgba(0,0,0,.3);border:1px solid rgba(168,85,247,.2);border-radius:10px;padding:10px;transition:border-color .2s;}
+    .mag7-cell:hover{border-color:var(--purple);}
+    .mag7-ticker{font-size:10px;font-weight:800;color:var(--purple);letter-spacing:1px;}
+    .mag7-name{font-size:9px;color:var(--muted);margin-bottom:4px;}
+    .mag7-price{font-size:16px;font-weight:800;color:var(--text);}
+    .mag7-ch{font-size:10px;font-weight:700;margin-top:2px;}
+    .mag7-weight{font-size:9px;color:var(--muted);margin-top:2px;}
+    .ai-curve{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin:12px 0;border-radius:10px;overflow:hidden;}
+    .curve-phase{padding:10px 8px;text-align:center;font-size:10px;font-weight:700;position:relative;}
+    .curve-phase.cur::after{content:'▼ 現在';position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--purple);white-space:nowrap;}
+    .capex-bars{display:grid;gap:8px;margin-top:12px;}
+    .capex-row{display:flex;align-items:center;gap:10px;}
+    .capex-name{font-size:11px;color:var(--text);min-width:90px;font-weight:600;}
+    .capex-bar-wrap{flex:1;height:8px;background:var(--bg4);border-radius:10px;overflow:hidden;}
+    .capex-bar-fill{height:100%;border-radius:10px;transition:width 1.2s ease;}
+    .capex-val{font-size:11px;font-weight:700;min-width:60px;text-align:right;}
+
+    /* ── SOFTBANK ── */
+    .sbk-banner{background:linear-gradient(135deg,rgba(255,60,0,.08),rgba(245,200,66,.06));border:1px solid rgba(255,100,0,.25);border-radius:16px;padding:20px;margin-bottom:16px;}
+    .sbk-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+    .sbk-title::before{content:'';width:3px;height:13px;background:var(--gold);border-radius:2px;}
+    .sbk-header{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;margin-bottom:16px;flex-wrap:wrap;}
+    @media(max-width:600px){.sbk-header{grid-template-columns:1fr;}}
+    .sbk-logo{font-size:32px;line-height:1;}
+    .sbk-price-block{}
+    .sbk-price-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+    .sbk-price-val{font-size:28px;font-weight:900;color:var(--text);}
+    .sbk-price-ch{font-size:12px;font-weight:700;margin-top:2px;}
+    .sbk-nav-val{text-align:right;}
+    .sbk-port-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:16px;}
+    .sbk-port-cell{background:rgba(0,0,0,.25);border:1px solid rgba(255,100,0,.15);border-radius:10px;padding:12px;transition:border-color .2s;}
+    .sbk-port-cell:hover{border-color:var(--gold);}
+    .sbk-port-name{font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;}
+    .sbk-port-ticker{font-size:9px;color:var(--gold);font-weight:700;letter-spacing:1px;margin-bottom:6px;}
+    .sbk-port-price{font-size:15px;font-weight:800;}
+    .sbk-port-ch{font-size:10px;font-weight:700;margin-top:2px;}
+    .sbk-port-desc{font-size:9px;color:var(--muted);margin-top:4px;line-height:1.4;}
+    .sbk-theme{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+    .sbk-theme-tag{background:rgba(255,100,0,.1);border:1px solid rgba(255,100,0,.25);color:#ff8c42;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.5px;}
+    .mirror-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;}
+    .mirror-cell{background:rgba(0,0,0,.2);border:1px solid rgba(0,200,255,.15);border-radius:10px;padding:12px;}
+    .mirror-label{font-size:9px;color:var(--cyan);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+    .mirror-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;}
+    .mirror-ticker{font-size:10px;color:var(--gold);font-weight:700;letter-spacing:1px;margin-bottom:6px;}
+    .mirror-desc{font-size:10px;color:var(--muted);line-height:1.5;}
+    .mirror-alloc{font-size:12px;font-weight:800;color:var(--cyan);margin-top:6px;}
+    .sbk-ch-wrap{position:relative;height:100px;margin-bottom:12px;}
   </style>
 </head>
 <body>
@@ -217,9 +271,9 @@
   <!-- header -->
   <div class="hd">
     <div>
-      <div class="badge">🏛 Global Macro · iDeCo · Behavioral Finance · AI</div>
-      <h1>S&amp;P500 長期予測 &amp; 投資判断ボード</h1>
-      <div class="hd-sub"><span class="live-dot"></span>世界ニュース統合 · iDeCoアドバイス · 投資家心理 · 行動プラン</div>
+      <div class="badge">🏛 Global Macro · AI Megatrend · SoftBank Mirror · iDeCo</div>
+      <h1>S&amp;P500 長期予測 &amp; AI・SoftBank戦略ボード</h1>
+      <div class="hd-sub"><span class="live-dot"></span>Mag7リアルタイム · SoftBankポートフォリオ追跡 · ミラー戦略 · iDeCoアドバイス · 投資家心理</div>
     </div>
     <div class="hd-btns">
       <button class="btn" id="refreshBtn" onclick="loadAll()">🔄 全データ更新</button>
@@ -252,6 +306,244 @@
     <div class="pc"><div class="lbl">10年債利回り</div><div class="val" id="sp-t10">--</div><div class="sub" id="sp-t10-s">--</div></div>
     <div class="pc"><div class="lbl">株式リスクプレミアム</div><div class="val" id="sp-erp">--</div><div class="sub" id="sp-erp-s">--</div></div>
     <div class="pc"><div class="lbl">配当利回り</div><div class="val" id="sp-div">--</div><div class="sub neu">Dividend Yield</div></div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       AI MEGATREND SECTION
+  ══════════════════════════════════ -->
+  <div class="ai-banner">
+    <div class="ai-banner-title">🤖 AI メガトレンド — S&amp;P500を動かす最大の構造変化</div>
+
+    <!-- Magnificent 7 -->
+    <div style="font-size:10px;color:var(--muted);margin-bottom:8px;letter-spacing:1px;text-transform:uppercase;">Magnificent 7 — リアルタイム株価（S&P500の約33%を占める）</div>
+    <div class="mag7-grid" id="mag7Grid">
+      <div class="mag7-cell"><div class="mag7-ticker">NVDA</div><div class="mag7-name">NVIDIA</div><div class="mag7-price" id="m7-NVDA-p">--</div><div class="mag7-ch" id="m7-NVDA-c">--</div><div class="mag7-weight">AI半導体 · 指数比率 7.0%</div></div>
+      <div class="mag7-cell"><div class="mag7-ticker">MSFT</div><div class="mag7-name">Microsoft</div><div class="mag7-price" id="m7-MSFT-p">--</div><div class="mag7-ch" id="m7-MSFT-c">--</div><div class="mag7-weight">AI統合 · 指数比率 6.5%</div></div>
+      <div class="mag7-cell"><div class="mag7-ticker">AAPL</div><div class="mag7-name">Apple</div><div class="mag7-price" id="m7-AAPL-p">--</div><div class="mag7-ch" id="m7-AAPL-c">--</div><div class="mag7-weight">AI端末 · 指数比率 6.2%</div></div>
+      <div class="mag7-cell"><div class="mag7-ticker">GOOGL</div><div class="mag7-name">Alphabet</div><div class="mag7-price" id="m7-GOOGL-p">--</div><div class="mag7-ch" id="m7-GOOGL-c">--</div><div class="mag7-weight">AI検索 · 指数比率 4.5%</div></div>
+      <div class="mag7-cell"><div class="mag7-ticker">AMZN</div><div class="mag7-name">Amazon</div><div class="mag7-price" id="m7-AMZN-p">--</div><div class="mag7-ch" id="m7-AMZN-c">--</div><div class="mag7-weight">AI/Cloud · 指数比率 4.0%</div></div>
+      <div class="mag7-cell"><div class="mag7-ticker">META</div><div class="mag7-name">Meta</div><div class="mag7-price" id="m7-META-p">--</div><div class="mag7-ch" id="m7-META-c">--</div><div class="mag7-weight">AI広告 · 指数比率 2.8%</div></div>
+      <div class="mag7-cell"><div class="mag7-ticker">TSLA</div><div class="mag7-name">Tesla</div><div class="mag7-price" id="m7-TSLA-p">--</div><div class="mag7-ch" id="m7-TSLA-c">--</div><div class="mag7-weight">AI自動運転 · 指数比率 1.8%</div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <!-- AI Adoption Curve -->
+      <div>
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">AI技術普及曲線 — 現在地</div>
+        <div class="ai-curve">
+          <div class="curve-phase" style="background:rgba(0,230,118,.15);color:var(--green);">🌱<br>イノベーター<br><span style="font-size:8px;color:var(--muted);">2019〜21</span></div>
+          <div class="curve-phase" style="background:rgba(0,200,255,.15);color:var(--cyan);">🚀<br>アーリー<br>アダプター<br><span style="font-size:8px;color:var(--muted);">2022〜23</span></div>
+          <div class="curve-phase cur" style="background:rgba(168,85,247,.25);color:var(--purple);border:2px solid var(--purple);">⚡<br>アーリー<br>マジョリティ<br><span style="font-size:8px;">2024〜26</span></div>
+          <div class="curve-phase" style="background:rgba(245,200,66,.08);color:var(--muted);">📈<br>レイト<br>マジョリティ<br><span style="font-size:8px;">2027〜30</span></div>
+          <div class="curve-phase" style="background:rgba(255,255,255,.04);color:var(--muted);">🏛<br>ラガード<br><span style="font-size:8px;">2030〜</span></div>
+        </div>
+        <div style="margin-top:24px;font-size:11px;color:var(--muted);line-height:1.7;" id="aiCurveText">
+          現在は<strong style="color:var(--purple);">アーリーマジョリティ期</strong>の序盤。
+          インターネット普及（1995〜2000年）と同じフェーズにあり、
+          まだ爆発的成長の前半。この段階でS&P500から手を引くことは、
+          1996年にNASDAQを売った行動と同じリスクがある。
+        </div>
+      </div>
+
+      <!-- AI CapEx tracker -->
+      <div>
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">AI設備投資（CapEx）規模 — 年間 (2025年実績)</div>
+        <div class="capex-bars">
+          <div class="capex-row">
+            <div class="capex-name">Microsoft</div>
+            <div class="capex-bar-wrap"><div class="capex-bar-fill" style="width:90%;background:linear-gradient(90deg,#0078d4,#00c8ff);"></div></div>
+            <div class="capex-val" style="color:#00c8ff;">$800億</div>
+          </div>
+          <div class="capex-row">
+            <div class="capex-name">Google</div>
+            <div class="capex-bar-wrap"><div class="capex-bar-fill" style="width:75%;background:linear-gradient(90deg,#4285f4,#34a853);"></div></div>
+            <div class="capex-val" style="color:#4285f4;">$750億</div>
+          </div>
+          <div class="capex-row">
+            <div class="capex-name">Amazon AWS</div>
+            <div class="capex-bar-wrap"><div class="capex-bar-fill" style="width:85%;background:linear-gradient(90deg,#ff9900,#f5c842);"></div></div>
+            <div class="capex-val" style="color:#ff9900;">$850億</div>
+          </div>
+          <div class="capex-row">
+            <div class="capex-name">Meta</div>
+            <div class="capex-bar-wrap"><div class="capex-bar-fill" style="width:65%;background:linear-gradient(90deg,#0668e1,#00d4ff);"></div></div>
+            <div class="capex-val" style="color:#0668e1;">$650億</div>
+          </div>
+          <div class="capex-row">
+            <div class="capex-name">SoftBank</div>
+            <div class="capex-bar-wrap"><div class="capex-bar-fill" style="width:50%;background:linear-gradient(90deg,#ff6400,#f5c842);"></div></div>
+            <div class="capex-val" style="color:#ff6400;">$500億+</div>
+          </div>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:var(--muted);line-height:1.7;">
+          合計 <strong style="color:var(--text);">年間3,550億ドル超</strong> のAI設備投資が継続中。
+          この規模の資本投下は半導体・電力・データセンター産業全体を引き上げ、
+          S&P500の実体経済を底上げしている。
+        </div>
+      </div>
+    </div>
+
+    <!-- AI impact on CAPE justification -->
+    <div style="margin-top:14px;background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.2);border-radius:10px;padding:14px;">
+      <div style="font-size:10px;color:var(--purple);font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">💡 なぜAIが高CAPEを正当化するか — 生産性革命論</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.8;" id="aiJustText">
+        1990年代後半のPC・インターネット革命時、CAPEは40超まで上昇したが、その後の実際の生産性向上がEPS成長を牽引した。
+        現在のAIは<strong style="color:var(--text);">ホワイトカラー業務の自動化</strong>により、企業の利益率を構造的に押し上げる可能性がある。
+        McKinseyは2030年までにAIが年間<strong style="color:var(--purple);">13兆ドル</strong>の経済価値を生み出すと試算。
+        これが実現すれば、現在の高CAPEは「割高」ではなく「正当な先取り」となる。
+        ただし、過去のバブルと同様、「今回は違う」という楽観論には常に慎重であるべきだ。
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       SOFTBANK SECTION
+  ══════════════════════════════════ -->
+  <div class="sbk-banner">
+    <div class="sbk-title">🔶 SoftBank Group — AI投資の最前線を追う</div>
+
+    <!-- SBG Stock -->
+    <div class="sbk-header">
+      <div class="sbk-logo">🔶</div>
+      <div class="sbk-price-block">
+        <div class="sbk-price-lbl">SoftBank Group (9984.T) · 東京証券取引所</div>
+        <div class="sbk-price-val" id="sbk-price">--</div>
+        <div class="sbk-price-ch" id="sbk-ch">--</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:4px;" id="sbk-meta">--</div>
+      </div>
+      <div class="sbk-nav-val">
+        <div style="font-size:10px;color:var(--muted);text-align:right;margin-bottom:3px;">ARM Holdings (NASDAQ)</div>
+        <div style="font-size:22px;font-weight:800;color:var(--text);" id="arm-price">--</div>
+        <div style="font-size:11px;font-weight:700;" id="arm-ch">--</div>
+        <div style="font-size:9px;color:var(--muted);margin-top:2px;">SBGの最重要保有資産</div>
+      </div>
+    </div>
+
+    <!-- Investment themes -->
+    <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">孫正義の投資テーマ</div>
+    <div class="sbk-theme">
+      <span class="sbk-theme-tag">🧠 AGI（汎用人工知能）</span>
+      <span class="sbk-theme-tag">⚡ AI半導体</span>
+      <span class="sbk-theme-tag">🤖 ヒューマノイドロボット</span>
+      <span class="sbk-theme-tag">🏗 AI インフラ</span>
+      <span class="sbk-theme-tag">🧬 AI×ヘルスケア</span>
+      <span class="sbk-theme-tag">🌐 データセンター</span>
+      <span class="sbk-theme-tag">🚗 自動運転</span>
+    </div>
+
+    <!-- Portfolio companies -->
+    <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">主要投資先ポートフォリオ</div>
+    <div class="sbk-port-grid">
+      <div class="sbk-port-cell">
+        <div class="sbk-port-name">ARM Holdings</div>
+        <div class="sbk-port-ticker">ARM · NASDAQ</div>
+        <div class="sbk-port-price" id="arm2-price" style="color:var(--gold);">--</div>
+        <div class="sbk-port-ch" id="arm2-ch">--</div>
+        <div class="sbk-port-desc">AI半導体の設計基盤。世界の95%のスマホチップを設計。SBGが90%超を保有。AGI時代のインフラ。</div>
+      </div>
+      <div class="sbk-port-cell">
+        <div class="sbk-port-name">OpenAI</div>
+        <div class="sbk-port-ticker">Private · $3000億評価</div>
+        <div class="sbk-port-price" style="color:var(--purple);">非上場</div>
+        <div class="sbk-port-ch" style="color:var(--green);">+大幅増資継続</div>
+        <div class="sbk-port-desc">ChatGPT開発元。SBGが巨額投資。AGIへの最短距離。上場すれば時価総額トップ10入りの可能性。</div>
+      </div>
+      <div class="sbk-port-cell">
+        <div class="sbk-port-name">T-Mobile US</div>
+        <div class="sbk-port-ticker">TMUS · NASDAQ</div>
+        <div class="sbk-port-price" id="tmus-price" style="color:var(--cyan);">--</div>
+        <div class="sbk-port-ch" id="tmus-ch">--</div>
+        <div class="sbk-port-desc">米国最大の通信会社。AI通信インフラとして5G × AI のシナジーを追求。安定的な収益源。</div>
+      </div>
+      <div class="sbk-port-cell">
+        <div class="sbk-port-name">NVIDIA</div>
+        <div class="sbk-port-ticker">NVDA · NASDAQ</div>
+        <div class="sbk-port-price" id="nvda2-price" style="color:var(--green);">--</div>
+        <div class="sbk-port-ch" id="nvda2-ch">--</div>
+        <div class="sbk-port-desc">AI半導体王者。Vision FundがGPU購入を通じ間接的に関与。SBGのAIインフラ戦略の核。</div>
+      </div>
+      <div class="sbk-port-cell">
+        <div class="sbk-port-name">Coupang</div>
+        <div class="sbk-port-ticker">CPNG · NYSE</div>
+        <div class="sbk-port-price" id="cpng-price" style="color:var(--text);">--</div>
+        <div class="sbk-port-ch" id="cpng-ch">--</div>
+        <div class="sbk-port-desc">韓国版Amazon。AI物流・推薦エンジンで急成長。Vision Fund最大の成功事例の一つ。</div>
+      </div>
+      <div class="sbk-port-cell">
+        <div class="sbk-port-name">ByteDance / TikTok</div>
+        <div class="sbk-port-ticker">Private · 推定$2500億</div>
+        <div class="sbk-port-price" style="color:var(--red);">非上場</div>
+        <div class="sbk-port-ch" style="color:var(--muted);">地政学リスクあり</div>
+        <div class="sbk-port-desc">TikTokのAIアルゴリズムは世界最高水準の推薦AI。米国規制が最大リスク。</div>
+      </div>
+    </div>
+
+    <!-- SBG insight -->
+    <div style="background:rgba(255,100,0,.08);border:1px solid rgba(255,100,0,.2);border-radius:10px;padding:14px;margin-bottom:16px;">
+      <div style="font-size:10px;color:var(--gold);font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">📡 孫正義の現在の読み — 「AGIは2026年に到来する」</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.8;" id="sbkInsight">
+        孫正義氏は2025〜26年に<strong style="color:var(--text);">「AGI（人間を超えるAI）が到来する」</strong>と明言し、
+        SoftBankの全リソースをAI・ロボティクスに集中投下している。
+        具体的には：<strong style="color:var(--gold);">Stargate Project（OpenAI+SBG+Oracle）で米国に$5000億のAIインフラを建設</strong>、
+        英国・日本にも同規模の投資を展開。これは単なる株式投資ではなく、
+        <strong style="color:var(--text);">AIインフラそのものを所有する戦略</strong>だ。
+        孫氏の過去の読み（Alibaba、Yahoo Japan、ARM）を見れば、
+        その先見性は無視できない。
+      </div>
+    </div>
+
+    <!-- Mirror Strategy -->
+    <div style="font-size:10px;color:var(--cyan);font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;">🪞 SoftBank戦略ミラー — 個人投資家が同じ方向に乗る方法</div>
+    <div class="mirror-grid">
+      <div class="mirror-cell">
+        <div class="mirror-label">コア / 直接投資</div>
+        <div class="mirror-title">ARM Holdings</div>
+        <div class="mirror-ticker">ARM · NASDAQ上場</div>
+        <div class="mirror-desc">SBGが最も多く保有する銘柄。AI半導体設計の独占的プラットフォーム。直接購入が最もSBGに近い動き。</div>
+        <div class="mirror-alloc">推奨配分: 10〜20%</div>
+      </div>
+      <div class="mirror-cell">
+        <div class="mirror-label">AI半導体 ETF</div>
+        <div class="mirror-title">VanEck Semiconductor ETF</div>
+        <div class="mirror-ticker">SOXX / SMH</div>
+        <div class="mirror-desc">NVDA・AMD・AVGO・ARMを含む半導体ETF。SBGのAI半導体ベット全体を1本で再現。</div>
+        <div class="mirror-alloc">推奨配分: 15〜25%</div>
+      </div>
+      <div class="mirror-cell">
+        <div class="mirror-label">AI テック ETF</div>
+        <div class="mirror-title">Invesco QQQ / QQQM</div>
+        <div class="mirror-ticker">QQQ / QQQM</div>
+        <div class="mirror-desc">Mag7を含むNASDAQ100。SBGのポートフォリオ企業群（NVDA、MSFT、GOOGL等）に広く分散投資。</div>
+        <div class="mirror-alloc">推奨配分: 20〜30%</div>
+      </div>
+      <div class="mirror-cell">
+        <div class="mirror-label">SBG直接保有</div>
+        <div class="mirror-title">SoftBank Group株</div>
+        <div class="mirror-ticker">9984.T · 東証</div>
+        <div class="mirror-desc">SBG株自体がAI投資会社として機能。ARM・OpenAI等への間接エクスポージャーをNAV割引で取得できる。</div>
+        <div class="mirror-alloc">推奨配分: 5〜10%</div>
+      </div>
+      <div class="mirror-cell">
+        <div class="mirror-label">ロボティクス / 自動化</div>
+        <div class="mirror-title">ROBO Global Robotics ETF</div>
+        <div class="mirror-ticker">ROBO / BOTZ</div>
+        <div class="mirror-desc">SBGが注力するヒューマノイドロボット・自動化領域。2030年代の最大テーマに先行投資。</div>
+        <div class="mirror-alloc">推奨配分: 5〜10%</div>
+      </div>
+      <div class="mirror-cell">
+        <div class="mirror-label">安定コア</div>
+        <div class="mirror-title">S&P500インデックス</div>
+        <div class="mirror-ticker">VOO / IVV / eMAXIS Slim</div>
+        <div class="mirror-desc">AI成長の恩恵をMag7経由で受けつつ、全体分散を確保。SBGのリスクを補完するアンカーポジション。</div>
+        <div class="mirror-alloc">推奨配分: 20〜30%</div>
+      </div>
+    </div>
+
+    <div style="margin-top:12px;background:rgba(0,0,0,.2);border-radius:8px;padding:12px;font-size:11px;color:var(--muted);line-height:1.8;">
+      ⚠️ <strong style="color:var(--gold);">SoftBankミラー戦略のリスク：</strong>
+      SBGは高レバレッジを使った集中投資を行う。個人投資家は<strong style="color:var(--text);">レバレッジなし・分散あり</strong>で同方向に乗ることが重要。
+      上記配分はポートフォリオの<strong style="color:var(--red);">最大50%まで</strong>に留め、残りはS&P500インデックスと債券で安定性を確保すること。
+    </div>
   </div>
 
   <!-- main 2-col -->
@@ -1201,6 +1493,9 @@ async function loadAll() {
   const newsScore = await newsPromise;
   updateUI(prices, labels, newsScore);
 
+  // Fetch stocks in parallel (non-blocking)
+  fetchStocks();
+
   btn.disabled=false; btn.textContent='🔄 全データ更新';
 }
 
@@ -1211,8 +1506,109 @@ function setTF(tf, el){
   loadAll();
 }
 
+/* ════════════════════════════════
+   STOCK PRICE FETCHER (Mag7 + SBG + ARM)
+════════════════════════════════ */
+const DEMO_PRICES = {
+  NVDA:{p:1050,ch:2.3}, MSFT:{p:430,ch:0.8}, AAPL:{p:215,ch:-0.4},
+  GOOGL:{p:175,ch:1.2}, AMZN:{p:195,ch:1.5}, META:{p:545,ch:2.1},
+  TSLA:{p:185,ch:-1.3}, ARM:{p:155,ch:3.2}, TMUS:{p:205,ch:0.5},
+  CPNG:{p:24,ch:1.1},
+  '9984.T':{p:9850,ch:1.8,currency:'¥'},
+};
+
+async function fetchStocks() {
+  const symbols = ['NVDA','MSFT','AAPL','GOOGL','AMZN','META','TSLA','ARM','TMUS','CPNG'];
+  const sbgSym = '9984.T';
+
+  let data = {};
+  try {
+    const allSyms = [...symbols, sbgSym].join(',');
+    const res = await fetch(
+      `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(allSyms)}&fields=regularMarketPrice,regularMarketChangePercent,regularMarketPreviousClose,marketCap`,
+      {cache:'no-store'}
+    );
+    if(!res.ok) throw new Error('quote API fail');
+    const json = await res.json();
+    (json.quoteResponse?.result||[]).forEach(q => {
+      data[q.symbol] = {
+        p: q.regularMarketPrice,
+        ch: q.regularMarketChangePercent,
+        currency: q.currency==='JPY'?'¥':'$',
+        cap: q.marketCap,
+      };
+    });
+    if(!Object.keys(data).length) throw new Error('empty');
+  } catch(_) {
+    data = DEMO_PRICES;
+  }
+
+  // ── Mag7 ──
+  const mag7 = ['NVDA','MSFT','AAPL','GOOGL','AMZN','META','TSLA'];
+  mag7.forEach(sym => {
+    const d = data[sym]||DEMO_PRICES[sym];
+    if(!d) return;
+    const pfx = d.currency==='¥'?'¥':'$';
+    const pEl = document.getElementById(`m7-${sym}-p`);
+    const cEl = document.getElementById(`m7-${sym}-c`);
+    if(pEl) pEl.textContent = pfx+(d.p>1000?Math.round(d.p).toLocaleString():d.p.toFixed(2));
+    if(cEl){
+      cEl.textContent = (d.ch>=0?'+':'')+d.ch.toFixed(2)+'%';
+      cEl.className = 'mag7-ch '+(d.ch>=0?'up':'down');
+    }
+  });
+
+  // ── ARM (appears in 2 places) ──
+  const armD = data['ARM']||DEMO_PRICES['ARM'];
+  ['arm-price','arm2-price'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.textContent='$'+armD.p.toFixed(2);
+  });
+  ['arm-ch','arm2-ch'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){
+      el.textContent=(armD.ch>=0?'+':'')+armD.ch.toFixed(2)+'%';
+      el.className='sbk-port-ch '+(armD.ch>=0?'up':'down');
+    }
+  });
+
+  // ── TMUS ──
+  const tmusD = data['TMUS']||DEMO_PRICES['TMUS'];
+  const tmusP=document.getElementById('tmus-price');
+  const tmusCh=document.getElementById('tmus-ch');
+  if(tmusP) tmusP.textContent='$'+tmusD.p.toFixed(2);
+  if(tmusCh){tmusCh.textContent=(tmusD.ch>=0?'+':'')+tmusD.ch.toFixed(2)+'%';tmusCh.className='sbk-port-ch '+(tmusD.ch>=0?'up':'down');}
+
+  // ── NVDA (in SBK portfolio) ──
+  const nvdaD = data['NVDA']||DEMO_PRICES['NVDA'];
+  const nvdaP2=document.getElementById('nvda2-price');
+  const nvdaC2=document.getElementById('nvda2-ch');
+  if(nvdaP2) nvdaP2.textContent='$'+nvdaD.p.toFixed(2);
+  if(nvdaC2){nvdaC2.textContent=(nvdaD.ch>=0?'+':'')+nvdaD.ch.toFixed(2)+'%';nvdaC2.className='sbk-port-ch '+(nvdaD.ch>=0?'up':'down');}
+
+  // ── CPNG ──
+  const cpngD = data['CPNG']||DEMO_PRICES['CPNG'];
+  const cpngP=document.getElementById('cpng-price');
+  const cpngCh=document.getElementById('cpng-ch');
+  if(cpngP) cpngP.textContent='$'+cpngD.p.toFixed(2);
+  if(cpngCh){cpngCh.textContent=(cpngD.ch>=0?'+':'')+cpngD.ch.toFixed(2)+'%';cpngCh.className='sbk-port-ch '+(cpngD.ch>=0?'up':'down');}
+
+  // ── SoftBank (9984.T) ──
+  const sbgD = data[sbgSym]||DEMO_PRICES[sbgSym];
+  const sbgP=document.getElementById('sbk-price');
+  const sbgCh=document.getElementById('sbk-ch');
+  const sbgMeta=document.getElementById('sbk-meta');
+  if(sbgP) sbgP.textContent='¥'+Math.round(sbgD.p).toLocaleString();
+  if(sbgCh){
+    sbgCh.textContent=(sbgD.ch>=0?'▲ +':' ▼ ')+Math.abs(sbgD.ch).toFixed(2)+'% (前日比)';
+    sbgCh.className='sbk-price-ch '+(sbgD.ch>=0?'up':'down');
+  }
+  if(sbgMeta && sbgD.cap) sbgMeta.textContent='時価総額: ¥'+Math.round(sbgD.cap/1e12*10)/10+'兆円';
+}
+
 loadAll();
 setInterval(loadAll, 90000);
+setInterval(fetchStocks, 30000); // stocks refresh every 30s
 </script>
 </body>
 </html>
