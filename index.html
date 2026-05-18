@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>暗号資産 AI 量子予測システム</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
   <style>
     :root {
       --bg:     #080c18;
@@ -35,7 +36,7 @@
       pointer-events:none;z-index:0;
     }
 
-    .wrap{max-width:1480px;margin:0 auto;padding:16px 20px;position:relative;z-index:1;zoom:1.25;}
+    .wrap{max-width:1480px;margin:0 auto;padding:16px 20px;position:relative;z-index:1;zoom:1.45;}
 
     /* ── Header ── */
     header{display:flex;align-items:center;justify-content:space-between;padding:20px 0 18px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:12px;}
@@ -453,6 +454,13 @@
           <button class="tf-btn" onclick="setTF(90,this)">90日</button>
         </div>
         <div class="chart-h"><canvas id="priceChart"></canvas></div>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:11px;padding:0 4px;">
+          <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;width:13px;height:13px;background:rgba(0,230,118,.35);border:1.5px solid #00e676;border-radius:2px;"></span>🟢 強い買いゾーン (S2〜S1)</span>
+          <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;width:13px;height:13px;background:rgba(0,230,118,.12);border:1.5px solid rgba(0,230,118,.5);border-radius:2px;"></span>🟡 打診買い (S1〜現値)</span>
+          <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;width:13px;height:13px;background:rgba(255,61,90,.18);border:1.5px solid #ff3d5a;border-radius:2px;"></span>🔴 利確ゾーン (R1〜R2)</span>
+          <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;width:13px;height:13px;background:rgba(255,61,90,.08);border:1.5px solid rgba(255,61,90,.5);border-radius:2px;"></span>🔺 強い利確 (R2〜)</span>
+          <span style="color:var(--gold);display:flex;align-items:center;gap:5px;">— 現在価格</span>
+        </div>
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
@@ -751,20 +759,84 @@ const CHART_OPTS = (yFmt) => ({
   }
 });
 
-function buildPriceChart(labels, prices, boll) {
+function buildPriceChart(labels, prices, boll, zones) {
   if(priceChart) priceChart.destroy();
   const ctx=document.getElementById('priceChart').getContext('2d');
   const g=ctx.createLinearGradient(0,0,0,300);
   g.addColorStop(0,'rgba(247,166,0,.25)');g.addColorStop(1,'rgba(247,166,0,0)');
+
+  const annotations = {};
+
+  if(zones) {
+    // 🟢 強い買いゾーン（S2〜S1）
+    annotations.buyStrong = {
+      type:'box', yMin:zones.s2, yMax:zones.s1,
+      backgroundColor:'rgba(0,230,118,.12)',
+      borderColor:'rgba(0,230,118,.5)', borderWidth:1,
+      label:{display:true, content:'🟢 強い買いゾーン', color:'#00e676',
+             font:{size:11,weight:'bold'}, position:{x:'start',y:'center'}}
+    };
+    // 🟡 打診買いゾーン（S1〜現値）
+    annotations.buyLight = {
+      type:'box', yMin:zones.s1, yMax:zones.cp,
+      backgroundColor:'rgba(0,230,118,.05)',
+      borderColor:'rgba(0,230,118,.25)', borderWidth:1,
+      label:{display:true, content:'🟡 打診買い', color:'rgba(0,230,118,.8)',
+             font:{size:10}, position:{x:'start',y:'center'}}
+    };
+    // 🔴 利確ゾーン①（R1〜R2）
+    annotations.sellZone = {
+      type:'box', yMin:zones.r1, yMax:zones.r2,
+      backgroundColor:'rgba(255,61,90,.1)',
+      borderColor:'rgba(255,61,90,.45)', borderWidth:1,
+      label:{display:true, content:'🔴 利確ゾーン①', color:'#ff3d5a',
+             font:{size:11,weight:'bold'}, position:{x:'start',y:'center'}}
+    };
+    // 🔺 強い利確（R2以上）
+    annotations.sellStrong = {
+      type:'box', yMin:zones.r2, yMax:zones.r2*1.06,
+      backgroundColor:'rgba(255,61,90,.06)',
+      borderColor:'rgba(255,61,90,.25)', borderWidth:1,
+      label:{display:true, content:'🔺 強い利確', color:'rgba(255,61,90,.8)',
+             font:{size:10}, position:{x:'start',y:'center'}}
+    };
+    // 現在価格ライン
+    annotations.currentLine = {
+      type:'line', yMin:zones.cp, yMax:zones.cp,
+      borderColor:'rgba(247,166,0,.9)', borderWidth:2, borderDash:[6,3],
+      label:{display:true, content:'現在 ' + '$'+(zones.cp/1000).toFixed(1)+'K',
+             color:'#f7a600', font:{size:11,weight:'bold'},
+             backgroundColor:'rgba(247,166,0,.15)', padding:4,
+             position:'end'}
+    };
+    // S1ライン
+    annotations.s1Line = {
+      type:'line', yMin:zones.s1, yMax:zones.s1,
+      borderColor:'rgba(0,230,118,.5)', borderWidth:1, borderDash:[4,4],
+    };
+    // R1ライン
+    annotations.r1Line = {
+      type:'line', yMin:zones.r1, yMax:zones.r1,
+      borderColor:'rgba(255,61,90,.5)', borderWidth:1, borderDash:[4,4],
+    };
+  }
+
   priceChart=new Chart(ctx,{
     type:'line',
-    data:{labels,datasets:[
-      {label:'BTC価格',data:prices,borderColor:'#f7a600',backgroundColor:g,borderWidth:2,pointRadius:0,fill:true,tension:.3},
-      {label:'BB上限',data:boll.up,borderColor:'rgba(255,61,90,.5)',borderWidth:1,borderDash:[3,3],pointRadius:0,fill:false},
-      {label:'BB中心',data:boll.mid,borderColor:'rgba(255,255,255,.1)',borderWidth:1,borderDash:[3,3],pointRadius:0,fill:false},
-      {label:'BB下限',data:boll.lo,borderColor:'rgba(0,230,118,.5)',borderWidth:1,borderDash:[3,3],pointRadius:0,fill:false},
+    data:{labels, datasets:[
+      {label:'BTC価格', data:prices, borderColor:'#f7a600', backgroundColor:g, borderWidth:2.5, pointRadius:0, fill:true, tension:.3, order:1},
+      {label:'BB上限',  data:boll.up,  borderColor:'rgba(255,61,90,.45)',   borderWidth:1, borderDash:[3,3], pointRadius:0, fill:false, order:2},
+      {label:'BB中心',  data:boll.mid, borderColor:'rgba(255,255,255,.1)',  borderWidth:1, borderDash:[3,3], pointRadius:0, fill:false, order:2},
+      {label:'BB下限',  data:boll.lo,  borderColor:'rgba(0,230,118,.45)',   borderWidth:1, borderDash:[3,3], pointRadius:0, fill:false, order:2},
     ]},
-    options:{...CHART_OPTS(v=>'$'+(v/1000).toFixed(0)+'K'),maintainAspectRatio:false}
+    options:{
+      ...CHART_OPTS(v=>'$'+(v/1000).toFixed(1)+'K'),
+      maintainAspectRatio:false,
+      plugins:{
+        ...CHART_OPTS().plugins,
+        annotation:{annotations}
+      }
+    }
   });
 }
 
@@ -833,19 +905,19 @@ function updateUI(prices, timestamps, coin, fgData) {
   const e20v=e20[n], e50v=e50[n], cp=prices[n];
   const adxV=adx(prices);
 
-  // Charts
-  buildPriceChart(labels, prices, boll);
-  buildRSIChart(labels, rsiArr);
-  buildMACDChart(labels, hist);
-  const mc=monteCarlo(prices.slice(-30));
-  buildPredChart(labels, prices, mc);
-
-  // Pivot
+  // Pivot (先に計算してチャートに渡す)
   const hi30=Math.max(...prices.slice(-Math.min(30,prices.length)));
   const lo30=Math.min(...prices.slice(-Math.min(30,prices.length)));
   const pivot=(hi30+lo30+cp)/3;
   const r1=2*pivot-lo30, r2=pivot+(hi30-lo30);
   const s1=2*pivot-hi30, s2=pivot-(hi30-lo30);
+
+  // Charts
+  buildPriceChart(labels, prices, boll, {cp, s1, s2, r1, r2});
+  buildRSIChart(labels, rsiArr);
+  buildMACDChart(labels, hist);
+  const mc=monteCarlo(prices.slice(-30));
+  buildPredChart(labels, prices, mc);
 
   // Price strip
   const ch=coin.price_change_percentage_24h;
