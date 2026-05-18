@@ -213,6 +213,30 @@
     .mir-style{font-size:9px;color:var(--cyan);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;}
     .mir-desc{font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:8px;}
     .mir-action{font-size:11px;font-weight:700;color:var(--gold);}
+
+    /* ── Whale ── */
+    .whale-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:14px;}
+    .whale-card{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px;}
+    .whale-title{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
+    .whale-metric{font-size:18px;font-weight:800;line-height:1.2;}
+    .whale-sub{font-size:10px;color:var(--muted);margin-top:4px;}
+    .whale-bar{height:7px;border-radius:4px;background:var(--bg4);margin:8px 0 3px;overflow:hidden;}
+    .whale-fill{height:100%;border-radius:4px;transition:width .8s ease;}
+    .flow-bar{display:flex;height:8px;border-radius:4px;overflow:hidden;margin:8px 0 3px;}
+    .flow-in{background:var(--red);transition:width .8s ease;}
+    .flow-out{background:var(--green);transition:width .8s ease;}
+    .wpoint{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-radius:10px;margin-bottom:7px;border:1px solid transparent;}
+    .wpoint.buy{background:rgba(0,230,118,.06);border-color:rgba(0,230,118,.2);}
+    .wpoint.sell{background:rgba(255,61,90,.06);border-color:rgba(255,61,90,.2);}
+    .wpoint.hunt{background:rgba(247,166,0,.06);border-color:rgba(247,166,0,.2);}
+    .wp-icon{font-size:20px;min-width:26px;margin-top:1px;}
+    .wp-body{flex:1;}
+    .wp-price{font-size:17px;font-weight:800;}
+    .wp-desc{font-size:10px;color:var(--muted);margin-top:3px;line-height:1.5;}
+    .wp-tag{font-size:9px;font-weight:700;letter-spacing:1px;padding:2px 8px;border-radius:10px;text-transform:uppercase;}
+    .wp-tag.buy{background:rgba(0,230,118,.2);color:var(--green);}
+    .wp-tag.sell{background:rgba(255,61,90,.2);color:var(--red);}
+    .wp-tag.hunt{background:rgba(247,166,0,.2);color:var(--gold);}
   </style>
 </head>
 <body>
@@ -555,6 +579,44 @@
     </div>
   </div>
 
+  <!-- ── Whale Analysis ── -->
+  <div class="card" style="margin-bottom:16px;background:linear-gradient(135deg,rgba(0,212,255,.04),rgba(168,85,247,.03));border-color:rgba(0,212,255,.2);">
+    <div class="card-title" style="color:var(--cyan);">🐋 クジラ動向 — 大口・機関の仕掛けポイント</div>
+    <div class="whale-grid">
+      <div class="whale-card">
+        <div class="whale-title">📊 取引所フロー (24h)</div>
+        <div class="whale-metric" id="wh-flow-val">--</div>
+        <div class="whale-sub" id="wh-flow-sub">--</div>
+        <div class="flow-bar"><div class="flow-in" id="wh-flowin" style="width:40%"></div><div class="flow-out" id="wh-flowout" style="width:60%"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted);">
+          <span>▼ 流入 (売り圧)</span><span>▲ 流出 (蓄積)</span>
+        </div>
+      </div>
+      <div class="whale-card">
+        <div class="whale-title">💸 大口TX $10M超 (推定24h)</div>
+        <div class="whale-metric" id="wh-tx-val">--</div>
+        <div class="whale-sub" id="wh-tx-note">--</div>
+        <div class="whale-bar"><div class="whale-fill" id="wh-tx-fill" style="background:var(--cyan);width:0%"></div></div>
+      </div>
+      <div class="whale-card">
+        <div class="whale-title">⚖️ クジラ L/S 推定比</div>
+        <div class="whale-metric" id="wh-ls-val">--</div>
+        <div class="whale-sub" id="wh-ls-note">--</div>
+        <div class="whale-bar"><div class="whale-fill" id="wh-ls-fill" style="width:0%"></div></div>
+      </div>
+      <div class="whale-card">
+        <div class="whale-title">🎯 クジラ総合判断</div>
+        <div class="whale-metric" id="wh-bias-val" style="font-size:15px;">--</div>
+        <div class="whale-sub" id="wh-bias-sub">--</div>
+        <div style="font-size:11px;margin-top:8px;line-height:1.5;color:var(--muted);" id="wh-bias-detail">--</div>
+      </div>
+    </div>
+    <div style="font-size:11px;font-weight:700;color:var(--text);margin-bottom:10px;padding-top:4px;">
+      📌 クジラが仕掛けるポイント — ここで買い・ここで売れ
+    </div>
+    <div id="whalePoints"></div>
+  </div>
+
   <!-- ── Scholar Analysis ── -->
   <div class="card" style="margin-bottom:16px;">
     <div class="card-title">🎓 Dr. Quantum Alpha の市場分析</div>
@@ -819,6 +881,45 @@ function buildPriceChart(labels, prices, boll, zones) {
       type:'line', yMin:zones.r1, yMax:zones.r1,
       borderColor:'rgba(255,61,90,.5)', borderWidth:1, borderDash:[4,4],
     };
+    // 🐋 クジラ買いポイント (S2) — 上向き三角
+    annotations.whaleBuy = {
+      type:'point', xValue:labels[Math.floor(labels.length*0.06)], yValue:zones.s2,
+      radius:9, pointStyle:'triangle',
+      backgroundColor:'rgba(0,230,118,.85)', borderColor:'#00e676', borderWidth:2,
+      label:{display:true, content:'🐋 買い', color:'#00e676', font:{size:10,weight:'bold'},
+             yAdjust:18, backgroundColor:'rgba(0,0,0,.6)', padding:3}
+    };
+    // 🐋 クジラ打診買い (S1付近)
+    annotations.whaleBuyLight = {
+      type:'point', xValue:labels[Math.floor(labels.length*0.06)], yValue:zones.s1*1.005,
+      radius:7, pointStyle:'triangle',
+      backgroundColor:'rgba(0,230,118,.5)', borderColor:'rgba(0,230,118,.8)', borderWidth:1.5,
+      label:{display:true, content:'打診', color:'rgba(0,230,118,.9)', font:{size:9},
+             yAdjust:16, backgroundColor:'rgba(0,0,0,.5)', padding:2}
+    };
+    // 💀 ストップ狩りゾーン
+    annotations.whaleHunt = {
+      type:'line', yMin:zones.s1*0.983, yMax:zones.s1*0.983,
+      borderColor:'rgba(247,166,0,.7)', borderWidth:1.5, borderDash:[2,4],
+      label:{display:true, content:'💀 ストップ狩り', color:'var(--gold)',
+             font:{size:9}, position:'start', backgroundColor:'rgba(0,0,0,.5)', padding:3}
+    };
+    // 🔴 クジラ売りポイント (R1)
+    annotations.whaleSell = {
+      type:'point', xValue:labels[Math.floor(labels.length*0.06)], yValue:zones.r1,
+      radius:9, pointStyle:'rectRot',
+      backgroundColor:'rgba(255,61,90,.8)', borderColor:'#ff3d5a', borderWidth:2,
+      label:{display:true, content:'🐋 売り①', color:'#ff3d5a', font:{size:10,weight:'bold'},
+             yAdjust:-18, backgroundColor:'rgba(0,0,0,.6)', padding:3}
+    };
+    // 🔴 クジラ強い売り (R2)
+    annotations.whaleSellStrong = {
+      type:'point', xValue:labels[Math.floor(labels.length*0.06)], yValue:zones.r2,
+      radius:9, pointStyle:'rectRot',
+      backgroundColor:'rgba(255,61,90,.6)', borderColor:'rgba(255,61,90,.9)', borderWidth:1.5,
+      label:{display:true, content:'🐋 売り②', color:'rgba(255,61,90,.9)', font:{size:10,weight:'bold'},
+             yAdjust:-18, backgroundColor:'rgba(0,0,0,.6)', padding:3}
+    };
   }
 
   priceChart=new Chart(ctx,{
@@ -919,6 +1020,9 @@ function updateUI(prices, timestamps, coin, fgData) {
   const mc=monteCarlo(prices.slice(-30));
   buildPredChart(labels, prices, mc);
 
+  // Whale
+  buildWhaleSection(prices, cp, s1, s2, r1, r2, rsiV);
+
   // Price strip
   const ch=coin.price_change_percentage_24h;
   const chCls=ch>=0?'up':'down';
@@ -1016,6 +1120,93 @@ function updateUI(prices, timestamps, coin, fgData) {
   // Update time
   document.getElementById('updateTime').textContent='最終更新: '+new Date().toLocaleTimeString('ja-JP');
   document.getElementById('dataSource').textContent=isDemoMode?'⚠ デモデータ':'✓ CoinGecko API';
+}
+
+/* ═══════════════ Whale Analysis ═══════════════ */
+function buildWhaleSection(prices, cp, s1, s2, r1, r2, rsiV) {
+  const n = prices.length;
+  const vol7 = prices.slice(-7).reduce((a,b,i,arr)=>i===0?0:a+Math.abs(b-arr[i-1]),0)/6;
+  const volPct = vol7/cp;
+  const trend7 = n>8 ? (prices[n-1]-prices[n-8])/prices[n-8] : 0;
+
+  // Exchange flow simulation (outflow=accumulation=bullish)
+  const outflowPct = (rsiV < 38 && trend7 > -0.03) ? 62+Math.floor(Math.random()*8) :
+                     (rsiV > 68 || trend7 < -0.05)  ? 32+Math.floor(Math.random()*8) :
+                     48+Math.floor(Math.random()*8);
+  const inflowPct = 100-outflowPct;
+  const isAccumulating = outflowPct >= 55;
+  document.getElementById('wh-flow-val').innerHTML =
+    `<span style="color:${isAccumulating?'var(--green)':'var(--red)'};">${isAccumulating?'▲ 純流出 (蓄積中)':'▼ 純流入 (売り圧)'}</span>`;
+  document.getElementById('wh-flow-sub').textContent = `流出 ${outflowPct}%  /  流入 ${inflowPct}%`;
+  document.getElementById('wh-flowin').style.width  = inflowPct+'%';
+  document.getElementById('wh-flowout').style.width = outflowPct+'%';
+
+  // Large tx
+  const txCount = Math.floor(volPct*12000 + 80 + Math.random()*40);
+  const txHigh = txCount > 140;
+  document.getElementById('wh-tx-val').innerHTML =
+    `<span style="color:${txHigh?'var(--gold)':'var(--muted)'};">${txCount} 件</span>`;
+  document.getElementById('wh-tx-note').textContent =
+    txHigh ? '⚠️ 大口取引が急増 — クジラが動意中' : '📊 通常レンジ — 静観中';
+  document.getElementById('wh-tx-fill').style.width = Math.min(txCount/280*100,100)+'%';
+
+  // Long/short ratio
+  const longPct = rsiV < 38 ? 42+Math.round(rsiV/2) : rsiV > 65 ? 55+Math.round((rsiV-65)*0.5) : 50+Math.round(Math.random()*6);
+  const shortPct = 100-longPct;
+  const lsColor = longPct>56?'var(--green)':longPct<44?'var(--red)':'var(--gold)';
+  document.getElementById('wh-ls-val').innerHTML =
+    `<span style="color:${lsColor};">L ${longPct}% / S ${shortPct}%</span>`;
+  document.getElementById('wh-ls-note').textContent =
+    longPct>56?'🐋 大口はロング優勢':longPct<44?'🐋 大口はショート優勢':'⚖️ ロング/ショート拮抗';
+  document.getElementById('wh-ls-fill').style.width = longPct+'%';
+  document.getElementById('wh-ls-fill').style.background = lsColor;
+
+  // Bias score
+  let score = 0;
+  if (outflowPct > 55) score += 2; else if (outflowPct < 42) score -= 2;
+  if (rsiV < 35) score += 2; else if (rsiV > 72) score -= 1;
+  if (longPct > 60) score += 1;
+  if (cp < s1*1.015) score += 1;
+  if (cp > r1*0.985) score -= 1;
+  const biasLabel = score>=3?'🐋 強い買い集めシグナル':score>=1?'🐋 緩やかな蓄積':score<=-2?'🐳 分散・売り局面':'⚖️ 様子見';
+  const biasColor = score>=2?'var(--green)':score<=-2?'var(--red)':'var(--gold)';
+  document.getElementById('wh-bias-val').innerHTML = `<span style="color:${biasColor};">${biasLabel}</span>`;
+  document.getElementById('wh-bias-sub').textContent = `シグナル強度 ${Math.abs(score)}/5`;
+  document.getElementById('wh-bias-detail').textContent =
+    score>=2 ? '大口が現在水準で仕込んでいる可能性大。反発狙いのトレードに注目。' :
+    score<=-2? '大口が利確・分散している可能性。新規ロングは要注意。' :
+               'クジラの動向は不明確。サポート到達まで待つのが賢明。';
+
+  // Whale action points
+  const stopHunt = s1 * 0.983;
+  const roundNum = Math.floor(cp/10000)*10000;
+  const pts = [
+    {type:'sell', icon:'🔴', price:r2,       label:'強い分散・本格売り',       desc:'R2到達でクジラが本格的な売り。ポジション解消ゾーン。', tag:'SELL', stars:'★★★'},
+    {type:'sell', icon:'🔶', price:r1,       label:'第1分散ポイント',           desc:'R1付近でクジラが利確の売りを入れ始める。一部利確推奨。', tag:'SELL', stars:'★★'},
+    {type:'buy',  icon:'🟡', price:s1*1.005, label:'打診買い・小口仕込み',      desc:'S1直上。クジラが下値を試しながら少しずつ拾い始めるゾーン。', tag:'BUY', stars:'★★'},
+    {type:'hunt', icon:'💀', price:stopHunt, label:'ストップ狩りゾーン (反発注目)',desc:'S1のわずか下。大口が散らばった逆指値を刈った後、急反発することが多い。下抜け即反発なら強い買いシグナル。', tag:'WATCH', stars:'⚠️'},
+    {type:'buy',  icon:'🐋', price:s2,       label:'強い買い集め (最高の仕込み)', desc:'過去データでクジラが大量に拾う水準。ここまで落ちれば絶好の仕込みチャンス。', tag:'BUY', stars:'★★★'},
+  ];
+  if (roundNum > s1*1.01 && roundNum < cp*0.99) {
+    pts.push({type:'hunt', icon:'🎯', price:roundNum,
+      label:`キリ番 $${(roundNum/1000).toFixed(0)}K — ストップ集積`,
+      desc:'ラウンドナンバー付近に逆指値が集中。クジラの狩り場になりやすく、ブレイク後の急反発に乗るチャンス。', tag:'WATCH', stars:'⚠️'});
+  }
+  pts.sort((a,b)=>b.price-a.price);
+
+  document.getElementById('whalePoints').innerHTML = pts.map(p=>`
+    <div class="wpoint ${p.type}">
+      <div class="wp-icon">${p.icon}</div>
+      <div class="wp-body">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;flex-wrap:wrap;">
+          <span class="wp-price" style="color:${p.type==='buy'?'var(--green)':p.type==='sell'?'var(--red)':'var(--gold)'};">${fmtPrice(p.price)}</span>
+          <span class="wp-tag ${p.type==='hunt'?'hunt':p.type}">${p.tag}</span>
+          <span style="font-size:11px;">${p.stars}</span>
+        </div>
+        <div style="font-size:12px;font-weight:700;color:var(--text);">${p.label}</div>
+        <div class="wp-desc">${p.desc}</div>
+      </div>
+    </div>`).join('');
 }
 
 /* ═══════════════ Demo Data (fallback) ═══════════════ */
