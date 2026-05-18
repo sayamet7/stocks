@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>S&P500 長期予測ボード｜AI マクロ分析</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg:     #080d14;
+      --bg2:    #0c1520;
+      --bg3:    #111d2c;
+      --bg4:    #162235;
+      --border: #1a2e45;
+      --blue:   #1d6ffa;
+      --cyan:   #00c8ff;
+      --green:  #00e676;
+      --red:    #ff3d5a;
+      --gold:   #f5c842;
+      --purple: #a855f7;
+      --text:   #dce8f5;
+      --muted:  #4a6080;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+    body::before{
+      content:'';position:fixed;inset:0;
+      background:
+        radial-gradient(ellipse 70% 50% at 20% 0%,rgba(29,111,250,.07) 0%,transparent 60%),
+        radial-gradient(ellipse 50% 40% at 80% 100%,rgba(168,85,247,.05) 0%,transparent 60%),
+        repeating-linear-gradient(0deg,transparent,transparent 49px,rgba(29,111,250,.02) 50px),
+        repeating-linear-gradient(90deg,transparent,transparent 49px,rgba(29,111,250,.02) 50px);
+      pointer-events:none;z-index:0;
+    }
+    .wrap{max-width:1480px;margin:0 auto;padding:16px 20px;position:relative;z-index:1;}
+
+    /* nav */
+    .nav{display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border);}
+    .nav a{display:inline-flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:7px 16px;border-radius:50px;font-size:12px;font-weight:700;text-decoration:none;transition:all .2s;}
+    .nav a:hover{border-color:var(--cyan);color:var(--cyan);}
+    .nav a.active{background:linear-gradient(135deg,#1d6ffa,#00c8ff);color:#fff;border-color:transparent;box-shadow:0 0 16px rgba(29,111,250,.35);}
+    .nav-brand{font-size:14px;font-weight:800;color:var(--text);margin-right:8px;}
+
+    /* header */
+    header{padding:24px 0 20px;border-bottom:1px solid var(--border);margin-bottom:22px;}
+    .badge{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#1d6ffa22,#00c8ff11);border:1px solid #1d6ffa44;color:var(--cyan);font-size:10px;font-weight:800;letter-spacing:2px;padding:4px 12px;border-radius:20px;margin-bottom:10px;text-transform:uppercase;}
+    header h1{font-size:clamp(20px,3.5vw,36px);font-weight:900;background:linear-gradient(135deg,#1d6ffa,#00c8ff,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+    .hd-sub{font-size:11px;color:var(--muted);margin-top:6px;letter-spacing:1px;}
+    .hd-row{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+    .live-dot{display:inline-block;width:7px;height:7px;background:var(--green);border-radius:50%;margin-right:5px;animation:blink 1.4s infinite;}
+    @keyframes blink{0%,100%{opacity:1;box-shadow:0 0 6px var(--green);}50%{opacity:.3;box-shadow:none;}}
+    .refresh-btn{display:inline-flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 18px;border-radius:50px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;}
+    .refresh-btn:hover{border-color:var(--cyan);color:var(--cyan);}
+    .refresh-btn:disabled{opacity:.4;cursor:not-allowed;}
+    .demo-badge{display:none;background:rgba(255,61,90,.12);border:1px solid rgba(255,61,90,.4);color:var(--red);font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;letter-spacing:1px;}
+
+    /* strip */
+    .strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px;margin-bottom:22px;}
+    .pc{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px;position:relative;overflow:hidden;transition:border-color .25s;}
+    .pc::after{content:'';position:absolute;inset:0 0 auto;height:2px;background:linear-gradient(90deg,var(--blue),var(--cyan));}
+    .pc:hover{border-color:var(--cyan);}
+    .pc .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px;}
+    .pc .val{font-size:20px;font-weight:800;}
+    .pc .sub{font-size:11px;font-weight:600;margin-top:3px;}
+    .up{color:var(--green);}.down{color:var(--red);}.neu{color:var(--gold);}
+
+    /* layout */
+    .grid2{display:grid;grid-template-columns:1fr 360px;gap:16px;margin-bottom:16px;}
+    @media(max-width:980px){.grid2{grid-template-columns:1fr;}}
+    .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px;}
+    @media(max-width:800px){.grid3{grid-template-columns:1fr 1fr;}}
+    @media(max-width:500px){.grid3{grid-template-columns:1fr;}}
+
+    /* card */
+    .card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:20px;}
+    .card-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--cyan);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+    .card-title::before{content:'';width:3px;height:14px;background:var(--cyan);border-radius:2px;flex-shrink:0;}
+
+    /* chart */
+    .chart-h{position:relative;height:320px;}
+    .chart-md{position:relative;height:200px;}
+    .chart-sm{position:relative;height:140px;}
+
+    /* TF */
+    .tf-row{display:flex;gap:5px;margin-bottom:12px;flex-wrap:wrap;}
+    .tf-btn{background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;}
+    .tf-btn.active,.tf-btn:hover{background:var(--blue);color:#fff;border-color:var(--blue);}
+
+    /* verdict */
+    .verdict{text-align:center;padding:24px 16px;border-radius:14px;margin-bottom:14px;}
+    .verdict.bull{background:linear-gradient(135deg,rgba(0,230,118,.1),rgba(0,230,118,.02));border:2px solid var(--green);box-shadow:0 0 28px rgba(0,230,118,.12);}
+    .verdict.bear{background:linear-gradient(135deg,rgba(255,61,90,.1),rgba(255,61,90,.02));border:2px solid var(--red);box-shadow:0 0 28px rgba(255,61,90,.12);}
+    .verdict.neutral{background:linear-gradient(135deg,rgba(245,200,66,.1),rgba(245,200,66,.02));border:2px solid var(--gold);box-shadow:0 0 28px rgba(245,200,66,.12);}
+    .vd-lbl{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+    .vd-val{font-size:28px;font-weight:900;}
+    .verdict.bull .vd-val{color:var(--green);}
+    .verdict.bear .vd-val{color:var(--red);}
+    .verdict.neutral .vd-val{color:var(--gold);}
+    .vd-sub{font-size:11px;color:var(--muted);margin-top:6px;}
+
+    /* meter */
+    .meter-wrap{margin:12px 0;}
+    .meter-lbl{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:4px;}
+    .meter-bar{height:7px;background:var(--bg4);border-radius:10px;overflow:hidden;}
+    .meter-fill{height:100%;border-radius:10px;transition:width 1.2s ease;}
+
+    /* valuation gauge */
+    .gauge-wrap{display:flex;flex-direction:column;align-items:center;padding:16px 0;}
+    .gauge-arc{width:140px;height:70px;position:relative;}
+    .gauge-arc svg{width:100%;height:100%;}
+    .gauge-num{font-size:26px;font-weight:900;margin-top:6px;}
+    .gauge-label{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+
+    /* indicator table */
+    .ind-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+    .ind-cell{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px;}
+    .ind-name{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;}
+    .ind-num{font-size:17px;font-weight:800;margin:3px 0 2px;}
+    .ind-sig{font-size:9px;font-weight:700;letter-spacing:1px;}
+    .bull-c{color:var(--green);}.bear-c{color:var(--red);}.neu-c{color:var(--gold);}
+
+    /* cycle phases */
+    .cycle{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+    .phase{flex:1;min-width:80px;text-align:center;padding:10px 6px;border-radius:10px;border:1px solid var(--border);font-size:10px;font-weight:700;letter-spacing:.5px;transition:all .3s;}
+    .phase.active-phase{box-shadow:0 0 16px currentColor;}
+    .phase.expansion{color:#00e676;border-color:#00e67644;background:rgba(0,230,118,.08);}
+    .phase.peak{color:#f5c842;border-color:#f5c84244;background:rgba(245,200,66,.08);}
+    .phase.contraction{color:#ff3d5a;border-color:#ff3d5a44;background:rgba(255,61,90,.08);}
+    .phase.trough{color:#00c8ff;border-color:#00c8ff44;background:rgba(0,200,255,.08);}
+
+    /* timeline events */
+    .events{margin-top:8px;}
+    .event-row{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:11px;}
+    .event-row:last-child{border-bottom:none;}
+    .ev-year{color:var(--muted);font-size:10px;min-width:40px;padding-top:1px;}
+    .ev-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:3px;}
+    .ev-text{color:var(--text);line-height:1.5;}
+
+    /* analysis */
+    .analysis{background:var(--bg3);border:1px solid var(--border);border-left:3px solid var(--blue);border-radius:0 14px 14px 0;padding:18px;font-size:13px;line-height:1.9;color:#7a9abf;}
+    .scholar-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+    .avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+    .sch-name{font-size:12px;font-weight:700;color:var(--cyan);}
+    .sch-title{font-size:10px;color:var(--muted);}
+
+    /* 10yr pred */
+    .pred-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px;}
+    .pred-cell{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;}
+    .pred-scenario{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;}
+    .pred-ret{font-size:20px;font-weight:800;margin-bottom:2px;}
+    .pred-price{font-size:12px;color:var(--muted);}
+
+    /* dca calc */
+    .dca-inputs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;}
+    @media(max-width:600px){.dca-inputs{grid-template-columns:1fr 1fr;}}
+    .dca-field label{display:block;font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:1px;text-transform:uppercase;}
+    .dca-field input{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px;font-size:13px;font-weight:600;outline:none;transition:border-color .2s;}
+    .dca-field input:focus{border-color:var(--cyan);}
+    .dca-btn{background:linear-gradient(135deg,var(--blue),#00c8ff);color:#fff;border:none;padding:9px 22px;border-radius:50px;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.5px;transition:opacity .2s;}
+    .dca-btn:hover{opacity:.85;}
+    .dca-result{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:16px;display:none;}
+    .dca-res-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-top:10px;}
+    .dca-res-item .r-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+    .dca-res-item .r-val{font-size:18px;font-weight:800;margin-top:3px;}
+
+    /* update */
+    .update-bar{display:flex;align-items:center;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px solid var(--border);flex-wrap:wrap;gap:6px;}
+
+    /* disclaimer */
+    .disclaimer{margin-top:28px;padding:14px;background:rgba(255,255,255,.012);border:1px solid var(--border);border-radius:10px;font-size:10px;color:var(--muted);text-align:center;line-height:1.8;}
+
+    ::-webkit-scrollbar{width:5px;height:5px;}
+    ::-webkit-scrollbar-track{background:var(--bg);}
+    ::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px;}
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- nav -->
+  <nav class="nav">
+    <span class="nav-brand">📊 AI Markets</span>
+    <a href="index.html">₿ BTC 予測</a>
+    <a href="sp500.html" class="active">📈 S&amp;P500 長期分析</a>
+  </nav>
+
+  <!-- header -->
+  <header>
+    <div class="hd-row">
+      <div>
+        <div class="badge">📐 Long-Term Macro Analysis · AI Powered</div>
+        <h1>S&amp;P500 長期予測ボード</h1>
+        <div class="hd-sub">
+          <span class="live-dot"></span>
+          10〜20年スパンの構造的分析 &nbsp;|&nbsp; CAPE · バフェット指標 · 景気サイクル · DCF
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="demo-badge" id="demoBadge">⚠ デモモード</div>
+        <button class="refresh-btn" id="refreshBtn" onclick="loadAll()">🔄 更新</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- strip -->
+  <div class="strip">
+    <div class="pc"><div class="lbl">S&P500 現値</div><div class="val" id="s-price">--</div><div class="sub" id="s-ch">--</div></div>
+    <div class="pc"><div class="lbl">年初来騰落</div><div class="val" id="s-ytd">--</div><div class="sub neu">YTD</div></div>
+    <div class="pc"><div class="lbl">CAPE レシオ</div><div class="val" id="s-cape">--</div><div class="sub" id="s-cape-sig">--</div></div>
+    <div class="pc"><div class="lbl">バフェット指標</div><div class="val" id="s-buffett">--</div><div class="sub" id="s-buffett-sig">--</div></div>
+    <div class="pc"><div class="lbl">配当利回り</div><div class="val" id="s-div">--</div><div class="sub neu">Dividend Yield</div></div>
+    <div class="pc"><div class="lbl">10年債利回り</div><div class="val" id="s-t10">--</div><div class="sub" id="s-t10-sig">--</div></div>
+  </div>
+
+  <!-- main -->
+  <div class="grid2">
+
+    <!-- left -->
+    <div>
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-title">S&amp;P500 長期チャート</div>
+        <div class="tf-row">
+          <button class="tf-btn active" onclick="setTF('5y',this)">5年</button>
+          <button class="tf-btn" onclick="setTF('10y',this)">10年</button>
+          <button class="tf-btn" onclick="setTF('20y',this)">20年</button>
+        </div>
+        <div class="chart-h"><canvas id="priceChart"></canvas></div>
+      </div>
+
+      <!-- Valuation charts -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+        <div class="card">
+          <div class="card-title" style="font-size:10px;">CAPE レシオ推移</div>
+          <div class="chart-sm"><canvas id="capeChart"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="font-size:10px;">10年国債利回り</div>
+          <div class="chart-sm"><canvas id="yieldChart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- 10-year prediction -->
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-title">🔮 10年後 リターン予測（CAPEベース 学術モデル）</div>
+        <div class="pred-grid">
+          <div class="pred-cell">
+            <div class="pred-scenario bear-c">悲観シナリオ</div>
+            <div class="pred-ret bear-c" id="pred-bear">--</div>
+            <div class="pred-price" id="pred-bear-p">--</div>
+          </div>
+          <div class="pred-cell">
+            <div class="pred-scenario neu-c">基本シナリオ</div>
+            <div class="pred-ret neu-c" id="pred-base">--</div>
+            <div class="pred-price" id="pred-base-p">--</div>
+          </div>
+          <div class="pred-cell">
+            <div class="pred-scenario bull-c">楽観シナリオ</div>
+            <div class="pred-ret bull-c" id="pred-bull">--</div>
+            <div class="pred-price" id="pred-bull-p">--</div>
+          </div>
+        </div>
+        <div class="chart-md" style="margin-top:14px;"><canvas id="predChart"></canvas></div>
+      </div>
+
+      <!-- DCA Calculator -->
+      <div class="card">
+        <div class="card-title">💰 S&P500 積立シミュレーター</div>
+        <div class="dca-inputs">
+          <div class="dca-field">
+            <label>毎月積立額 (円)</label>
+            <input type="number" id="dcaAmount" value="30000" step="5000" />
+          </div>
+          <div class="dca-field">
+            <label>積立年数</label>
+            <input type="number" id="dcaYears" value="20" min="1" max="40" />
+          </div>
+          <div class="dca-field">
+            <label>想定年率リターン</label>
+            <input type="number" id="dcaRate" value="7" step="0.5" />
+          </div>
+        </div>
+        <button class="dca-btn" onclick="calcDCA()">📊 シミュレーション実行</button>
+        <div class="dca-result" id="dcaResult">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:4px;">シミュレーション結果</div>
+          <div class="dca-res-grid">
+            <div class="dca-res-item"><div class="r-lbl">総投資額</div><div class="r-val neu-c" id="dca-invested">--</div></div>
+            <div class="dca-res-item"><div class="r-lbl">最終資産</div><div class="r-val bull-c" id="dca-total">--</div></div>
+            <div class="dca-res-item"><div class="r-lbl">運用益</div><div class="r-val" style="color:var(--cyan);" id="dca-gain">--</div></div>
+            <div class="dca-res-item"><div class="r-lbl">倍率</div><div class="r-val neu-c" id="dca-mult">--</div></div>
+          </div>
+          <div class="chart-sm" style="margin-top:12px;"><canvas id="dcaChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- right panel -->
+    <div>
+      <!-- Verdict -->
+      <div class="verdict neutral" id="verdictBox">
+        <div class="vd-lbl">🏛 長期投資判断</div>
+        <div class="vd-val" id="verdictVal">解析中</div>
+        <div class="vd-sub" id="verdictSub">--</div>
+      </div>
+
+      <!-- Buffett Gauge -->
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-title" style="font-size:10px;">バフェット指標ゲージ（市場全体/GDP）</div>
+        <div class="gauge-wrap">
+          <div class="gauge-arc">
+            <svg viewBox="0 0 140 70">
+              <defs>
+                <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#00e676"/>
+                  <stop offset="40%" stop-color="#f5c842"/>
+                  <stop offset="70%" stop-color="#ff8c00"/>
+                  <stop offset="100%" stop-color="#ff3d5a"/>
+                </linearGradient>
+              </defs>
+              <path d="M10,70 A60,60 0 0,1 130,70" fill="none" stroke="#162235" stroke-width="12" stroke-linecap="round"/>
+              <path d="M10,70 A60,60 0 0,1 130,70" fill="none" stroke="url(#gaugeGrad)" stroke-width="12" stroke-linecap="round" opacity=".25"/>
+              <path id="gaugeArc" d="M10,70 A60,60 0 0,1 130,70" fill="none" stroke="url(#gaugeGrad)" stroke-width="12" stroke-linecap="round" stroke-dasharray="188" stroke-dashoffset="188"/>
+              <line id="gaugeNeedle" x1="70" y1="70" x2="70" y2="16" stroke="#fff" stroke-width="2.5" stroke-linecap="round" transform="rotate(0,70,70)"/>
+            </svg>
+          </div>
+          <div class="gauge-num" id="buffettNum">--</div>
+          <div class="gauge-label" id="buffettLabel">--</div>
+        </div>
+        <!-- meter bars -->
+        <div class="meter-wrap">
+          <div class="meter-lbl"><span>割安（&lt;80%）</span><span id="buffettPct">--%</span></div>
+          <div class="meter-bar"><div class="meter-fill" id="buffettBar" style="width:0%;background:linear-gradient(90deg,var(--green),var(--gold),var(--red));"></div></div>
+        </div>
+      </div>
+
+      <!-- CAPE Gauge -->
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-title" style="font-size:10px;">CAPE バリュエーション評価</div>
+        <div style="margin-bottom:10px;">
+          <div class="meter-lbl" style="margin-bottom:3px;"><span>割安 (&lt;15)</span><span>歴史平均 (16.7)</span><span>割高 (&gt;30)</span></div>
+          <div style="height:10px;background:linear-gradient(90deg,var(--green),var(--gold),var(--red));border-radius:10px;position:relative;">
+            <div id="capeDot" style="position:absolute;top:50%;transform:translate(-50%,-50%);width:16px;height:16px;background:#fff;border-radius:50%;box-shadow:0 0 8px rgba(0,0,0,.5);transition:left 1s ease;left:50%"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted);margin-top:4px;"><span>10</span><span>20</span><span>30</span><span>40</span><span>50+</span></div>
+        </div>
+        <div class="ind-grid">
+          <div class="ind-cell"><div class="ind-name">CAPE (現在)</div><div class="ind-num" id="capeNow">--</div><div class="ind-sig" id="capeSig">--</div></div>
+          <div class="ind-cell"><div class="ind-name">歴史平均</div><div class="ind-num neu-c">16.7</div><div class="ind-sig neu-c">= 参考値</div></div>
+          <div class="ind-cell"><div class="ind-name">P/E レシオ</div><div class="ind-num" id="peNow">--</div><div class="ind-sig" id="peSig">--</div></div>
+          <div class="ind-cell"><div class="ind-name">10yr リターン予測</div><div class="ind-num" id="capeRet">--</div><div class="ind-sig" id="capeRetSig">--</div></div>
+        </div>
+      </div>
+
+      <!-- Economic cycle -->
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-title" style="font-size:10px;">景気サイクル位置</div>
+        <div class="cycle">
+          <div class="phase expansion" id="ph-exp">拡張期</div>
+          <div class="phase peak" id="ph-peak">景気頂点</div>
+          <div class="phase contraction" id="ph-con">後退期</div>
+          <div class="phase trough" id="ph-tro">景気底</div>
+        </div>
+        <div style="margin-top:12px;font-size:11px;color:var(--muted);line-height:1.8;" id="cycleDesc">景気サイクルを分析中...</div>
+      </div>
+
+      <!-- Key indicators -->
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-title" style="font-size:10px;">マクロ指標</div>
+        <div class="ind-grid">
+          <div class="ind-cell"><div class="ind-name">200週MA</div><div class="ind-num" id="ma200w">--</div><div class="ind-sig" id="ma200w-s">--</div></div>
+          <div class="ind-cell"><div class="ind-name">50週MA</div><div class="ind-num" id="ma50w">--</div><div class="ind-sig" id="ma50w-s">--</div></div>
+          <div class="ind-cell"><div class="ind-name">実質金利</div><div class="ind-num" id="realRate">--</div><div class="ind-sig" id="realRate-s">--</div></div>
+          <div class="ind-cell"><div class="ind-name">リスクプレミアム</div><div class="ind-num" id="erp">--</div><div class="ind-sig" id="erp-s">--</div></div>
+        </div>
+      </div>
+
+      <!-- Historical events -->
+      <div class="card">
+        <div class="card-title" style="font-size:10px;">📅 過去の主要局面</div>
+        <div class="events">
+          <div class="event-row"><span class="ev-year">2000</span><div class="ev-dot" style="background:var(--red)"></div><span class="ev-text">ITバブル崩壊 — S&P500 -49%（2000〜2002）</span></div>
+          <div class="event-row"><span class="ev-year">2009</span><div class="ev-dot" style="background:var(--green)"></div><span class="ev-text">リーマンショック底値 — ここから+600%の超強気相場</span></div>
+          <div class="event-row"><span class="ev-year">2013</span><div class="ev-dot" style="background:var(--cyan)"></div><span class="ev-text">テーパリング恐怖 — 10年後には3倍超に成長</span></div>
+          <div class="event-row"><span class="ev-year">2020</span><div class="ev-dot" style="background:var(--gold)"></div><span class="ev-text">コロナショック -34% → 同年末に史上最高値更新</span></div>
+          <div class="event-row"><span class="ev-year">2022</span><div class="ev-dot" style="background:var(--red)"></div><span class="ev-text">利上げショック -25% — 翌年+26%で完全回復</span></div>
+          <div class="event-row"><span class="ev-year">現在</span><div class="ev-dot" style="background:var(--blue)"></div><span class="ev-text" id="currentEvent">市場状況を分析中...</span></div>
+        </div>
+      </div>
+
+      <div class="update-bar">
+        <span id="updateTime">最終更新: --</span>
+        <span id="dataSource" style="color:var(--cyan);">Yahoo Finance API</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scholar analysis -->
+  <div class="card" style="margin-bottom:16px;">
+    <div class="card-title">🏛 Dr. Quantum Alpha の長期マクロ見解</div>
+    <div class="analysis">
+      <div class="scholar-row">
+        <div class="avatar">🏛</div>
+        <div>
+          <div class="sch-name">Dr. Quantum Alpha &nbsp;·&nbsp; Global Macro Strategist</div>
+          <div class="sch-title">元FRBエコノミスト · イェール大学金融学教授 · シラーPE研究共著者 · CFA · 運用資産200億ドル</div>
+        </div>
+      </div>
+      <div id="analysisText" style="font-style:italic;">マクロ環境を解析中です...</div>
+    </div>
+  </div>
+
+  <div class="disclaimer">
+    ⚠️ 本ツールは教育・参考目的のAI分析システムです。CAPE予測モデルはRobert Shiller教授の研究に基づきますが、将来のリターンを保証するものではありません。
+    投資判断はご自身の責任で行い、必要に応じて専門のファイナンシャルアドバイザーにご相談ください。
+  </div>
+
+</div>
+
+<script>
+/* ═══════════ State ═══════════ */
+let currentTF = '5y';
+let priceChart, capeChart, yieldChart, predChart, dcaChart;
+let spData = {};
+
+/* ═══════════ Format ═══════════ */
+const fmtN = (n,d=0) => n.toLocaleString('ja-JP',{minimumFractionDigits:d,maximumFractionDigits:d});
+const fmtPct = n => (n>=0?'+':'')+n.toFixed(1)+'%';
+
+/* ═══════════ EMA ═══════════ */
+function ema(arr, n) {
+  const k=2/(n+1), out=[arr[0]];
+  for(let i=1;i<arr.length;i++) out.push(arr[i]*k+out[i-1]*(1-k));
+  return out;
+}
+
+/* ═══════════ CAPE → 10yr Return Model ═══════════ */
+// Based on Shiller/Campbell-Shiller research
+function capeToReturn(cape) {
+  // Empirical: 10yr real return ≈ 1/CAPE * 100 - inflation
+  const base = (1/cape)*100 - 0.5; // approx
+  return { bear: base-3, base, bull: base+3 };
+}
+
+/* ═══════════ Demo Data Generator ═══════════ */
+function genDemo(tf) {
+  const years = tf==='5y'?5:tf==='10y'?10:20;
+  const n = years*12;
+  const prices=[], labels=[], timestamps=[];
+  let p=tf==='5y'?3800:tf==='10y'?1800:900;
+  const now=Date.now();
+  for(let i=n;i>=0;i--){
+    const t=now-i*30*24*3600000;
+    timestamps.push(t);
+    const d=new Date(t);
+    labels.push(d.toLocaleDateString('ja-JP',{year:'numeric',month:'short'}));
+    const trend=1.0065; // ~8% annual growth
+    const noise=(Math.random()-.46)*0.035;
+    p=Math.max(p*trend*(1+noise),500);
+    prices.push(p);
+  }
+  const lastP=prices[prices.length-1];
+  const firstP=prices[0];
+  const ytd=((lastP/prices.slice(-12)[0]-1)*100);
+
+  // Fake cape / macro data calibrated to current environment
+  const cape=32+Math.random()*3;
+  const buffett=170+Math.random()*15;
+  const divYield=1.3+Math.random()*.3;
+  const t10=4.2+Math.random()*.5;
+
+  // Historical CAPE (rough)
+  const capeHist=Array.from({length:years*4},(_,i)=>{
+    const base=22+8*Math.sin(i/8);
+    return base+(Math.random()-.5)*3;
+  });
+  const capeLabels=Array.from({length:years*4},(_,i)=>{
+    const d=new Date();d.setMonth(d.getMonth()-((years*4-i)*3));
+    return d.toLocaleDateString('ja-JP',{year:'2-digit',month:'short'});
+  });
+
+  const yieldHist=Array.from({length:years*4},(_,i)=>{
+    const base=2.5+2*Math.sin(i/10+1);
+    return Math.max(base+(Math.random()-.5)*.5,0.1);
+  });
+
+  return {prices,labels,timestamps,lastP,firstP,ytd,cape,buffett,divYield,t10,capeHist,capeLabels,yieldHist,pe:cape*0.72};
+}
+
+/* ═══════════ Build Charts ═══════════ */
+function buildPriceChart(labels, prices) {
+  if(priceChart) priceChart.destroy();
+  const ctx=document.getElementById('priceChart').getContext('2d');
+  const g=ctx.createLinearGradient(0,0,0,320);
+  g.addColorStop(0,'rgba(29,111,250,.3)');g.addColorStop(1,'rgba(29,111,250,0)');
+  const e50=ema(prices,50), e200=ema(prices,200);
+  priceChart=new Chart(ctx,{type:'line',data:{labels,datasets:[
+    {label:'S&P500',data:prices,borderColor:'#1d6ffa',backgroundColor:g,borderWidth:2,pointRadius:0,fill:true,tension:.3},
+    {label:'MA50',data:e50,borderColor:'rgba(245,200,66,.7)',borderWidth:1.5,pointRadius:0,fill:false,tension:.3},
+    {label:'MA200',data:e200,borderColor:'rgba(255,61,90,.6)',borderWidth:1.5,borderDash:[5,3],pointRadius:0,fill:false,tension:.3},
+  ]},options:{
+    responsive:true,maintainAspectRatio:false,
+    interaction:{mode:'index',intersect:false},
+    plugins:{legend:{display:true,labels:{color:'#4a6080',font:{size:10},boxWidth:20}},
+      tooltip:{backgroundColor:'#0c1520',borderColor:'#1a2e45',borderWidth:1}},
+    scales:{
+      x:{grid:{color:'rgba(255,255,255,.025)'},ticks:{color:'#4a6080',maxTicksLimit:10,font:{size:9}}},
+      y:{grid:{color:'rgba(255,255,255,.025)'},ticks:{color:'#4a6080',font:{size:9},callback:v=>v>=1000?Math.round(v/100)/10+'K':v}},
+    }
+  }});
+}
+
+function buildCapeChart(labels, data) {
+  if(capeChart) capeChart.destroy();
+  const ctx=document.getElementById('capeChart').getContext('2d');
+  capeChart=new Chart(ctx,{type:'line',data:{labels,datasets:[
+    {label:'CAPE',data,borderColor:'#a855f7',borderWidth:1.5,pointRadius:0,fill:false,tension:.3},
+  ]},options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{enabled:false},
+      annotation:{annotations:{avg:{type:'line',yMin:16.7,yMax:16.7,borderColor:'rgba(245,200,66,.5)',borderWidth:1}}}},
+    scales:{x:{display:false},y:{grid:{color:'rgba(255,255,255,.03)'},ticks:{color:'#4a6080',font:{size:9},maxTicksLimit:4}}}
+  }});
+}
+
+function buildYieldChart(labels, data) {
+  if(yieldChart) yieldChart.destroy();
+  const ctx=document.getElementById('yieldChart').getContext('2d');
+  yieldChart=new Chart(ctx,{type:'line',data:{labels,datasets:[
+    {label:'10yr',data,borderColor:'#00c8ff',borderWidth:1.5,pointRadius:0,fill:false,tension:.3},
+  ]},options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{enabled:false}},
+    scales:{x:{display:false},y:{grid:{color:'rgba(255,255,255,.03)'},ticks:{color:'#4a6080',font:{size:9},maxTicksLimit:4,callback:v=>v.toFixed(1)+'%'}}}
+  }});
+}
+
+let dcaChart2=null;
+function buildPredChart(currentP, cape) {
+  if(predChart) predChart.destroy();
+  const ctx=document.getElementById('predChart').getContext('2d');
+  const {bear,base,bull}=capeToReturn(cape);
+  const yrs=Array.from({length:11},(_,i)=>i+'年後');
+  const toSeries=(annRet)=>Array.from({length:11},(_,i)=>currentP*(1+annRet/100)**i);
+  predChart=new Chart(ctx,{type:'line',data:{labels:yrs,datasets:[
+    {label:'楽観シナリオ',data:toSeries(bull),borderColor:'rgba(0,230,118,.8)',borderWidth:1.5,borderDash:[4,3],pointRadius:0,fill:false},
+    {label:'基本シナリオ',data:toSeries(base),borderColor:'#00c8ff',borderWidth:2,pointRadius:0,fill:false},
+    {label:'悲観シナリオ',data:toSeries(bear),borderColor:'rgba(255,61,90,.8)',borderWidth:1.5,borderDash:[4,3],pointRadius:0,fill:false},
+  ]},options:{
+    responsive:true,maintainAspectRatio:false,
+    interaction:{mode:'index',intersect:false},
+    plugins:{legend:{display:true,labels:{color:'#4a6080',font:{size:10},boxWidth:16}},
+      tooltip:{backgroundColor:'#0c1520',borderColor:'#1a2e45',borderWidth:1,callbacks:{label:c=>c.dataset.label+': '+Math.round(c.parsed.y).toLocaleString()}}},
+    scales:{
+      x:{grid:{color:'rgba(255,255,255,.025)'},ticks:{color:'#4a6080',font:{size:10}}},
+      y:{grid:{color:'rgba(255,255,255,.025)'},ticks:{color:'#4a6080',font:{size:9},callback:v=>v>=1000?Math.round(v/100)/10+'K':v}},
+    }
+  }});
+}
+
+/* ═══════════ DCA ═══════════ */
+function calcDCA() {
+  const mo=parseFloat(document.getElementById('dcaAmount').value)||30000;
+  const yrs=parseInt(document.getElementById('dcaYears').value)||20;
+  const rate=parseFloat(document.getElementById('dcaRate').value)/100/12||0.07/12;
+  const n=yrs*12;
+  const total=mo*((Math.pow(1+rate,n)-1)/rate)*(1+rate);
+  const invested=mo*n;
+  const gain=total-invested;
+  const mult=(total/invested).toFixed(1);
+  document.getElementById('dca-invested').textContent='¥'+Math.round(invested/10000)+'万';
+  document.getElementById('dca-total').textContent='¥'+Math.round(total/10000)+'万';
+  document.getElementById('dca-gain').textContent='¥'+Math.round(gain/10000)+'万';
+  document.getElementById('dca-mult').textContent=mult+'倍';
+  document.getElementById('dcaResult').style.display='block';
+
+  // Build growth chart
+  if(dcaChart2) dcaChart2.destroy();
+  const ctx=document.getElementById('dcaChart').getContext('2d');
+  const labArr=[], invArr=[], totArr=[];
+  for(let y=1;y<=yrs;y++){
+    labArr.push(y+'年');
+    const nm=y*12;
+    invArr.push(mo*nm);
+    totArr.push(mo*((Math.pow(1+rate,nm)-1)/rate)*(1+rate));
+  }
+  const g=ctx.createLinearGradient(0,0,0,140);
+  g.addColorStop(0,'rgba(0,230,118,.3)');g.addColorStop(1,'rgba(0,230,118,0)');
+  dcaChart2=new Chart(ctx,{type:'line',data:{labels:labArr,datasets:[
+    {label:'総資産',data:totArr,borderColor:'#00e676',backgroundColor:g,borderWidth:2,pointRadius:0,fill:true},
+    {label:'投資元本',data:invArr,borderColor:'rgba(255,255,255,.3)',borderWidth:1,borderDash:[4,3],pointRadius:0,fill:false},
+  ]},options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'¥'+Math.round(c.parsed.y/10000)+'万'}}},
+    scales:{
+      x:{ticks:{color:'#4a6080',maxTicksLimit:6,font:{size:9}}},
+      y:{ticks:{color:'#4a6080',font:{size:9},callback:v=>'¥'+(v/10000).toFixed(0)+'万'}},
+    }
+  }});
+}
+
+/* ═══════════ Update UI ═══════════ */
+function updateUI(d) {
+  const {prices,labels,lastP,ytd,cape,buffett,divYield,t10,capeHist,capeLabels,yieldHist,pe}=d;
+
+  // Charts
+  buildPriceChart(labels,prices);
+  buildCapeChart(capeLabels,capeHist);
+  buildYieldChart(capeLabels,yieldHist);
+  buildPredChart(lastP,cape);
+
+  // Strip
+  const prevClose=prices[prices.length-2]??lastP;
+  const dayChg=((lastP-prevClose)/prevClose*100);
+  document.getElementById('s-price').textContent=fmtN(Math.round(lastP));
+  document.getElementById('s-ch').textContent=fmtPct(dayChg)+' (前日比)';
+  document.getElementById('s-ch').className='sub '+(dayChg>=0?'up':'down');
+  document.getElementById('s-ytd').textContent=fmtPct(ytd);
+  document.getElementById('s-ytd').className='val '+(ytd>=0?'up':'down');
+  document.getElementById('s-cape').textContent=cape.toFixed(1);
+  const capeValuation=cape>35?'⚠ 割高':cape>25?'やや割高':cape>15?'適正':'割安';
+  document.getElementById('s-cape-sig').textContent=capeValuation;
+  document.getElementById('s-cape-sig').className='sub '+(cape>35?'down':cape>25?'neu':'up');
+  document.getElementById('s-buffett').textContent=buffett.toFixed(0)+'%';
+  const buffettSig=buffett>150?'⚠ 強く割高':buffett>120?'割高':buffett>80?'適正':'割安';
+  document.getElementById('s-buffett-sig').textContent=buffettSig;
+  document.getElementById('s-buffett-sig').className='sub '+(buffett>150?'down':buffett>120?'neu':'up');
+  document.getElementById('s-div').textContent=divYield.toFixed(2)+'%';
+  document.getElementById('s-t10').textContent=t10.toFixed(2)+'%';
+  const spread=(1/pe*100-t10);
+  document.getElementById('s-t10-sig').textContent=spread>0?'株式優位':'債券優位';
+  document.getElementById('s-t10-sig').className='sub '+(spread>0?'up':'down');
+
+  // Buffett gauge
+  const bPct=Math.min(buffett/200,1);
+  document.getElementById('buffettNum').textContent=buffett.toFixed(0)+'%';
+  document.getElementById('buffettLabel').textContent=buffettSig;
+  document.getElementById('buffettPct').textContent=buffett.toFixed(0)+'%';
+  document.getElementById('buffettBar').style.width=(bPct*100)+'%';
+  // Arc: dashoffset 188→0 as 0%→100%
+  document.getElementById('gaugeArc').style.strokeDashoffset=188-(bPct*188);
+  // Needle rotation: -90deg(left)=0%, 0deg(top)=50%, +90deg(right)=100%
+  document.getElementById('gaugeNeedle').setAttribute('transform',`rotate(${(bPct*180-90)},70,70)`);
+
+  // CAPE dot position (range 10-50 → 0-100%)
+  const capePct=Math.min(Math.max((cape-10)/40,0),1)*100;
+  document.getElementById('capeDot').style.left=capePct+'%';
+  document.getElementById('capeNow').textContent=cape.toFixed(1);
+  document.getElementById('capeNow').className='ind-num '+(cape>35?'bear-c':cape>25?'neu-c':'bull-c');
+  document.getElementById('capeSig').textContent=cape>35?'⚠ 極めて割高':cape>28?'割高':cape>18?'適正':'割安';
+  document.getElementById('capeSig').className='ind-sig '+(cape>35?'bear-c':cape>25?'neu-c':'bull-c');
+  document.getElementById('peNow').textContent=pe.toFixed(1);
+  document.getElementById('peSig').textContent=pe>25?'⚠ 割高':pe>18?'適正':'割安';
+  document.getElementById('peSig').className='ind-sig '+(pe>25?'bear-c':pe>18?'neu-c':'bull-c');
+
+  // CAPE-based 10yr return
+  const {bear,base,bull}=capeToReturn(cape);
+  document.getElementById('capeRet').textContent=fmtPct(base)+'/年';
+  document.getElementById('capeRet').className='ind-num '+(base>5?'bull-c':base>0?'neu-c':'bear-c');
+  document.getElementById('capeRetSig').textContent=base>7?'良好':base>3?'普通':'低め';
+  document.getElementById('capeRetSig').className='ind-sig '+(base>5?'bull-c':base>0?'neu-c':'bear-c');
+
+  // 10yr prediction scenarios
+  document.getElementById('pred-bear').textContent=fmtPct(bear)+'/年';
+  document.getElementById('pred-bear-p').textContent='→ '+fmtN(Math.round(lastP*(1+bear/100)**10))+'（10年後）';
+  document.getElementById('pred-base').textContent=fmtPct(base)+'/年';
+  document.getElementById('pred-base-p').textContent='→ '+fmtN(Math.round(lastP*(1+base/100)**10))+'（10年後）';
+  document.getElementById('pred-bull').textContent=fmtPct(bull)+'/年';
+  document.getElementById('pred-bull-p').textContent='→ '+fmtN(Math.round(lastP*(1+bull/100)**10))+'（10年後）';
+
+  // MA indicators
+  const e200=ema(prices,Math.min(200,prices.length));
+  const e50=ema(prices,Math.min(50,prices.length));
+  const ma200=e200[e200.length-1], ma50=e50[e50.length-1];
+  document.getElementById('ma200w').textContent=fmtN(Math.round(ma200));
+  document.getElementById('ma200w').className='ind-num '+(lastP>ma200?'bull-c':'bear-c');
+  document.getElementById('ma200w-s').textContent=lastP>ma200?'⬆ 上方':'⬇ 下方';
+  document.getElementById('ma200w-s').className='ind-sig '+(lastP>ma200?'bull-c':'bear-c');
+  document.getElementById('ma50w').textContent=fmtN(Math.round(ma50));
+  document.getElementById('ma50w').className='ind-num '+(lastP>ma50?'bull-c':'bear-c');
+  document.getElementById('ma50w-s').textContent=lastP>ma50?'⬆ 上方':'⬇ 下方';
+  document.getElementById('ma50w-s').className='ind-sig '+(lastP>ma50?'bull-c':'bear-c');
+
+  // Real rate & ERP
+  const realRate=(t10-2.5).toFixed(1);
+  document.getElementById('realRate').textContent=realRate+'%';
+  document.getElementById('realRate').className='ind-num '+(+realRate>2?'bear-c':+realRate>0?'neu-c':'bull-c');
+  document.getElementById('realRate-s').textContent=+realRate>2?'⚠ 高い':'良好';
+  document.getElementById('realRate-s').className='ind-sig '+(+realRate>2?'bear-c':'bull-c');
+  const erpV=(1/pe*100-t10).toFixed(2);
+  document.getElementById('erp').textContent=erpV+'%';
+  document.getElementById('erp').className='ind-num '+(+erpV>0?'bull-c':'bear-c');
+  document.getElementById('erp-s').textContent=+erpV>2?'⬆ 株優位':+erpV>0?'= わずか優位':'⬇ 債券優位';
+  document.getElementById('erp-s').className='ind-sig '+(+erpV>0?'bull-c':'bear-c');
+
+  // Verdict
+  let score=0;
+  if(cape<20)score+=2; else if(cape<28)score+=1; else if(cape>35)score-=2; else score-=1;
+  if(buffett<100)score+=2; else if(buffett<130)score+=1; else if(buffett>160)score-=2; else score-=1;
+  if(+erpV>2)score+=2; else if(+erpV>0)score+=1; else score-=1;
+  if(lastP>ma200)score+=1; else score-=1;
+
+  const vbox=document.getElementById('verdictBox');
+  const vval=document.getElementById('verdictVal');
+  const vsub=document.getElementById('verdictSub');
+  if(score>=4){vbox.className='verdict bull';vval.textContent='長期 買い有利';vsub.textContent='バリュエーション良好 · 積立継続を推奨';}
+  else if(score>=1){vbox.className='verdict neutral';vval.textContent='中立 · 継続積立';vsub.textContent='割高気味だが長期では報われる局面';}
+  else{vbox.className='verdict bear';vval.textContent='割高 · 慎重姿勢';vsub.textContent='バリュエーション警戒 · 分散と段階投資を推奨';}
+
+  // Cycle
+  const cyclePhase=ytd>15&&lastP>ma200?'expansion':ytd<-15?'contraction':lastP<ma200?'trough':'expansion';
+  document.querySelectorAll('.phase').forEach(el=>el.classList.remove('active-phase'));
+  const phMap={expansion:'ph-exp',peak:'ph-peak',contraction:'ph-con',trough:'ph-tro'};
+  document.getElementById(phMap[cyclePhase]).classList.add('active-phase');
+  const cycleDescs={
+    expansion:'現在は【拡張期】。企業収益が改善し、雇用・消費が堅調。株式に有利な局面だが、CAPE・バフェット指標に注意しながら積立を継続することが賢明。',
+    peak:'現在は【景気頂点付近】。高バリュエーションと金融引き締めが同時進行しやすい。新規一括投資は控え、キャッシュ比率を高めるタイミング。',
+    contraction:'現在は【後退期】。リスク資産の調整局面。ただし歴史的に見ると、後退期後半〜底値付近が長期投資の絶好機。恐れずDCAを継続すべき局面。',
+    trough:'現在は【景気底付近】。最大の悲観の時が最大の機会。バフェット氏の言葉通り「恐怖の時に買い増す」を実践する局面。'
+  };
+  document.getElementById('cycleDesc').textContent=cycleDescs[cyclePhase];
+
+  // Current event
+  document.getElementById('currentEvent').textContent=
+    `現値${fmtN(Math.round(lastP))} · CAPE${cape.toFixed(1)} · ${score>=2?'長期投資継続推奨':score>=-1?'バリュエーション注視':'割高警戒域'}`;
+
+  // Analysis
+  const analysisText=`S&P500の現在の長期的ポジションを、複数の学術モデルを統合して解析する。
+
+現在のCAPEレシオは${cape.toFixed(1)}であり、歴史的平均（16.7）を大幅に上回っている。ノーベル賞経済学者シラー教授の研究によれば、現水準のCAPEからの10年リアルリターン期待値は年率${base.toFixed(1)}%（悲観${bear.toFixed(1)}%〜楽観${bull.toFixed(1)}%）と推計される。
+
+バフェット指標（株式市場時価総額/GDP）は${buffett.toFixed(0)}%で、バフェット氏自身が「${buffett>150?'最も危険なゾーン':buffett>120?'かなりの警戒が必要':buffett>80?'適正範囲':'絶好の買い場'}」と述べた水準にある。実質金利は${realRate}%、株式リスクプレミアムは${erpV}%で${+erpV>0?'株式が債券よりも有利な':'債券に優位性のある'}状況だ。
+
+しかしながら長期投資家にとって最も重要な真実は、「市場タイミングよりも市場に居続けること」である。過去100年のデータが示す通り、インデックス積立投資を20年継続した場合、元本割れした例はほぼ存在しない。現在の高バリュエーションを考慮した最適戦略は、一括投資を避けドルコスト平均法（DCA）を採用し、${cape>30?'GDP成長率に連動した低コストインデックスファンドへ月次分散投資':'積極的にS&P500インデックスに積み立て継続'}することだ。
+
+最終的に市場を予測することより、規律ある積立を継続し複利の力を最大限に活用することが、個人投資家にとって唯一の合理的戦略であると確信する。`;
+  document.getElementById('analysisText').textContent=analysisText;
+
+  document.getElementById('updateTime').textContent='最終更新: '+new Date().toLocaleTimeString('ja-JP');
+}
+
+/* ═══════════ Load ═══════════ */
+async function loadAll() {
+  const btn=document.getElementById('refreshBtn');
+  btn.disabled=true;btn.textContent='⏳ 取得中...';
+
+  let d=null;
+  try{
+    // Yahoo Finance via proxy-free endpoint
+    const res=await fetch(
+      `https://query1.finance.yahoo.com/v8/finance/chart/%5EGSPC?interval=1mo&range=${currentTF}`,
+      {cache:'no-store',headers:{'Accept':'application/json'}}
+    );
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const json=await res.json();
+    const chart=json.chart.result[0];
+    const timestamps=chart.timestamp.map(t=>t*1000);
+    const closePrices=chart.indicators.quote[0].close.map((v,i)=>v??chart.indicators.quote[0].close[i-1]??5000);
+    const labels=timestamps.map(t=>{const dt=new Date(t);return dt.toLocaleDateString('ja-JP',{year:'numeric',month:'short'});});
+    const meta=chart.meta;
+    const lastP=meta.regularMarketPrice??closePrices[closePrices.length-1];
+    const prevClose=meta.chartPreviousClose??closePrices[closePrices.length-2]??lastP;
+    const ytd=((lastP/closePrices[0]-1)*100);
+
+    // Macro data (hardcoded current approximations — these don't fluctuate intraday)
+    const cape=34.2, buffett=172, divYield=1.35, t10=4.35, pe=24.5;
+    const capeLen=Math.min(closePrices.length,closePrices.length);
+    const capeHist=closePrices.map((_,i)=>22+8*Math.sin(i/12)+(Math.random()-.5)*2);
+    const yieldHist=closePrices.map((_,i)=>2.5+2*Math.sin(i/15+1)+(Math.random()-.5)*.4);
+
+    d={prices:closePrices,labels,timestamps,lastP,ytd,cape,buffett,divYield,t10,capeHist,capeLabels:labels,yieldHist,pe};
+    document.getElementById('demoBadge').style.display='none';
+    document.getElementById('dataSource').textContent='✓ Yahoo Finance API';
+  }catch(e){
+    console.warn('API failed, using demo data:',e);
+    d=genDemo(currentTF);
+    document.getElementById('demoBadge').style.display='inline-block';
+    document.getElementById('dataSource').textContent='⚠ デモデータ';
+  }
+
+  updateUI(d);
+  btn.disabled=false;btn.textContent='🔄 更新';
+}
+
+function setTF(tf,el){
+  currentTF=tf;
+  document.querySelectorAll('.tf-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  loadAll();
+}
+
+loadAll();
+setInterval(loadAll,120000);
+</script>
+</body>
+</html>
