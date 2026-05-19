@@ -215,6 +215,20 @@
     .tab-icon{font-size:27px;}
     .tab-label{font-size:15px;font-weight:500;}
 
+
+    /* Options OI */
+    .oi-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);}
+    .oi-strip-cell{background:var(--card);padding:14px 16px;}
+    .oi-lbl{font-size:18px;color:var(--muted);margin-bottom:4px;}
+    .oi-val{font-size:23px;font-weight:700;}
+    .oi-sub{font-size:17px;margin-top:2px;}
+    .put-call-bar{height:10px;border-radius:5px;overflow:hidden;display:flex;margin:8px 0 4px;}
+    .pc-call{background:var(--green);}
+    .pc-put{background:var(--red);}
+    .oi-strike-row{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:.5px solid var(--border);}
+    .oi-strike-row:last-child{border-bottom:none;}
+    .oi-strike-bar-wrap{flex:1;height:8px;background:var(--bg);border-radius:4px;overflow:hidden;}
+    .oi-strike-bar{height:100%;border-radius:4px;transition:width .8s ease;}
     ::-webkit-scrollbar{width:4px;}
     ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
     .g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
@@ -308,6 +322,55 @@
       <button class="tf-btn" onclick="setTF('20y',this)">20年</button>
     </div>
     <div class="ch ch-300"><canvas id="priceChart"></canvas></div>
+  </div>
+</div>
+
+
+<!-- Options OI Analysis -->
+<div class="section">
+  <div class="section-title">📋 オプション建玉分析 (SPY)</div>
+  <div class="card" style="overflow:hidden;">
+    <div class="oi-strip">
+      <div class="oi-strip-cell">
+        <div class="oi-lbl">マックスペイン</div>
+        <div class="oi-val" id="optMaxPain">--</div>
+        <div class="oi-sub" id="optMaxPainSub">--</div>
+      </div>
+      <div class="oi-strip-cell">
+        <div class="oi-lbl">P/C レシオ</div>
+        <div class="oi-val" id="optPCRatio">--</div>
+        <div class="oi-sub" id="optPCRatioSub">--</div>
+      </div>
+      <div class="oi-strip-cell">
+        <div class="oi-lbl">総OI (コール)</div>
+        <div class="oi-val up" id="optCallOI">--</div>
+        <div class="oi-sub down" id="optPutOI">--</div>
+      </div>
+    </div>
+    <div style="padding:12px 16px 8px;">
+      <div style="display:flex;justify-content:space-between;font-size:18px;margin-bottom:4px;">
+        <span style="color:var(--green);">コール (強気) <strong id="optCallPct">--</strong></span>
+        <span style="color:var(--red);">プット (弱気) <strong id="optPutPct">--</strong></span>
+      </div>
+      <div class="put-call-bar"><div class="pc-call" id="pcCall" style="width:50%"></div><div class="pc-put" id="pcPut" style="width:50%"></div></div>
+      <div style="font-size:17px;color:var(--muted);text-align:center;margin-top:4px;" id="optSentiment">--</div>
+    </div>
+  </div>
+
+  <div class="card" style="overflow:hidden;margin-top:12px;">
+    <div style="padding:14px 16px 4px;font-size:21px;font-weight:600;">📊 ストライク別 建玉分布</div>
+    <div style="padding:2px 16px 8px;font-size:17px;color:var(--muted);">OIが集まる価格帯 = 市場参加者が意識するサポート/レジスタンス</div>
+    <div style="position:relative;height:280px;padding:4px 8px 8px;"><canvas id="optOIChart"></canvas></div>
+    <div style="display:flex;gap:18px;padding:4px 16px 10px;font-size:17px;color:var(--muted);">
+      <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;width:10px;height:10px;background:rgba(52,199,89,.65);border-radius:2px;"></span>コール OI</span>
+      <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;width:10px;height:10px;background:rgba(255,59,48,.65);border-radius:2px;"></span>プット OI</span>
+    </div>
+  </div>
+
+  <div class="card" style="overflow:hidden;margin-top:12px;">
+    <div style="padding:14px 16px 8px;font-size:21px;font-weight:600;">🎯 主要OI集積ストライク</div>
+    <div id="topStrikes"></div>
+    <div style="padding:8px 16px;font-size:16px;color:var(--muted);border-top:.5px solid var(--border);">OIが最も多いストライクは機関が意識するサポート/レジスタンス。マックスペイン方向に価格が引き寄せられる傾向あり。</div>
   </div>
 </div>
 
@@ -632,6 +695,146 @@ function calcDCA(){const mo=parseFloat(document.getElementById('dcaAmt').value)|
 function genDemo(tf){const years=tf==='5y'?5:tf==='10y'?10:20;const n=years*12;const prices=[],labels=[];let p=tf==='5y'?4500:tf==='10y'?2200:1000;for(let i=n;i>=0;i--){const d=new Date(TODAY);d.setMonth(d.getMonth()-i);labels.push(d.toLocaleDateString('ja-JP',{year:'numeric',month:'short'}));p*=1.0068*(1+(Math.random()-.46)*0.03);prices.push(Math.max(p,500));}return{prices,labels};}
 
 async function loadAll(){const btn=document.getElementById('refreshBtn');btn.disabled=true;btn.textContent='⏳ 取得中...';const newsPromise=fetchNews();let prices,labels;try{const range=TF==='20y'?'20y':TF==='10y'?'10y':'5y';const res=await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/%5EGSPC?interval=1mo&range=${range}`,{cache:'no-store'});if(!res.ok)throw new Error('HTTP '+res.status);const json=await res.json();const chart=json.chart.result[0];const ts=chart.timestamp;const closes=chart.indicators.quote[0].close;prices=[];labels=[];for(let i=0;i<ts.length;i++){const v=closes[i];if(v===null||v===undefined)continue;prices.push(v);const d=new Date(ts[i]*1000);labels.push(d.toLocaleDateString('ja-JP',{year:'numeric',month:'short'}));}if(prices.length<10)throw new Error('data too short');document.getElementById('demoBadge').style.display='none';document.getElementById('dataSource').textContent='✓ Yahoo Finance API';}catch(e){const d=genDemo(TF);prices=d.prices;labels=d.labels;document.getElementById('demoBadge').style.display='inline-block';document.getElementById('dataSource').textContent='⚠ デモデータ';}const newsScore=await newsPromise;updateUI(prices,labels,newsScore);fetchStocks();btn.disabled=false;btn.textContent='更新';}
+
+
+let optOIChart=null;
+
+async function fetchOptionsOI(spyPrice){
+  let calls=null,puts=null;
+  try{
+    const res=await fetch('https://query1.finance.yahoo.com/v7/finance/options/SPY',{cache:'no-store'});
+    if(!res.ok)throw new Error('opt fail');
+    const json=await res.json();
+    const chain=json.optionChain?.result?.[0];
+    if(!chain)throw new Error('no chain');
+    calls=chain.options[0]?.calls||[];
+    puts=chain.options[0]?.puts||[];
+  }catch(_){}
+  renderOptionsOI(spyPrice,calls,puts);
+}
+
+function renderOptionsOI(spyPrice,calls,puts){
+  const spy=spyPrice||560;
+  if(!calls||!calls.length){
+    // demo data
+    const strikes=[];
+    const base=Math.round(spy/5)*5;
+    for(let s=base-60;s<=base+60;s+=5)strikes.push(s);
+    calls=strikes.map(s=>({strike:s,openInterest:Math.floor(Math.random()*80000+(s>spy?120000:30000)+Math.abs(s-spy)<10?200000:0)}));
+    puts=strikes.map(s=>({strike:s,openInterest:Math.floor(Math.random()*80000+(s<spy?120000:30000)+Math.abs(s-spy)<10?200000:0)}));
+    // Add key round numbers
+    [Math.round(spy/10)*10,Math.round(spy/10)*10-10,Math.round(spy/10)*10+10].forEach(r=>{
+      const ci=calls.findIndex(c=>Math.abs(c.strike-r)<3);
+      const pi=puts.findIndex(p=>Math.abs(p.strike-r)<3);
+      if(ci>=0)calls[ci].openInterest+=300000;
+      if(pi>=0)puts[pi].openInterest+=300000;
+    });
+  }
+
+  // Filter to range ±8% from current price
+  const lo=spy*0.92,hi=spy*1.08;
+  const fc=calls.filter(c=>c.strike>=lo&&c.strike<=hi&&c.openInterest>0);
+  const fp=puts.filter(p=>p.strike>=lo&&p.strike<=hi&&p.openInterest>0);
+
+  // All strikes in range
+  const allStrikes=[...new Set([...fc.map(c=>c.strike),...fp.map(p=>p.strike)])].sort((a,b)=>a-b);
+  const callMap=Object.fromEntries(fc.map(c=>[c.strike,c.openInterest]));
+  const putMap=Object.fromEntries(fp.map(p=>[p.strike,p.openInterest]));
+
+  const callOI=allStrikes.map(s=>callMap[s]||0);
+  const putOI=allStrikes.map(s=>-(putMap[s]||0));
+
+  const totalCalls=fc.reduce((a,c)=>a+c.openInterest,0);
+  const totalPuts=fp.reduce((a,p)=>a+p.openInterest,0);
+  const pcRatio=(totalPuts/Math.max(totalCalls,1)).toFixed(2);
+  const callPct=(totalCalls/(totalCalls+totalPuts)*100).toFixed(1);
+  const putPct=(100-parseFloat(callPct)).toFixed(1);
+
+  // Max Pain: strike where total $ value of all options is maximized at expiry
+  // Simplified: strike where sum(call*(S-K)*callOI + put*(K-S)*putOI) is minimized
+  let maxPainStrike=spy;
+  let minPain=Infinity;
+  allStrikes.forEach(k=>{
+    let pain=0;
+    fc.forEach(c=>{ if(k>c.strike) pain+=c.openInterest*(k-c.strike); });
+    fp.forEach(p=>{ if(k<p.strike) pain+=p.openInterest*(p.strike-k); });
+    if(pain<minPain){minPain=pain;maxPainStrike=k;}
+  });
+
+  document.getElementById('optMaxPain').textContent='$'+maxPainStrike.toFixed(0);
+  const mpDiff=((maxPainStrike-spy)/spy*100).toFixed(1);
+  document.getElementById('optMaxPainSub').textContent=(mpDiff>=0?'現在値より▲ +':'現在値より▼ ')+Math.abs(mpDiff)+'%';
+  document.getElementById('optPCRatio').textContent=pcRatio;
+  const pcClass=parseFloat(pcRatio)>1.2?'down':parseFloat(pcRatio)<0.7?'up':'neu';
+  document.getElementById('optPCRatio').className='oi-val '+pcClass;
+  document.getElementById('optPCRatioSub').textContent=parseFloat(pcRatio)>1.2?'⚠ 弱気過多':parseFloat(pcRatio)<0.7?'強気過多':'✓ 均衡';
+  document.getElementById('optCallOI').textContent='C: '+(totalCalls/1e6).toFixed(1)+'M';
+  document.getElementById('optPutOI').textContent='P: '+(totalPuts/1e6).toFixed(1)+'M';
+  document.getElementById('optCallPct').textContent=callPct+'%';
+  document.getElementById('optPutPct').textContent=putPct+'%';
+  document.getElementById('pcCall').style.width=callPct+'%';
+  document.getElementById('pcPut').style.width=putPct+'%';
+  document.getElementById('optSentiment').textContent=
+    parseFloat(pcRatio)>1.3?'⚠ プット過多 — 過度な弱気センチメント（逆張り買いシグナルになることも）':
+    parseFloat(pcRatio)>1.0?'🐻 弱気優勢 — ヘッジ需要が高まっている':
+    parseFloat(pcRatio)<0.7?'⚠ コール過多 — 強気過熱 (天井警戒)':
+    parseFloat(pcRatio)<0.85?'🐂 強気優勢 — コール需要高い':'⚖️ 均衡 — 中立的センチメント';
+
+  // OI Chart
+  if(optOIChart)optOIChart.destroy();
+  const ctx=document.getElementById('optOIChart').getContext('2d');
+  optOIChart=new Chart(ctx,{
+    type:'bar',
+    data:{labels:allStrikes.map(s=>'$'+s),datasets:[
+      {label:'コール OI',data:callOI,backgroundColor:'rgba(52,199,89,.65)',borderWidth:0},
+      {label:'プット OI',data:putOI,backgroundColor:'rgba(255,59,48,.65)',borderWidth:0}
+    ]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{backgroundColor:'#FFFFFF',borderColor:'#E5E5EA',borderWidth:1,titleColor:'#1C1C1E',bodyColor:'#3C3C43',
+          callbacks:{label:c=>(c.datasetIndex===0?'コール: ':'プット: ')+(Math.abs(c.parsed.y)/1000).toFixed(0)+'K 枚'}},
+        annotation:{annotations:{
+          spyLine:{type:'line',xMin:'$'+Math.round(spy),xMax:'$'+Math.round(spy),borderColor:'rgba(255,149,0,.9)',borderWidth:2,borderDash:[6,3],label:{display:true,content:'SPY $'+spy.toFixed(0),color:'#FF9500',font:{size:10,weight:'bold'},backgroundColor:'rgba(255,149,0,.1)',padding:4}},
+          mpLine:{type:'line',xMin:'$'+maxPainStrike,xMax:'$'+maxPainStrike,borderColor:'rgba(175,82,222,.9)',borderWidth:2,borderDash:[4,4],label:{display:true,content:'MaxPain $'+maxPainStrike,color:'#AF52DE',font:{size:10,weight:'bold'},backgroundColor:'rgba(175,82,222,.1)',padding:4}}
+        }}
+      },
+      scales:{
+        x:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#8E8E93',font:{size:9},maxTicksLimit:12}},
+        y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#8E8E93',font:{size:9},callback:v=>(Math.abs(v)/1000).toFixed(0)+'K'}}
+      }
+    }
+  });
+
+  // Top strikes
+  const combined=allStrikes.map(s=>({s,total:(callMap[s]||0)+(putMap[s]||0),call:callMap[s]||0,put:putMap[s]||0}));
+  combined.sort((a,b)=>b.total-a.total);
+  const top8=combined.slice(0,8);
+  const maxT=top8[0]?.total||1;
+  document.getElementById('topStrikes').innerHTML=top8.map(r=>{
+    const bw=r.total/maxT*100;
+    const isAbove=r.s>spy;
+    const col=isAbove?'var(--red)':'var(--green)';
+    const role=r.s===maxPainStrike?'🎯 MaxPain':isAbove?'⬆ レジスタンス':'⬇ サポート';
+    const callPctS=(r.call/r.total*100).toFixed(0);
+    const putPctS=(r.put/r.total*100).toFixed(0);
+    return`<div class="oi-strike-row">
+      <div style="min-width:85px;">
+        <div style="font-size:20px;font-weight:700;color:${col};">$${r.s}</div>
+        <div style="font-size:15px;color:var(--muted);">${role}</div>
+      </div>
+      <div class="oi-strike-bar-wrap">
+        <div style="display:flex;height:100%;">
+          <div style="width:${callPctS}%;background:rgba(52,199,89,.65);"></div>
+          <div style="width:${putPctS}%;background:rgba(255,59,48,.65);"></div>
+        </div>
+      </div>
+      <div style="font-size:18px;font-weight:600;color:var(--text);min-width:80px;text-align:right;">${(r.total/1000).toFixed(0)}K</div>
+      <div style="font-size:16px;color:var(--muted);min-width:115px;text-align:right;">C:${callPctS}% P:${putPctS}%</div>
+    </div>`;
+  }).join('');
+}
 
 function setTF(tf,el){TF=tf;document.querySelectorAll('.tf-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');loadAll();}
 
