@@ -177,6 +177,20 @@
 
     #statsPanel > div{display:flex;justify-content:space-between;padding:10px 0;border-bottom:.5px solid var(--border);font-size:19px;}
     #statsPanel > div:last-child{border-bottom:none;}
+
+    /* OI Distribution */
+    .oi-meta-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--border);}
+    .oi-meta-cell{background:var(--card);padding:14px 16px;}
+    .oi-lbl{font-size:18px;color:var(--muted);margin-bottom:4px;}
+    .oi-val{font-size:23px;font-weight:700;}
+    .oi-sub{font-size:17px;margin-top:2px;}
+    .ls-bar{height:10px;border-radius:5px;overflow:hidden;display:flex;margin:8px 0 4px;}
+    .ls-l{background:var(--green);}
+    .ls-s{background:var(--red);}
+    .liq-row{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:.5px solid var(--border);}
+    .liq-row:last-child{border-bottom:none;}
+    .liq-bar-wrap{flex:1;height:8px;background:var(--bg);border-radius:4px;overflow:hidden;}
+    .liq-bar-fill{height:100%;border-radius:4px;transition:width .8s ease;}
     ::-webkit-scrollbar{width:4px;}
     ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
   </style>
@@ -475,6 +489,57 @@
   </div>
 </div>
 
+
+<div class="section">
+  <div class="section-title">📊 建玉分布 (OI分析)</div>
+  <div class="card" style="overflow:hidden;">
+    <div class="oi-meta-grid">
+      <div class="oi-meta-cell">
+        <div class="oi-lbl">総建玉 (OI)</div>
+        <div class="oi-val" id="oiTotal">--</div>
+        <div class="oi-sub" id="oiTotalSub">--</div>
+      </div>
+      <div class="oi-meta-cell">
+        <div class="oi-lbl">ファンディング</div>
+        <div class="oi-val" id="oiFunding">--</div>
+        <div class="oi-sub" id="oiFundingSub">--</div>
+      </div>
+      <div class="oi-meta-cell">
+        <div class="oi-lbl">L/S レシオ</div>
+        <div class="oi-val" id="oiLSRatio">--</div>
+        <div class="oi-sub" id="oiLSSub">--</div>
+      </div>
+    </div>
+    <div style="padding:12px 16px 8px;">
+      <div style="display:flex;justify-content:space-between;font-size:18px;margin-bottom:4px;">
+        <span style="color:var(--green);">ロング <strong id="oiLongPct">--</strong></span>
+        <span style="color:var(--muted);">L/S 比率</span>
+        <span style="color:var(--red);">ショート <strong id="oiShortPct">--</strong></span>
+      </div>
+      <div class="ls-bar"><div class="ls-l" id="lsLong" style="width:50%"></div><div class="ls-s" id="lsShort" style="width:50%"></div></div>
+      <div style="font-size:17px;color:var(--muted);text-align:center;margin-top:4px;" id="lsNote">--</div>
+    </div>
+  </div>
+
+  <div class="card" style="overflow:hidden;margin-top:12px;">
+    <div style="padding:14px 16px 4px;font-size:21px;font-weight:600;">📌 注文板 集積ゾーン</div>
+    <div style="padding:2px 16px 8px;font-size:17px;color:var(--muted);">大口注文が積み上がっている価格帯 — Binance 先物注文板</div>
+    <div style="position:relative;height:320px;padding:4px 8px 8px;"><canvas id="oiDepthChart"></canvas></div>
+    <div style="display:flex;gap:18px;padding:4px 16px 12px;font-size:17px;color:var(--muted);">
+      <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;width:10px;height:10px;background:rgba(52,199,89,.7);border-radius:2px;"></span>買い (Bid)</span>
+      <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;width:10px;height:10px;background:rgba(255,59,48,.7);border-radius:2px;"></span>売り (Ask)</span>
+      <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;width:10px;height:4px;background:var(--orange);border-radius:2px;"></span>現在値</span>
+    </div>
+  </div>
+
+  <div class="card" style="overflow:hidden;margin-top:12px;">
+    <div style="padding:14px 16px 4px;font-size:21px;font-weight:600;">⚡ 強制決済クラスター</div>
+    <div style="padding:2px 16px 8px;font-size:17px;color:var(--muted);">各レバレッジでのロング / ショート 強制決済ライン</div>
+    <div id="liqLevels"></div>
+    <div style="padding:8px 16px;font-size:16px;color:var(--muted);border-top:.5px solid var(--border);">※ 標準分離マージン方式での目安水準。実際は取引所・マージンモードにより異なる</div>
+  </div>
+</div>
+
 <div class="disclaimer">⚠️ 本ツールはAIによる教育・参考目的の分析システムです。投資判断は必ずご自身の責任で行ってください。仮想通貨市場は極めて高いボラティリティを持ち、元本割れのリスクがあります。</div>
 
 <div class="tab-bar">
@@ -518,7 +583,7 @@ function buildPredChart(histLabels,histPrices,mc){if(predChart)predChart.destroy
 
 function setInd(id,val,sig,cls){const numEl=document.getElementById('i-'+id);const sigEl=document.getElementById('s-'+id);numEl.textContent=val;numEl.className='ind-num '+(cls==='bull'?'bull':cls==='bear'?'bear':'neutral-c');sigEl.textContent=sig;sigEl.className='ind-sig-pill '+(cls==='bull'?'pill-bull':cls==='bear'?'pill-bear':'pill-neutral');}
 
-function updateUI(prices,timestamps,coin,fgData){const labels=timestamps.map(t=>{const d=new Date(t);return days<=1?d.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}):d.toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'});});const rsiArr=rsi(prices);const{hist}=macd(prices);const boll=bollinger(prices);const e20=ema(prices,20),e50=ema(prices,50);const n=prices.length-1;const rsiV=rsiArr[n]??50,macdH=hist[n]??0,pctBV=boll.pctB[n]??0.5;const e20v=e20[n],e50v=e50[n],cp=prices[n];const adxV=adx(prices);const hi30=Math.max(...prices.slice(-Math.min(30,prices.length)));const lo30=Math.min(...prices.slice(-Math.min(30,prices.length)));const pivot=(hi30+lo30+cp)/3;const r1=2*pivot-lo30,r2=pivot+(hi30-lo30);const s1=2*pivot-hi30,s2=pivot-(hi30-lo30);buildPriceChart(labels,prices,boll,{cp,s1,s2,r1,r2});buildRSIChart(labels,rsiArr);buildMACDChart(labels,hist);const mc=monteCarlo(prices.slice(-30));buildPredChart(labels,prices,mc);buildWhaleSection(prices,cp,s1,s2,r1,r2,rsiV);const ch=coin.price_change_percentage_24h;const chCls=ch>=0?'up':'down';document.getElementById('pc-price').textContent=fmtPrice(cp);const chEl=document.getElementById('pc-ch');chEl.textContent=(ch>=0?'+':'')+ch.toFixed(2)+'% (24h)';chEl.className='price-change '+chCls;document.getElementById('pc-high').textContent=fmtPrice(coin.high_24h);document.getElementById('pc-low').textContent=fmtPrice(coin.low_24h);document.getElementById('pc-vol').textContent=fmtB(coin.total_volume);document.getElementById('pc-cap').textContent=fmtB(coin.market_cap);const volHigh=coin.total_volume>3e10;document.getElementById('pc-volch').textContent=volHigh?'📈 高出来高':'📉 低出来高';document.getElementById('pc-volch').className='stat-sub '+(volHigh?'up':'down');const fgV=fgData?.value??50;const fgL=fgData?.value_classification??'Neutral';document.getElementById('fgVal').textContent=fgV;document.getElementById('fgLabel').textContent=fgL;const fgColor=fgV<25?'var(--red)':fgV<40?'var(--orange)':fgV>75?'var(--green)':'var(--blue)';document.getElementById('fgLabel').style.color=fgColor;const arcEl=document.getElementById('fgArc');arcEl.style.stroke=fgColor;arcEl.style.strokeDashoffset=110-(fgV/100)*110;document.getElementById('lv-r2').textContent=fmtPrice(r2);document.getElementById('lv-r1').textContent=fmtPrice(r1);document.getElementById('lv-cur').textContent=fmtPrice(cp);document.getElementById('lv-s1').textContent=fmtPrice(s1);document.getElementById('lv-s2').textContent=fmtPrice(s2);const rsiCls=rsiV<30?'bull':rsiV>70?'bear':'neutral-c';setInd('rsi',rsiV.toFixed(1),rsiV<30?'⬆ 強買い':rsiV>70?'⬇ 買われ過ぎ':'= 中立',rsiCls);const macdCls=macdH>0?'bull':'bear';setInd('macd',macdH.toFixed(0),macdH>0?'⬆ 上昇':'⬇ 下降',macdCls);const e20Cls=cp>e20v?'bull':'bear';setInd('ema20',fmtPrice(e20v),cp>e20v?'⬆ 上方':'⬇ 下方',e20Cls);const bbCls=pctBV<0.2?'bull':pctBV>0.8?'bear':'neutral-c';setInd('bb',(pctBV*100).toFixed(0)+'%',pctBV<0.2?'⬆ 過売り':pctBV>0.8?'⬇ 過買い':'= 中立',bbCls);const e50Cls=cp>e50v?'bull':'bear';setInd('ema50',fmtPrice(e50v),cp>e50v?'⬆ 上方':'⬇ 下方',e50Cls);const trendCls=adxV>40?'bull':adxV<20?'bear':'neutral-c';setInd('trend',adxV,adxV>40?'⬆ 強トレンド':adxV<20?'⬇ 弱トレンド':'= 中程度',trendCls);const{signal,label,conf}=computeSignal(rsiV,macdH,pctBV,cp,e20v,e50v);const sigBox=document.getElementById('sigBox');sigBox.className='signal-pill '+signal.toLowerCase();document.getElementById('sigVal').textContent=signal==='BUY'?'買い推奨':signal==='SELL'?'待機・売り':'中立様子見';document.getElementById('sigSub').textContent=label;document.getElementById('confTxt').textContent=conf+'%';document.getElementById('confFill').style.width=conf+'%';document.getElementById('riskDot').style.left=(signal==='BUY'?22:signal==='SELL'?75:50)+'%';document.getElementById('analysisText').textContent=makeAnalysis(signal,rsiV,macdH,pctBV,cp,e20v,e50v,conf,s1,r1,coinSym,fgV);const entLo=Math.min(s1,cp*0.99),entHi=cp*1.003;document.getElementById('entryPanel').innerHTML=`<div style="margin-bottom:8px;"><div style="font-size:16px;color:var(--muted);margin-bottom:2px;">推奨エントリーゾーン</div><div style="font-size:25px;font-weight:700;color:var(--green);">${fmtPrice(entLo)} 〜 ${fmtPrice(entHi)}</div></div><div style="line-height:2;font-size:18px;">🟢 第1エントリー: <strong>${fmtPrice(entLo*1.001)}</strong> (40%)<br>🟡 第2エントリー: <strong>${fmtPrice(s2*1.01)}</strong> (40%)<br>🔵 押し目枠: <strong>${fmtPrice(s2*0.99)}</strong> (20%)</div>`;const sl=s1*0.97,tp1=r1,tp2=r2;const rrr=cp>sl?((tp1-cp)/(cp-sl)).toFixed(1):'--';document.getElementById('slVal').textContent=fmtPrice(sl);document.getElementById('tp1Val').textContent=fmtPrice(tp1);document.getElementById('tp2Val').textContent=fmtPrice(tp2);document.getElementById('rrrVal').textContent='1 : '+rrr;const vol7=prices.slice(-7).reduce((a,b,i,arr)=>i===0?0:a+Math.abs(b-arr[i-1]),0)/6;const chg7=((prices[n]-prices[Math.max(0,n-7)])/prices[Math.max(0,n-7)]*100).toFixed(2);const mc50chg=((mc.p50[7]-cp)/cp*100).toFixed(1);document.getElementById('statsPanel').innerHTML=`<div><span>7日ボラ率</span><strong style="color:var(--text);">${(vol7/cp*100).toFixed(2)}%/日</strong></div><div><span>7日騰落率</span><strong style="color:${+chg7>=0?'var(--green)':'var(--red)'};">${+chg7>=0?'+':''}${chg7}%</strong></div><div><span>予測7日後中央値</span><strong style="color:var(--blue);">${fmtPrice(mc.p50[7])}</strong></div><div><span>予測変化率</span><strong style="color:${+mc50chg>=0?'var(--green)':'var(--red)'};">${+mc50chg>=0?'+':''}${mc50chg}%</strong></div><div><span>予測レンジ</span><strong>${fmtPrice(mc.p25[7])} 〜 ${fmtPrice(mc.p75[7])}</strong></div>`;document.getElementById('updateTime').textContent='最終更新: '+new Date().toLocaleTimeString('ja-JP');document.getElementById('dataSource').textContent=isDemoMode?'⚠ デモデータ':'✓ CoinGecko API';currentPrice=cp;}
+function updateUI(prices,timestamps,coin,fgData){const labels=timestamps.map(t=>{const d=new Date(t);return days<=1?d.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}):d.toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'});});const rsiArr=rsi(prices);const{hist}=macd(prices);const boll=bollinger(prices);const e20=ema(prices,20),e50=ema(prices,50);const n=prices.length-1;const rsiV=rsiArr[n]??50,macdH=hist[n]??0,pctBV=boll.pctB[n]??0.5;const e20v=e20[n],e50v=e50[n],cp=prices[n];const adxV=adx(prices);const hi30=Math.max(...prices.slice(-Math.min(30,prices.length)));const lo30=Math.min(...prices.slice(-Math.min(30,prices.length)));const pivot=(hi30+lo30+cp)/3;const r1=2*pivot-lo30,r2=pivot+(hi30-lo30);const s1=2*pivot-hi30,s2=pivot-(hi30-lo30);buildPriceChart(labels,prices,boll,{cp,s1,s2,r1,r2});buildRSIChart(labels,rsiArr);buildMACDChart(labels,hist);const mc=monteCarlo(prices.slice(-30));buildPredChart(labels,prices,mc);buildWhaleSection(prices,cp,s1,s2,r1,r2,rsiV);const ch=coin.price_change_percentage_24h;const chCls=ch>=0?'up':'down';document.getElementById('pc-price').textContent=fmtPrice(cp);const chEl=document.getElementById('pc-ch');chEl.textContent=(ch>=0?'+':'')+ch.toFixed(2)+'% (24h)';chEl.className='price-change '+chCls;document.getElementById('pc-high').textContent=fmtPrice(coin.high_24h);document.getElementById('pc-low').textContent=fmtPrice(coin.low_24h);document.getElementById('pc-vol').textContent=fmtB(coin.total_volume);document.getElementById('pc-cap').textContent=fmtB(coin.market_cap);const volHigh=coin.total_volume>3e10;document.getElementById('pc-volch').textContent=volHigh?'📈 高出来高':'📉 低出来高';document.getElementById('pc-volch').className='stat-sub '+(volHigh?'up':'down');const fgV=fgData?.value??50;const fgL=fgData?.value_classification??'Neutral';document.getElementById('fgVal').textContent=fgV;document.getElementById('fgLabel').textContent=fgL;const fgColor=fgV<25?'var(--red)':fgV<40?'var(--orange)':fgV>75?'var(--green)':'var(--blue)';document.getElementById('fgLabel').style.color=fgColor;const arcEl=document.getElementById('fgArc');arcEl.style.stroke=fgColor;arcEl.style.strokeDashoffset=110-(fgV/100)*110;document.getElementById('lv-r2').textContent=fmtPrice(r2);document.getElementById('lv-r1').textContent=fmtPrice(r1);document.getElementById('lv-cur').textContent=fmtPrice(cp);document.getElementById('lv-s1').textContent=fmtPrice(s1);document.getElementById('lv-s2').textContent=fmtPrice(s2);const rsiCls=rsiV<30?'bull':rsiV>70?'bear':'neutral-c';setInd('rsi',rsiV.toFixed(1),rsiV<30?'⬆ 強買い':rsiV>70?'⬇ 買われ過ぎ':'= 中立',rsiCls);const macdCls=macdH>0?'bull':'bear';setInd('macd',macdH.toFixed(0),macdH>0?'⬆ 上昇':'⬇ 下降',macdCls);const e20Cls=cp>e20v?'bull':'bear';setInd('ema20',fmtPrice(e20v),cp>e20v?'⬆ 上方':'⬇ 下方',e20Cls);const bbCls=pctBV<0.2?'bull':pctBV>0.8?'bear':'neutral-c';setInd('bb',(pctBV*100).toFixed(0)+'%',pctBV<0.2?'⬆ 過売り':pctBV>0.8?'⬇ 過買い':'= 中立',bbCls);const e50Cls=cp>e50v?'bull':'bear';setInd('ema50',fmtPrice(e50v),cp>e50v?'⬆ 上方':'⬇ 下方',e50Cls);const trendCls=adxV>40?'bull':adxV<20?'bear':'neutral-c';setInd('trend',adxV,adxV>40?'⬆ 強トレンド':adxV<20?'⬇ 弱トレンド':'= 中程度',trendCls);const{signal,label,conf}=computeSignal(rsiV,macdH,pctBV,cp,e20v,e50v);const sigBox=document.getElementById('sigBox');sigBox.className='signal-pill '+signal.toLowerCase();document.getElementById('sigVal').textContent=signal==='BUY'?'買い推奨':signal==='SELL'?'待機・売り':'中立様子見';document.getElementById('sigSub').textContent=label;document.getElementById('confTxt').textContent=conf+'%';document.getElementById('confFill').style.width=conf+'%';document.getElementById('riskDot').style.left=(signal==='BUY'?22:signal==='SELL'?75:50)+'%';document.getElementById('analysisText').textContent=makeAnalysis(signal,rsiV,macdH,pctBV,cp,e20v,e50v,conf,s1,r1,coinSym,fgV);const entLo=Math.min(s1,cp*0.99),entHi=cp*1.003;document.getElementById('entryPanel').innerHTML=`<div style="margin-bottom:8px;"><div style="font-size:16px;color:var(--muted);margin-bottom:2px;">推奨エントリーゾーン</div><div style="font-size:25px;font-weight:700;color:var(--green);">${fmtPrice(entLo)} 〜 ${fmtPrice(entHi)}</div></div><div style="line-height:2;font-size:18px;">🟢 第1エントリー: <strong>${fmtPrice(entLo*1.001)}</strong> (40%)<br>🟡 第2エントリー: <strong>${fmtPrice(s2*1.01)}</strong> (40%)<br>🔵 押し目枠: <strong>${fmtPrice(s2*0.99)}</strong> (20%)</div>`;const sl=s1*0.97,tp1=r1,tp2=r2;const rrr=cp>sl?((tp1-cp)/(cp-sl)).toFixed(1):'--';document.getElementById('slVal').textContent=fmtPrice(sl);document.getElementById('tp1Val').textContent=fmtPrice(tp1);document.getElementById('tp2Val').textContent=fmtPrice(tp2);document.getElementById('rrrVal').textContent='1 : '+rrr;const vol7=prices.slice(-7).reduce((a,b,i,arr)=>i===0?0:a+Math.abs(b-arr[i-1]),0)/6;const chg7=((prices[n]-prices[Math.max(0,n-7)])/prices[Math.max(0,n-7)]*100).toFixed(2);const mc50chg=((mc.p50[7]-cp)/cp*100).toFixed(1);document.getElementById('statsPanel').innerHTML=`<div><span>7日ボラ率</span><strong style="color:var(--text);">${(vol7/cp*100).toFixed(2)}%/日</strong></div><div><span>7日騰落率</span><strong style="color:${+chg7>=0?'var(--green)':'var(--red)'};">${+chg7>=0?'+':''}${chg7}%</strong></div><div><span>予測7日後中央値</span><strong style="color:var(--blue);">${fmtPrice(mc.p50[7])}</strong></div><div><span>予測変化率</span><strong style="color:${+mc50chg>=0?'var(--green)':'var(--red)'};">${+mc50chg>=0?'+':''}${mc50chg}%</strong></div><div><span>予測レンジ</span><strong>${fmtPrice(mc.p25[7])} 〜 ${fmtPrice(mc.p75[7])}</strong></div>`;document.getElementById('updateTime').textContent='最終更新: '+new Date().toLocaleTimeString('ja-JP');document.getElementById('dataSource').textContent=isDemoMode?'⚠ デモデータ':'✓ CoinGecko API';currentPrice=cp;fetchOIData(cp);}
 
 function buildWhaleSection(prices,cp,s1,s2,r1,r2,rsiV){const n=prices.length;const vol7=prices.slice(-7).reduce((a,b,i,arr)=>i===0?0:a+Math.abs(b-arr[i-1]),0)/6;const volPct=vol7/cp;const trend7=n>8?(prices[n-1]-prices[n-8])/prices[n-8]:0;const outflowPct=(rsiV<38&&trend7>-0.03)?62+Math.floor(Math.random()*8):(rsiV>68||trend7<-0.05)?32+Math.floor(Math.random()*8):48+Math.floor(Math.random()*8);const inflowPct=100-outflowPct;const isAccumulating=outflowPct>=55;document.getElementById('wh-flow-val').innerHTML=`<span style="color:${isAccumulating?'var(--green)':'var(--red)'};">${isAccumulating?'▲ 純流出 (蓄積中)':'▼ 純流入 (売り圧)'}</span>`;document.getElementById('wh-flow-sub').textContent=`流出 ${outflowPct}%  /  流入 ${inflowPct}%`;document.getElementById('wh-flowin').style.width=inflowPct+'%';document.getElementById('wh-flowout').style.width=outflowPct+'%';const txCount=Math.floor(volPct*12000+80+Math.random()*40);const txHigh=txCount>140;document.getElementById('wh-tx-val').innerHTML=`<span style="color:${txHigh?'var(--orange)':'var(--muted)'};">${txCount} 件</span>`;document.getElementById('wh-tx-note').textContent=txHigh?'⚠️ 大口取引が急増':'📊 通常レンジ';document.getElementById('wh-tx-fill').style.width=Math.min(txCount/280*100,100)+'%';const longPct=rsiV<38?42+Math.round(rsiV/2):rsiV>65?55+Math.round((rsiV-65)*0.5):50+Math.round(Math.random()*6);const shortPct=100-longPct;const lsColor=longPct>56?'var(--green)':longPct<44?'var(--red)':'var(--orange)';document.getElementById('wh-ls-val').innerHTML=`<span style="color:${lsColor};">L ${longPct}% / S ${shortPct}%</span>`;document.getElementById('wh-ls-note').textContent=longPct>56?'🐋 大口はロング優勢':longPct<44?'🐋 大口はショート優勢':'⚖️ 拮抗';document.getElementById('wh-ls-fill').style.width=longPct+'%';document.getElementById('wh-ls-fill').style.background=lsColor;let score=0;if(outflowPct>55)score+=2;else if(outflowPct<42)score-=2;if(rsiV<35)score+=2;else if(rsiV>72)score-=1;if(longPct>60)score+=1;if(cp<s1*1.015)score+=1;if(cp>r1*0.985)score-=1;const biasLabel=score>=3?'🐋 強い買い集めシグナル':score>=1?'🐋 緩やかな蓄積':score<=-2?'🐳 分散・売り局面':'⚖️ 様子見';const biasColor=score>=2?'var(--green)':score<=-2?'var(--red)':'var(--orange)';document.getElementById('wh-bias-val').innerHTML=`<span style="color:${biasColor};">${biasLabel}</span>`;document.getElementById('wh-bias-sub').textContent=`シグナル強度 ${Math.abs(score)}/5`;document.getElementById('wh-bias-detail').textContent=score>=2?'大口が現在水準で仕込んでいる可能性大。反発狙いに注目。':score<=-2?'大口が利確・分散している可能性。新規ロングは要注意。':'クジラの動向は不明確。サポート到達まで待つのが賢明。';const stopHunt=s1*0.983;const roundNum=Math.floor(cp/10000)*10000;const pts=[{type:'sell',icon:'🔴',price:r2,label:'強い分散・本格売り',desc:'R2到達でクジラが本格的な売り。ポジション解消ゾーン。',tag:'SELL'},{type:'sell',icon:'🔶',price:r1,label:'第1分散ポイント',desc:'R1付近でクジラが利確の売りを入れ始める。一部利確推奨。',tag:'SELL'},{type:'buy',icon:'🟡',price:s1*1.005,label:'打診買い・小口仕込み',desc:'S1直上。クジラが下値を試しながら少しずつ拾い始めるゾーン。',tag:'BUY'},{type:'hunt',icon:'💀',price:stopHunt,label:'ストップ狩りゾーン',desc:'S1のわずか下。大口が逆指値を刈った後、急反発することが多い。',tag:'WATCH'},{type:'buy',icon:'🐋',price:s2,label:'強い買い集め（最高の仕込み）',desc:'過去データでクジラが大量に拾う水準。絶好の仕込みチャンス。',tag:'BUY'}];if(roundNum>s1*1.01&&roundNum<cp*0.99){pts.push({type:'hunt',icon:'🎯',price:roundNum,label:`キリ番 $${(roundNum/1000).toFixed(0)}K`,desc:'ラウンドナンバー付近に逆指値が集中。ブレイク後の急反発に乗るチャンス。',tag:'WATCH'});}pts.sort((a,b)=>b.price-a.price);document.getElementById('whalePoints').innerHTML=pts.map(p=>`<div class="wpoint ${p.type}"><div class="wp-icon">${p.icon}</div><div class="wp-body"><div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;flex-wrap:wrap;"><span class="wp-price" style="color:${p.type==='buy'?'var(--green)':p.type==='sell'?'var(--red)':'var(--orange)'};">${fmtPrice(p.price)}</span><span class="wp-tag ${p.type==='hunt'?'hunt':p.type}">${p.tag}</span></div><div style="font-size:18px;font-weight:600;">${p.label}</div><div class="wp-desc">${p.desc}</div></div></div>`).join('');}
 
@@ -528,6 +593,169 @@ async function loadAll(){const btn=document.getElementById('refreshBtn');btn.dis
 
 function setCoin(id,sym,el){coinId=id;coinSym=sym;document.querySelectorAll('.coin-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');loadAll();}
 function setTF(d,el){days=d;document.querySelectorAll('.tf-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');loadAll();}
+
+let oiDepthChart=null;
+
+async function fetchOIData(btcPrice){
+  let totalOI=null,lsData=null,depthData=null,fundingData=null;
+  try{
+    const [oiR,lsR,depR,fundR]=await Promise.allSettled([
+      fetch('https://fapi.binance.com/fapi/v1/openInterest?symbol=BTCUSDT',{cache:'no-store'}),
+      fetch('https://fapi.binance.com/fapi/v1/globalLongShortAccountRatio?symbol=BTCUSDT&period=1h&limit=2',{cache:'no-store'}),
+      fetch('https://fapi.binance.com/fapi/v1/depth?symbol=BTCUSDT&limit=500',{cache:'no-store'}),
+      fetch('https://fapi.binance.com/fapi/v1/premiumIndex?symbol=BTCUSDT',{cache:'no-store'})
+    ]);
+    if(oiR.status==='fulfilled'&&oiR.value.ok)totalOI=await oiR.value.json();
+    if(lsR.status==='fulfilled'&&lsR.value.ok)lsData=await lsR.value.json();
+    if(depR.status==='fulfilled'&&depR.value.ok)depthData=await depR.value.json();
+    if(fundR.status==='fulfilled'&&fundR.value.ok)fundingData=await fundR.value.json();
+  }catch(_){}
+  renderOISection(btcPrice,totalOI,lsData,depthData,fundingData);
+}
+
+function renderOISection(btcPrice,oiRaw,lsData,depthData,fundingData){
+  // Total OI
+  if(oiRaw){
+    const oi=parseFloat(oiRaw.openInterest);
+    const oiUSD=oi*btcPrice;
+    document.getElementById('oiTotal').textContent='$'+(oiUSD/1e9).toFixed(2)+'B';
+    document.getElementById('oiTotalSub').textContent=(oi/1000).toFixed(1)+'K BTC';
+  }
+  // Funding
+  if(fundingData){
+    const fr=parseFloat(fundingData.lastFundingRate||0)*100;
+    const fEl=document.getElementById('oiFunding');
+    fEl.textContent=(fr>=0?'+':'')+fr.toFixed(4)+'%';
+    fEl.className='oi-val '+(fr>0.05?'down':fr<-0.01?'up':'neu');
+    document.getElementById('oiFundingSub').textContent=fr>0.05?'⚠ ロング過多':fr<-0.01?'⚠ ショート過多':'✓ 正常範囲';
+  }
+  // L/S
+  if(lsData&&lsData.length){
+    const ratio=parseFloat(lsData[0].longShortRatio);
+    const lp=ratio/(1+ratio)*100;
+    const sp=100-lp;
+    document.getElementById('oiLSRatio').textContent=ratio.toFixed(2);
+    document.getElementById('oiLSSub').textContent=ratio>1.2?'ロング優勢':ratio<0.8?'ショート優勢':'均衡';
+    document.getElementById('oiLongPct').textContent=lp.toFixed(1)+'%';
+    document.getElementById('oiShortPct').textContent=sp.toFixed(1)+'%';
+    document.getElementById('lsLong').style.width=lp+'%';
+    document.getElementById('lsShort').style.width=sp+'%';
+    document.getElementById('lsNote').textContent=
+      lp>62?'⚠ ロング過多 — 逆張りショートスクイーズに注意':
+      lp>55?'🐂 ロング優勢 — 強気センチメント継続':
+      lp<38?'⚠ ショート過多 — ショートスクイーズに注意':
+      lp<45?'🐻 ショート優勢 — 弱気センチメント':'⚖️ L/S 均衡 — 方向感なし';
+  }
+  // Depth chart
+  if(depthData&&depthData.bids&&depthData.asks){
+    buildOIDepthChart(depthData,btcPrice);
+  }else{
+    buildOIDepthChartDemo(btcPrice);
+  }
+  // Liq levels
+  renderLiqLevels(btcPrice);
+}
+
+function buildOIDepthChart(depth,cur){
+  const bs=Math.ceil(cur*0.005/100)*100;
+  const rng=cur*0.07;
+  const buckets={};
+  for(let p=cur-rng;p<=cur+rng;p+=bs){const k=Math.round(p/bs)*bs;if(!buckets[k])buckets[k]={b:0,a:0};}
+  depth.bids.forEach(([pr,qty])=>{const k=Math.round(parseFloat(pr)/bs)*bs;if(buckets[k]!==undefined)buckets[k].b+=parseFloat(qty);});
+  depth.asks.forEach(([pr,qty])=>{const k=Math.round(parseFloat(pr)/bs)*bs;if(buckets[k]!==undefined)buckets[k].a+=parseFloat(qty);});
+  const keys=Object.keys(buckets).map(Number).sort((a,b)=>b-a);
+  const labels=keys.map(k=>'$'+(k/1000).toFixed(0)+'K');
+  const bids=keys.map(k=>buckets[k].b);
+  const asks=keys.map(k=>-buckets[k].a);
+  _drawOIChart(labels,bids,asks,cur,keys);
+}
+
+function buildOIDepthChartDemo(cur){
+  const bs=Math.ceil(cur*0.005/100)*100;
+  const rng=cur*0.07;
+  const keys=[];
+  for(let p=cur+rng;p>=cur-rng;p-=bs)keys.push(Math.round(p/bs)*bs);
+  const round5=Math.round(cur/5000)*5000;
+  const round10=Math.round(cur/10000)*10000;
+  const labels=keys.map(k=>'$'+(k/1000).toFixed(0)+'K');
+  const bids=keys.map(k=>{
+    if(k>=cur)return 0;
+    const base=30+Math.random()*40;
+    if(Math.abs(k-round5)<bs*1.5||Math.abs(k-round10)<bs*1.5)return base+120+Math.random()*80;
+    if(k>cur*0.97)return base+50;
+    return base;
+  });
+  const asks=keys.map(k=>{
+    if(k<=cur)return 0;
+    const base=-(30+Math.random()*40);
+    if(Math.abs(k-round5)<bs*1.5||Math.abs(k-round10)<bs*1.5)return base-120-Math.random()*80;
+    if(k<cur*1.03)return base-50;
+    return base;
+  });
+  _drawOIChart(labels,bids,asks,cur,keys);
+}
+
+function _drawOIChart(labels,bids,asks,cur,keys){
+  if(oiDepthChart)oiDepthChart.destroy();
+  const ctx=document.getElementById('oiDepthChart').getContext('2d');
+  const curIdx=keys.findIndex(k=>k<=cur);
+  oiDepthChart=new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'買い (Bid)',data:bids,backgroundColor:'rgba(52,199,89,.65)',borderWidth:0},
+      {label:'売り (Ask)',data:asks,backgroundColor:'rgba(255,59,48,.65)',borderWidth:0}
+    ]},
+    options:{
+      indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{backgroundColor:'#FFFFFF',borderColor:'#E5E5EA',borderWidth:1,titleColor:'#1C1C1E',bodyColor:'#3C3C43',
+          callbacks:{label:c=>(c.datasetIndex===0?'買い: ':'売り: ')+Math.abs(c.parsed.x).toFixed(1)+' BTC'}},
+        annotation:{annotations:{curLine:{type:'line',xMin:0,xMax:0,borderColor:'rgba(255,149,0,.9)',borderWidth:2,label:{display:true,content:'現在値 $'+(cur/1000).toFixed(1)+'K',color:'#FF9500',font:{size:10,weight:'bold'},backgroundColor:'rgba(255,149,0,.1)',padding:4}}}}
+        }
+      },
+      scales:{
+        x:{stacked:false,grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#8E8E93',font:{size:9},callback:v=>Math.abs(v).toFixed(0)}},
+        y:{stacked:false,grid:{display:false},ticks:{color:function(ctx2){const idx=ctx2.index;return keys&&Math.abs(keys[idx]-cur)<cur*0.008?'#FF9500':'#8E8E93';},font:{size:9}}}
+      }
+    }
+  });
+}
+
+function renderLiqLevels(cur){
+  const levs=[
+    {lev:5,label:'5x'},
+    {lev:10,label:'10x'},
+    {lev:20,label:'20x'},
+    {lev:50,label:'50x'},
+    {lev:100,label:'100x'}
+  ];
+  const rows=[];
+  levs.forEach(l=>{
+    const mm=0.004;
+    rows.push({price:cur*(1+1/l.lev-mm),type:'short',label:`ショート ${l.label} 強制決済`,lev:l.lev});
+    rows.push({price:cur*(1-1/l.lev+mm),type:'long', label:`ロング  ${l.label} 強制決済`,lev:l.lev});
+  });
+  rows.sort((a,b)=>b.price-a.price);
+  const maxDist=Math.max(...rows.map(r=>Math.abs(r.price-cur)/cur*100));
+  document.getElementById('liqLevels').innerHTML=rows.map(r=>{
+    const dist=Math.abs(r.price-cur)/cur*100;
+    const bw=Math.min(dist/maxDist*100,100);
+    const isLong=r.type==='long';
+    const col=isLong?'var(--red)':'var(--blue)';
+    const bg=isLong?'rgba(255,59,48,.65)':'rgba(0,122,255,.65)';
+    const arrow=r.price>cur?'↑':'↓';
+    return`<div class="liq-row">
+      <div style="min-width:175px;">
+        <div style="font-size:17px;font-weight:600;color:${col};">${arrow} ${r.label}</div>
+        <div style="font-size:15px;color:var(--muted);">現在値との距離 ${dist.toFixed(1)}%</div>
+      </div>
+      <div class="liq-bar-wrap"><div class="liq-bar-fill" style="width:${bw}%;background:${bg};"></div></div>
+      <div style="font-size:20px;font-weight:700;color:${col};min-width:110px;text-align:right;">${fmt(r.price,0)}</div>
+    </div>`;
+  }).join('');
+}
+
 
 loadAll();
 setInterval(loadAll,60000);
