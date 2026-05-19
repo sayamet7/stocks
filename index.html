@@ -26,40 +26,40 @@
     body{font-family:-apple-system,"SF Pro Display","Helvetica Neue",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:84px;}
 
     .nav-top{background:rgba(242,242,247,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);padding:14px 16px 10px;position:sticky;top:0;z-index:100;border-bottom:.5px solid var(--sep);}
-    .nav-title{font-size:28px;font-weight:700;}
-    .nav-sub{font-size:13px;color:var(--muted);margin-top:2px;}
+    .nav-title{font-size:32px;font-weight:700;}
+    .nav-sub{font-size:16px;color:var(--muted);margin-top:2px;}
     .live-dot{display:inline-block;width:7px;height:7px;background:var(--green);border-radius:50%;margin-right:4px;animation:blink 1.4s infinite;}
     @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 
     .page-tabs{display:flex;gap:0;margin:12px 16px 0;background:#E5E5EA;border-radius:10px;padding:2px;}
-    .page-tab{flex:1;text-align:center;padding:7px 0;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border-radius:8px;transition:all .2s;text-decoration:none;display:block;}
+    .page-tab{flex:1;text-align:center;padding:7px 0;font-size:16px;font-weight:600;color:var(--muted);cursor:pointer;border-radius:8px;transition:all .2s;text-decoration:none;display:block;}
     .page-tab.active{background:white;color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.1);}
 
     .section{padding:0 16px;margin-top:20px;}
-    .section-title{font-size:20px;font-weight:700;margin-bottom:12px;}
+    .section-title{font-size:23px;font-weight:700;margin-bottom:12px;}
 
     .card{background:var(--card);border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:12px;}
     .card-inner{padding:16px;}
 
     .price-header{background:var(--card);border-radius:16px;padding:20px 16px;margin:12px 16px 0;box-shadow:0 2px 8px rgba(0,0,0,.06);}
-    .coin-name-label{font-size:15px;color:var(--muted);font-weight:500;}
-    .price-big{font-size:42px;font-weight:700;margin:4px 0;line-height:1;}
-    .price-change{display:inline-flex;align-items:center;gap:4px;font-size:15px;font-weight:600;padding:4px 12px;border-radius:8px;margin-top:6px;}
+    .coin-name-label{font-size:18px;color:var(--muted);font-weight:500;}
+    .price-big{font-size:46px;font-weight:700;margin:4px 0;line-height:1;}
+    .price-change{display:inline-flex;align-items:center;gap:4px;font-size:18px;font-weight:600;padding:4px 12px;border-radius:8px;margin-top:6px;}
     .price-change.up{background:rgba(52,199,89,.12);color:var(--green);}
     .price-change.down{background:rgba(255,59,48,.12);color:var(--red);}
 
     .coin-tabs{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
-    .coin-btn{background:var(--bg);border:1.5px solid var(--border);color:var(--muted);padding:6px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;}
+    .coin-btn{background:var(--bg);border:1.5px solid var(--border);color:var(--muted);padding:6px 16px;border-radius:20px;font-size:16px;font-weight:600;cursor:pointer;transition:all .2s;}
     .coin-btn.active{background:var(--blue);border-color:var(--blue);color:white;}
 
     .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border-radius:16px;overflow:hidden;}
     .stat-cell{background:var(--card);padding:14px 16px;}
-    .stat-label{font-size:12px;color:var(--muted);margin-bottom:4px;}
-    .stat-value{font-size:17px;font-weight:600;}
-    .stat-sub{font-size:12px;margin-top:2px;}
+    .stat-label{font-size:15px;color:var(--muted);margin-bottom:4px;}
+    .stat-value{font-size:20px;font-weight:600;}
+    .stat-sub{font-size:15px;margin-top:2px;}
 
     .tf-row{display:flex;gap:4px;padding:12px 16px;justify-content:space-between;}
-    .tf-btn{flex:1;text-align:center;padding:6px 2px;font-size:13px;font-weight:600;color:var(--muted);background:transparent;border:none;cursor:pointer;border-radius:8px;transition:all .2s;}
+    .tf-btn{flex:1;text-align:center;padding:6px 2px;font-size:16px;font-weight:600;color:var(--muted);background:transparent;border:none;cursor:pointer;border-radius:8px;transition:all .2s;}
     .tf-btn.active{background:var(--blue);color:white;}
 
     .chart-h{position:relative;height:240px;padding:0 12px 8px;}
@@ -69,12 +69,12 @@
     .signal-pill.buy{background:rgba(52,199,89,.1);border:1.5px solid var(--green);}
     .signal-pill.sell{background:rgba(255,59,48,.1);border:1.5px solid var(--red);}
     .signal-pill.hold{background:rgba(255,149,0,.1);border:1.5px solid var(--orange);}
-    .signal-label{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
-    .signal-value{font-size:28px;font-weight:700;}
+    .signal-label{font-size:14px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
+    .signal-value{font-size:32px;font-weight:700;}
     .signal-pill.buy .signal-value{color:var(--green);}
     .signal-pill.sell .signal-value{color:var(--red);}
     .signal-pill.hold .signal-value{color:var(--orange);}
-    .signal-sub{font-size:13px;color:var(--muted);margin-top:4px;}
+    .signal-sub{font-size:16px;color:var(--muted);margin-top:4px;}
 
     .conf-track{height:6px;background:var(--bg);border-radius:3px;overflow:hidden;margin:8px 0 4px;}
     .conf-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--blue),var(--green));transition:width 1s ease;}
@@ -85,11 +85,11 @@
     .ind-list{}
     .ind-row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:.5px solid var(--border);}
     .ind-row:last-child{border-bottom:none;}
-    .ind-name{font-size:15px;font-weight:500;}
-    .ind-desc{font-size:12px;color:var(--muted);margin-top:1px;}
+    .ind-name{font-size:18px;font-weight:500;}
+    .ind-desc{font-size:15px;color:var(--muted);margin-top:1px;}
     .ind-badge{display:flex;align-items:center;gap:8px;}
-    .ind-num{font-size:15px;font-weight:600;}
-    .ind-sig-pill{font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;}
+    .ind-num{font-size:18px;font-weight:600;}
+    .ind-sig-pill{font-size:14px;font-weight:700;padding:3px 8px;border-radius:6px;}
     .bull{color:var(--green);}
     .bear{color:var(--red);}
     .neutral-c{color:var(--orange);}
@@ -102,24 +102,24 @@
 
     .level-row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:.5px solid var(--border);}
     .level-row:last-child{border-bottom:none;}
-    .level-tag{font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;min-width:36px;text-align:center;}
+    .level-tag{font-size:14px;font-weight:700;padding:3px 8px;border-radius:6px;min-width:36px;text-align:center;}
     .tag-r{background:rgba(255,59,48,.12);color:var(--red);}
     .tag-s{background:rgba(52,199,89,.12);color:var(--green);}
     .tag-c{background:rgba(0,122,255,.12);color:var(--blue);}
 
     .inst-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);}
     .inst-cell{background:var(--card);padding:14px 16px;}
-    .inst-ticker{font-size:12px;font-weight:700;color:var(--blue);}
-    .inst-name{font-size:11px;color:var(--muted);margin-bottom:4px;}
-    .inst-price{font-size:17px;font-weight:600;}
-    .inst-ch{font-size:12px;font-weight:600;margin-top:2px;}
-    .inst-btc{font-size:11px;color:var(--muted);margin-top:4px;}
+    .inst-ticker{font-size:15px;font-weight:700;color:var(--blue);}
+    .inst-name{font-size:14px;color:var(--muted);margin-bottom:4px;}
+    .inst-price{font-size:20px;font-weight:600;}
+    .inst-ch{font-size:15px;font-weight:600;margin-top:2px;}
+    .inst-btc{font-size:14px;color:var(--muted);margin-top:4px;}
 
     .whale-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);}
     .whale-cell{background:var(--card);padding:14px 16px;}
-    .whale-cell-title{font-size:12px;color:var(--muted);margin-bottom:6px;}
-    .whale-metric{font-size:15px;font-weight:600;}
-    .whale-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+    .whale-cell-title{font-size:15px;color:var(--muted);margin-bottom:6px;}
+    .whale-metric{font-size:18px;font-weight:600;}
+    .whale-sub{font-size:14px;color:var(--muted);margin-top:2px;}
     .flow-bar{display:flex;height:6px;border-radius:3px;overflow:hidden;margin:8px 0 3px;}
     .flow-in{background:var(--red);}
     .flow-out{background:var(--green);}
@@ -128,54 +128,54 @@
 
     .wpoint{display:flex;gap:12px;padding:14px 16px;border-bottom:.5px solid var(--border);}
     .wpoint:last-child{border-bottom:none;}
-    .wp-icon{font-size:22px;}
+    .wp-icon{font-size:25px;}
     .wp-body{flex:1;}
-    .wp-price{font-size:17px;font-weight:700;}
-    .wp-desc{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.5;}
-    .wp-tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;margin-top:4px;}
+    .wp-price{font-size:20px;font-weight:700;}
+    .wp-desc{font-size:15px;color:var(--muted);margin-top:4px;line-height:1.5;}
+    .wp-tag{display:inline-block;font-size:14px;font-weight:700;padding:2px 8px;border-radius:6px;margin-top:4px;}
     .wp-tag.buy{background:rgba(52,199,89,.12);color:var(--green);}
     .wp-tag.sell{background:rgba(255,59,48,.12);color:var(--red);}
     .wp-tag.hunt{background:rgba(255,149,0,.12);color:var(--orange);}
 
-    .analysis-card{padding:16px;font-size:14px;line-height:1.8;color:var(--text2);}
+    .analysis-card{padding:16px;font-size:17px;line-height:1.8;color:var(--text2);}
     .analyst-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
-    .analyst-avatar{width:44px;height:44px;border-radius:22px;background:linear-gradient(135deg,#007AFF,#34C759);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
-    .analyst-name{font-size:15px;font-weight:600;}
-    .analyst-title{font-size:12px;color:var(--muted);margin-top:2px;}
+    .analyst-avatar{width:44px;height:44px;border-radius:22px;background:linear-gradient(135deg,#007AFF,#34C759);display:flex;align-items:center;justify-content:center;font-size:23px;flex-shrink:0;}
+    .analyst-name{font-size:18px;font-weight:600;}
+    .analyst-title{font-size:15px;color:var(--muted);margin-top:2px;}
 
     .mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);}
     .mini-cell{background:var(--card);padding:14px 16px;}
-    .mc-lbl{font-size:12px;color:var(--muted);margin-bottom:4px;}
-    .mc-val{font-size:20px;font-weight:700;}
+    .mc-lbl{font-size:15px;color:var(--muted);margin-bottom:4px;}
+    .mc-val{font-size:23px;font-weight:700;}
 
     .halving-bar{height:8px;background:var(--bg);border-radius:4px;overflow:hidden;margin:8px 0 4px;}
     .halving-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--green),var(--orange),var(--red));transition:width 1s ease;}
     .halving-phases{display:flex;gap:0;border-radius:10px;overflow:hidden;margin-bottom:8px;}
-    .cyc-ph{flex:1;padding:8px 4px;text-align:center;font-size:10px;font-weight:600;}
+    .cyc-ph{flex:1;padding:8px 4px;text-align:center;font-size:13px;font-weight:600;}
     .cyc-ph.cur{outline:2px solid var(--orange);outline-offset:-2px;}
 
     .mirror-card{padding:16px;border-bottom:.5px solid var(--border);}
     .mirror-card:last-child{border-bottom:none;}
-    .mir-who{font-size:15px;font-weight:600;margin-bottom:2px;}
-    .mir-style{font-size:12px;color:var(--blue);font-weight:600;margin-bottom:6px;}
-    .mir-desc{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:6px;}
-    .mir-action{font-size:13px;font-weight:600;color:var(--orange);}
+    .mir-who{font-size:18px;font-weight:600;margin-bottom:2px;}
+    .mir-style{font-size:15px;color:var(--blue);font-weight:600;margin-bottom:6px;}
+    .mir-desc{font-size:16px;color:var(--muted);line-height:1.6;margin-bottom:6px;}
+    .mir-action{font-size:16px;font-weight:600;color:var(--orange);}
 
     .pred-legend{display:flex;gap:12px;flex-wrap:wrap;padding:8px 16px 4px;}
-    .pred-leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);}
+    .pred-leg-item{display:flex;align-items:center;gap:5px;font-size:14px;color:var(--muted);}
     .leg-dot{width:8px;height:8px;border-radius:50%;}
 
-    .update-bar{padding:8px 16px;font-size:12px;color:var(--muted);display:flex;justify-content:space-between;}
-    .demo-badge{display:none;background:rgba(255,59,48,.1);border:1px solid rgba(255,59,48,.3);color:var(--red);font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;}
-    .disclaimer{margin:8px 16px 20px;padding:14px;background:white;border-radius:12px;font-size:12px;color:var(--muted);line-height:1.7;}
+    .update-bar{padding:8px 16px;font-size:15px;color:var(--muted);display:flex;justify-content:space-between;}
+    .demo-badge{display:none;background:rgba(255,59,48,.1);border:1px solid rgba(255,59,48,.3);color:var(--red);font-size:14px;font-weight:700;padding:4px 12px;border-radius:20px;}
+    .disclaimer{margin:8px 16px 20px;padding:14px;background:white;border-radius:12px;font-size:15px;color:var(--muted);line-height:1.7;}
 
     .tab-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(248,248,248,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:.5px solid var(--sep);display:flex;padding:8px 0 20px;z-index:100;}
     .tab-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;text-decoration:none;color:var(--muted);}
     .tab-item.active{color:var(--blue);}
-    .tab-icon{font-size:22px;}
-    .tab-label{font-size:10px;font-weight:500;}
+    .tab-icon{font-size:25px;}
+    .tab-label{font-size:13px;font-weight:500;}
 
-    #statsPanel > div{display:flex;justify-content:space-between;padding:10px 0;border-bottom:.5px solid var(--border);font-size:14px;}
+    #statsPanel > div{display:flex;justify-content:space-between;padding:10px 0;border-bottom:.5px solid var(--border);font-size:17px;}
     #statsPanel > div:last-child{border-bottom:none;}
     ::-webkit-scrollbar{width:4px;}
     ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
@@ -191,7 +191,7 @@
     </div>
     <div style="display:flex;align-items:center;gap:8px;">
       <span class="demo-badge" id="demoBadge">⚠ デモ</span>
-      <button onclick="loadAll()" id="refreshBtn" style="background:var(--blue);border:none;color:white;padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;">更新</button>
+      <button onclick="loadAll()" id="refreshBtn" style="background:var(--blue);border:none;color:white;padding:7px 16px;border-radius:20px;font-size:16px;font-weight:600;cursor:pointer;">更新</button>
     </div>
   </div>
 </div>
@@ -236,8 +236,8 @@
         <path d="M5,40 A35,35 0 0,1 75,40" fill="none" stroke="#E5E5EA" stroke-width="8" stroke-linecap="round"/>
         <path id="fgArc" d="M5,40 A35,35 0 0,1 75,40" fill="none" stroke="#FF9500" stroke-width="8" stroke-linecap="round" stroke-dasharray="110" stroke-dashoffset="110"/>
       </svg>
-      <div style="font-size:22px;font-weight:700;" id="fgVal">--</div>
-      <div style="font-size:11px;font-weight:600;color:var(--orange);" id="fgLabel">--</div>
+      <div style="font-size:25px;font-weight:700;" id="fgVal">--</div>
+      <div style="font-size:14px;font-weight:600;color:var(--orange);" id="fgLabel">--</div>
     </div>
     <div class="stat-cell" style="grid-column:span 2;">
       <div class="stat-label">時価総額</div>
@@ -256,7 +256,7 @@
       <button class="tf-btn" onclick="setTF(90,this)">90日</button>
     </div>
     <div class="chart-h"><canvas id="priceChart"></canvas></div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;padding:6px 16px 10px;font-size:11px;color:var(--muted);">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;padding:6px 16px 10px;font-size:14px;color:var(--muted);">
       <span>🟢 買いゾーン(S2〜S1)</span><span>🔴 利確ゾーン(R1〜R2)</span><span style="color:var(--orange);">— 現在価格</span>
     </div>
   </div>
@@ -265,11 +265,11 @@
 <div class="section">
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
     <div class="card">
-      <div style="padding:12px 16px 4px;font-size:13px;font-weight:600;color:var(--muted);">RSI (14)</div>
+      <div style="padding:12px 16px 4px;font-size:16px;font-weight:600;color:var(--muted);">RSI (14)</div>
       <div class="chart-sm" style="padding:0 8px 8px;"><canvas id="rsiChart"></canvas></div>
     </div>
     <div class="card">
-      <div style="padding:12px 16px 4px;font-size:13px;font-weight:600;color:var(--muted);">MACD</div>
+      <div style="padding:12px 16px 4px;font-size:16px;font-weight:600;color:var(--muted);">MACD</div>
       <div class="chart-sm" style="padding:0 8px 8px;"><canvas id="macdChart"></canvas></div>
     </div>
   </div>
@@ -278,8 +278,8 @@
 <div class="section">
   <div class="card">
     <div style="padding:16px 16px 4px;">
-      <div style="font-size:17px;font-weight:600;">🔮 7日間 価格予測レンジ</div>
-      <div style="font-size:13px;color:var(--muted);margin-top:2px;">モンテカルロ法</div>
+      <div style="font-size:20px;font-weight:600;">🔮 7日間 価格予測レンジ</div>
+      <div style="font-size:16px;color:var(--muted);margin-top:2px;">モンテカルロ法</div>
     </div>
     <div class="pred-legend">
       <div class="pred-leg-item"><div class="leg-dot" style="background:var(--orange)"></div>実績</div>
@@ -299,13 +299,13 @@
     <div class="signal-sub" id="sigSub">--</div>
   </div>
   <div class="card card-inner">
-    <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:6px;">
+    <div style="display:flex;justify-content:space-between;font-size:16px;color:var(--muted);margin-bottom:6px;">
       <span>信頼度スコア</span>
       <span id="confTxt" style="font-weight:600;color:var(--text);">0%</span>
     </div>
     <div class="conf-track"><div class="conf-fill" id="confFill" style="width:0%"></div></div>
     <div style="margin-top:14px;">
-      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:4px;">
+      <div style="display:flex;justify-content:space-between;font-size:15px;color:var(--muted);margin-bottom:4px;">
         <span>低リスク</span><span>リスクレベル</span><span>高リスク</span>
       </div>
       <div class="risk-track"><div class="risk-dot" id="riskDot" style="left:50%"></div></div>
@@ -348,11 +348,11 @@
 <div class="section">
   <div class="section-title">サポート・レジスタンス</div>
   <div class="card">
-    <div class="level-row"><span class="level-tag tag-r">R2</span><strong id="lv-r2">--</strong><span style="font-size:12px;color:var(--muted);">強抵抗</span></div>
-    <div class="level-row"><span class="level-tag tag-r">R1</span><strong id="lv-r1">--</strong><span style="font-size:12px;color:var(--muted);">抵抗</span></div>
-    <div class="level-row" style="background:rgba(0,122,255,.04);"><span class="level-tag tag-c">現在</span><strong id="lv-cur" style="color:var(--blue);">--</strong><span style="font-size:12px;color:var(--muted);">現値</span></div>
-    <div class="level-row"><span class="level-tag tag-s">S1</span><strong id="lv-s1">--</strong><span style="font-size:12px;color:var(--muted);">サポート</span></div>
-    <div class="level-row"><span class="level-tag tag-s">S2</span><strong id="lv-s2">--</strong><span style="font-size:12px;color:var(--muted);">強サポート</span></div>
+    <div class="level-row"><span class="level-tag tag-r">R2</span><strong id="lv-r2">--</strong><span style="font-size:15px;color:var(--muted);">強抵抗</span></div>
+    <div class="level-row"><span class="level-tag tag-r">R1</span><strong id="lv-r1">--</strong><span style="font-size:15px;color:var(--muted);">抵抗</span></div>
+    <div class="level-row" style="background:rgba(0,122,255,.04);"><span class="level-tag tag-c">現在</span><strong id="lv-cur" style="color:var(--blue);">--</strong><span style="font-size:15px;color:var(--muted);">現値</span></div>
+    <div class="level-row"><span class="level-tag tag-s">S1</span><strong id="lv-s1">--</strong><span style="font-size:15px;color:var(--muted);">サポート</span></div>
+    <div class="level-row"><span class="level-tag tag-s">S2</span><strong id="lv-s2">--</strong><span style="font-size:15px;color:var(--muted);">強サポート</span></div>
     <div class="update-bar"><span id="updateTime">最終更新: --</span><span id="dataSource" style="color:var(--blue);">CoinGecko API</span></div>
   </div>
 </div>
@@ -369,12 +369,12 @@
       <div class="inst-cell"><div class="inst-ticker">FBTC</div><div class="inst-name">Fidelity BTC ETF</div><div class="inst-price" id="fbtc-p">--</div><div class="inst-ch" id="fbtc-c">--</div><div class="inst-btc">🪙 約180,000枚</div></div>
     </div>
     <div style="padding:14px 16px;border-top:.5px solid var(--border);">
-      <div style="font-size:13px;font-weight:600;color:var(--blue);margin-bottom:10px;">📡 BTC ETF 資金フロー</div>
+      <div style="font-size:16px;font-weight:600;color:var(--blue);margin-bottom:10px;">📡 BTC ETF 資金フロー</div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center;">
-        <div><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">IBIT</div><div style="font-size:15px;font-weight:600;" id="ibitFlow">--</div></div>
-        <div><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">FBTC</div><div style="font-size:15px;font-weight:600;" id="fbtcFlow">--</div></div>
-        <div><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">合計</div><div style="font-size:15px;font-weight:600;" id="totalFlow">--</div></div>
-        <div><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">ETF保有</div><div style="font-size:15px;font-weight:600;color:var(--orange);">約120万枚</div></div>
+        <div><div style="font-size:14px;color:var(--muted);margin-bottom:3px;">IBIT</div><div style="font-size:18px;font-weight:600;" id="ibitFlow">--</div></div>
+        <div><div style="font-size:14px;color:var(--muted);margin-bottom:3px;">FBTC</div><div style="font-size:18px;font-weight:600;" id="fbtcFlow">--</div></div>
+        <div><div style="font-size:14px;color:var(--muted);margin-bottom:3px;">合計</div><div style="font-size:18px;font-weight:600;" id="totalFlow">--</div></div>
+        <div><div style="font-size:14px;color:var(--muted);margin-bottom:3px;">ETF保有</div><div style="font-size:18px;font-weight:600;color:var(--orange);">約120万枚</div></div>
       </div>
     </div>
   </div>
@@ -391,26 +391,26 @@
       <div class="cyc-ph" style="background:rgba(0,0,0,.04);color:var(--muted);">❄️ 冬</div>
     </div>
     <div class="halving-bar"><div class="halving-fill" id="halvingFill" style="width:0%"></div></div>
-    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:10px;">
+    <div style="display:flex;justify-content:space-between;font-size:14px;color:var(--muted);margin-bottom:10px;">
       <span>2024年4月</span><span id="halvingPct" style="font-weight:600;color:var(--text);">--</span><span>2028年</span>
     </div>
-    <div style="font-size:13px;color:var(--text2);line-height:1.7;" id="halvingText">計算中...</div>
+    <div style="font-size:16px;color:var(--text2);line-height:1.7;" id="halvingText">計算中...</div>
     <div style="margin-top:14px;display:grid;gap:8px;">
       <div style="background:var(--bg);border-radius:10px;padding:10px;display:flex;justify-content:space-between;align-items:center;">
-        <div><div style="font-size:13px;font-weight:600;">2012年 第1回</div><div style="font-size:11px;color:var(--muted);">半減期後〜ピーク</div></div>
-        <div style="font-size:17px;font-weight:700;color:var(--green);">+9,000%</div>
+        <div><div style="font-size:16px;font-weight:600;">2012年 第1回</div><div style="font-size:14px;color:var(--muted);">半減期後〜ピーク</div></div>
+        <div style="font-size:20px;font-weight:700;color:var(--green);">+9,000%</div>
       </div>
       <div style="background:var(--bg);border-radius:10px;padding:10px;display:flex;justify-content:space-between;align-items:center;">
-        <div><div style="font-size:13px;font-weight:600;">2016年 第2回</div><div style="font-size:11px;color:var(--muted);">半減期後〜ピーク</div></div>
-        <div style="font-size:17px;font-weight:700;color:var(--green);">+3,000%</div>
+        <div><div style="font-size:16px;font-weight:600;">2016年 第2回</div><div style="font-size:14px;color:var(--muted);">半減期後〜ピーク</div></div>
+        <div style="font-size:20px;font-weight:700;color:var(--green);">+3,000%</div>
       </div>
       <div style="background:var(--bg);border-radius:10px;padding:10px;display:flex;justify-content:space-between;align-items:center;">
-        <div><div style="font-size:13px;font-weight:600;">2020年 第3回</div><div style="font-size:11px;color:var(--muted);">半減期後〜ピーク</div></div>
-        <div style="font-size:17px;font-weight:700;color:var(--green);">+700%</div>
+        <div><div style="font-size:16px;font-weight:600;">2020年 第3回</div><div style="font-size:14px;color:var(--muted);">半減期後〜ピーク</div></div>
+        <div style="font-size:20px;font-weight:700;color:var(--green);">+700%</div>
       </div>
       <div style="background:rgba(255,149,0,.08);border:1px solid rgba(255,149,0,.25);border-radius:10px;padding:10px;display:flex;justify-content:space-between;align-items:center;">
-        <div><div style="font-size:13px;font-weight:600;color:var(--orange);">2024年 第4回 ← 現在</div><div style="font-size:11px;color:var(--muted);">予測：12〜18ヶ月でピーク</div></div>
-        <div style="font-size:17px;font-weight:700;color:var(--orange);" id="cycleExpected">--</div>
+        <div><div style="font-size:16px;font-weight:600;color:var(--orange);">2024年 第4回 ← 現在</div><div style="font-size:14px;color:var(--muted);">予測：12〜18ヶ月でピーク</div></div>
+        <div style="font-size:20px;font-weight:700;color:var(--orange);" id="cycleExpected">--</div>
       </div>
     </div>
   </div>
@@ -431,12 +431,12 @@
   <div class="section-title">🐋 クジラ動向</div>
   <div class="card" style="overflow:hidden;">
     <div class="whale-grid">
-      <div class="whale-cell"><div class="whale-cell-title">📊 取引所フロー(24h)</div><div class="whale-metric" id="wh-flow-val">--</div><div class="whale-sub" id="wh-flow-sub">--</div><div class="flow-bar"><div class="flow-in" id="wh-flowin" style="width:40%"></div><div class="flow-out" id="wh-flowout" style="width:60%"></div></div><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);"><span>▼流入</span><span>▲流出</span></div></div>
+      <div class="whale-cell"><div class="whale-cell-title">📊 取引所フロー(24h)</div><div class="whale-metric" id="wh-flow-val">--</div><div class="whale-sub" id="wh-flow-sub">--</div><div class="flow-bar"><div class="flow-in" id="wh-flowin" style="width:40%"></div><div class="flow-out" id="wh-flowout" style="width:60%"></div></div><div style="display:flex;justify-content:space-between;font-size:13px;color:var(--muted);"><span>▼流入</span><span>▲流出</span></div></div>
       <div class="whale-cell"><div class="whale-cell-title">💸 大口TX $10M超</div><div class="whale-metric" id="wh-tx-val">--</div><div class="whale-sub" id="wh-tx-note">--</div><div class="whale-bar"><div class="whale-fill" id="wh-tx-fill" style="background:var(--blue);width:0%"></div></div></div>
       <div class="whale-cell"><div class="whale-cell-title">⚖️ L/S 推定比</div><div class="whale-metric" id="wh-ls-val">--</div><div class="whale-sub" id="wh-ls-note">--</div><div class="whale-bar"><div class="whale-fill" id="wh-ls-fill" style="width:0%"></div></div></div>
-      <div class="whale-cell"><div class="whale-cell-title">🎯 クジラ総合判断</div><div class="whale-metric" id="wh-bias-val" style="font-size:13px;">--</div><div class="whale-sub" id="wh-bias-sub">--</div><div style="font-size:11px;margin-top:6px;line-height:1.5;color:var(--muted);" id="wh-bias-detail">--</div></div>
+      <div class="whale-cell"><div class="whale-cell-title">🎯 クジラ総合判断</div><div class="whale-metric" id="wh-bias-val" style="font-size:16px;">--</div><div class="whale-sub" id="wh-bias-sub">--</div><div style="font-size:14px;margin-top:6px;line-height:1.5;color:var(--muted);" id="wh-bias-detail">--</div></div>
     </div>
-    <div style="padding:14px 16px 8px;font-size:15px;font-weight:600;">📌 クジラが仕掛けるポイント</div>
+    <div style="padding:14px 16px 8px;font-size:18px;font-weight:600;">📌 クジラが仕掛けるポイント</div>
     <div id="whalePoints"></div>
   </div>
 </div>
@@ -457,11 +457,11 @@
 <div class="section">
   <div class="section-title">📍 エントリー・決済</div>
   <div class="card card-inner" style="margin-bottom:12px;">
-    <div style="font-size:13px;color:var(--muted);margin-bottom:6px;">推奨エントリーゾーン</div>
-    <div id="entryPanel" style="font-size:14px;color:var(--muted);">解析中...</div>
+    <div style="font-size:16px;color:var(--muted);margin-bottom:6px;">推奨エントリーゾーン</div>
+    <div id="entryPanel" style="font-size:17px;color:var(--muted);">解析中...</div>
   </div>
   <div class="card" style="overflow:hidden;margin-bottom:12px;">
-    <div style="padding:14px 16px 8px;font-size:15px;font-weight:600;">🎯 ストップ & 利確</div>
+    <div style="padding:14px 16px 8px;font-size:18px;font-weight:600;">🎯 ストップ & 利確</div>
     <div class="mini-grid">
       <div class="mini-cell"><div class="mc-lbl" style="color:var(--red);">ストップロス</div><div class="mc-val down" id="slVal">--</div></div>
       <div class="mini-cell"><div class="mc-lbl" style="color:var(--green);">目標①</div><div class="mc-val up" id="tp1Val">--</div></div>
@@ -470,7 +470,7 @@
     </div>
   </div>
   <div class="card card-inner">
-    <div style="font-size:15px;font-weight:600;margin-bottom:12px;">📊 統計サマリー</div>
+    <div style="font-size:18px;font-weight:600;margin-bottom:12px;">📊 統計サマリー</div>
     <div id="statsPanel">解析中...</div>
   </div>
 </div>
@@ -518,9 +518,9 @@ function buildPredChart(histLabels,histPrices,mc){if(predChart)predChart.destroy
 
 function setInd(id,val,sig,cls){const numEl=document.getElementById('i-'+id);const sigEl=document.getElementById('s-'+id);numEl.textContent=val;numEl.className='ind-num '+(cls==='bull'?'bull':cls==='bear'?'bear':'neutral-c');sigEl.textContent=sig;sigEl.className='ind-sig-pill '+(cls==='bull'?'pill-bull':cls==='bear'?'pill-bear':'pill-neutral');}
 
-function updateUI(prices,timestamps,coin,fgData){const labels=timestamps.map(t=>{const d=new Date(t);return days<=1?d.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}):d.toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'});});const rsiArr=rsi(prices);const{hist}=macd(prices);const boll=bollinger(prices);const e20=ema(prices,20),e50=ema(prices,50);const n=prices.length-1;const rsiV=rsiArr[n]??50,macdH=hist[n]??0,pctBV=boll.pctB[n]??0.5;const e20v=e20[n],e50v=e50[n],cp=prices[n];const adxV=adx(prices);const hi30=Math.max(...prices.slice(-Math.min(30,prices.length)));const lo30=Math.min(...prices.slice(-Math.min(30,prices.length)));const pivot=(hi30+lo30+cp)/3;const r1=2*pivot-lo30,r2=pivot+(hi30-lo30);const s1=2*pivot-hi30,s2=pivot-(hi30-lo30);buildPriceChart(labels,prices,boll,{cp,s1,s2,r1,r2});buildRSIChart(labels,rsiArr);buildMACDChart(labels,hist);const mc=monteCarlo(prices.slice(-30));buildPredChart(labels,prices,mc);buildWhaleSection(prices,cp,s1,s2,r1,r2,rsiV);const ch=coin.price_change_percentage_24h;const chCls=ch>=0?'up':'down';document.getElementById('pc-price').textContent=fmtPrice(cp);const chEl=document.getElementById('pc-ch');chEl.textContent=(ch>=0?'+':'')+ch.toFixed(2)+'% (24h)';chEl.className='price-change '+chCls;document.getElementById('pc-high').textContent=fmtPrice(coin.high_24h);document.getElementById('pc-low').textContent=fmtPrice(coin.low_24h);document.getElementById('pc-vol').textContent=fmtB(coin.total_volume);document.getElementById('pc-cap').textContent=fmtB(coin.market_cap);const volHigh=coin.total_volume>3e10;document.getElementById('pc-volch').textContent=volHigh?'📈 高出来高':'📉 低出来高';document.getElementById('pc-volch').className='stat-sub '+(volHigh?'up':'down');const fgV=fgData?.value??50;const fgL=fgData?.value_classification??'Neutral';document.getElementById('fgVal').textContent=fgV;document.getElementById('fgLabel').textContent=fgL;const fgColor=fgV<25?'var(--red)':fgV<40?'var(--orange)':fgV>75?'var(--green)':'var(--blue)';document.getElementById('fgLabel').style.color=fgColor;const arcEl=document.getElementById('fgArc');arcEl.style.stroke=fgColor;arcEl.style.strokeDashoffset=110-(fgV/100)*110;document.getElementById('lv-r2').textContent=fmtPrice(r2);document.getElementById('lv-r1').textContent=fmtPrice(r1);document.getElementById('lv-cur').textContent=fmtPrice(cp);document.getElementById('lv-s1').textContent=fmtPrice(s1);document.getElementById('lv-s2').textContent=fmtPrice(s2);const rsiCls=rsiV<30?'bull':rsiV>70?'bear':'neutral-c';setInd('rsi',rsiV.toFixed(1),rsiV<30?'⬆ 強買い':rsiV>70?'⬇ 買われ過ぎ':'= 中立',rsiCls);const macdCls=macdH>0?'bull':'bear';setInd('macd',macdH.toFixed(0),macdH>0?'⬆ 上昇':'⬇ 下降',macdCls);const e20Cls=cp>e20v?'bull':'bear';setInd('ema20',fmtPrice(e20v),cp>e20v?'⬆ 上方':'⬇ 下方',e20Cls);const bbCls=pctBV<0.2?'bull':pctBV>0.8?'bear':'neutral-c';setInd('bb',(pctBV*100).toFixed(0)+'%',pctBV<0.2?'⬆ 過売り':pctBV>0.8?'⬇ 過買い':'= 中立',bbCls);const e50Cls=cp>e50v?'bull':'bear';setInd('ema50',fmtPrice(e50v),cp>e50v?'⬆ 上方':'⬇ 下方',e50Cls);const trendCls=adxV>40?'bull':adxV<20?'bear':'neutral-c';setInd('trend',adxV,adxV>40?'⬆ 強トレンド':adxV<20?'⬇ 弱トレンド':'= 中程度',trendCls);const{signal,label,conf}=computeSignal(rsiV,macdH,pctBV,cp,e20v,e50v);const sigBox=document.getElementById('sigBox');sigBox.className='signal-pill '+signal.toLowerCase();document.getElementById('sigVal').textContent=signal==='BUY'?'買い推奨':signal==='SELL'?'待機・売り':'中立様子見';document.getElementById('sigSub').textContent=label;document.getElementById('confTxt').textContent=conf+'%';document.getElementById('confFill').style.width=conf+'%';document.getElementById('riskDot').style.left=(signal==='BUY'?22:signal==='SELL'?75:50)+'%';document.getElementById('analysisText').textContent=makeAnalysis(signal,rsiV,macdH,pctBV,cp,e20v,e50v,conf,s1,r1,coinSym,fgV);const entLo=Math.min(s1,cp*0.99),entHi=cp*1.003;document.getElementById('entryPanel').innerHTML=`<div style="margin-bottom:8px;"><div style="font-size:11px;color:var(--muted);margin-bottom:2px;">推奨エントリーゾーン</div><div style="font-size:20px;font-weight:700;color:var(--green);">${fmtPrice(entLo)} 〜 ${fmtPrice(entHi)}</div></div><div style="line-height:2;font-size:13px;">🟢 第1エントリー: <strong>${fmtPrice(entLo*1.001)}</strong> (40%)<br>🟡 第2エントリー: <strong>${fmtPrice(s2*1.01)}</strong> (40%)<br>🔵 押し目枠: <strong>${fmtPrice(s2*0.99)}</strong> (20%)</div>`;const sl=s1*0.97,tp1=r1,tp2=r2;const rrr=cp>sl?((tp1-cp)/(cp-sl)).toFixed(1):'--';document.getElementById('slVal').textContent=fmtPrice(sl);document.getElementById('tp1Val').textContent=fmtPrice(tp1);document.getElementById('tp2Val').textContent=fmtPrice(tp2);document.getElementById('rrrVal').textContent='1 : '+rrr;const vol7=prices.slice(-7).reduce((a,b,i,arr)=>i===0?0:a+Math.abs(b-arr[i-1]),0)/6;const chg7=((prices[n]-prices[Math.max(0,n-7)])/prices[Math.max(0,n-7)]*100).toFixed(2);const mc50chg=((mc.p50[7]-cp)/cp*100).toFixed(1);document.getElementById('statsPanel').innerHTML=`<div><span>7日ボラ率</span><strong style="color:var(--text);">${(vol7/cp*100).toFixed(2)}%/日</strong></div><div><span>7日騰落率</span><strong style="color:${+chg7>=0?'var(--green)':'var(--red)'};">${+chg7>=0?'+':''}${chg7}%</strong></div><div><span>予測7日後中央値</span><strong style="color:var(--blue);">${fmtPrice(mc.p50[7])}</strong></div><div><span>予測変化率</span><strong style="color:${+mc50chg>=0?'var(--green)':'var(--red)'};">${+mc50chg>=0?'+':''}${mc50chg}%</strong></div><div><span>予測レンジ</span><strong>${fmtPrice(mc.p25[7])} 〜 ${fmtPrice(mc.p75[7])}</strong></div>`;document.getElementById('updateTime').textContent='最終更新: '+new Date().toLocaleTimeString('ja-JP');document.getElementById('dataSource').textContent=isDemoMode?'⚠ デモデータ':'✓ CoinGecko API';currentPrice=cp;}
+function updateUI(prices,timestamps,coin,fgData){const labels=timestamps.map(t=>{const d=new Date(t);return days<=1?d.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}):d.toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'});});const rsiArr=rsi(prices);const{hist}=macd(prices);const boll=bollinger(prices);const e20=ema(prices,20),e50=ema(prices,50);const n=prices.length-1;const rsiV=rsiArr[n]??50,macdH=hist[n]??0,pctBV=boll.pctB[n]??0.5;const e20v=e20[n],e50v=e50[n],cp=prices[n];const adxV=adx(prices);const hi30=Math.max(...prices.slice(-Math.min(30,prices.length)));const lo30=Math.min(...prices.slice(-Math.min(30,prices.length)));const pivot=(hi30+lo30+cp)/3;const r1=2*pivot-lo30,r2=pivot+(hi30-lo30);const s1=2*pivot-hi30,s2=pivot-(hi30-lo30);buildPriceChart(labels,prices,boll,{cp,s1,s2,r1,r2});buildRSIChart(labels,rsiArr);buildMACDChart(labels,hist);const mc=monteCarlo(prices.slice(-30));buildPredChart(labels,prices,mc);buildWhaleSection(prices,cp,s1,s2,r1,r2,rsiV);const ch=coin.price_change_percentage_24h;const chCls=ch>=0?'up':'down';document.getElementById('pc-price').textContent=fmtPrice(cp);const chEl=document.getElementById('pc-ch');chEl.textContent=(ch>=0?'+':'')+ch.toFixed(2)+'% (24h)';chEl.className='price-change '+chCls;document.getElementById('pc-high').textContent=fmtPrice(coin.high_24h);document.getElementById('pc-low').textContent=fmtPrice(coin.low_24h);document.getElementById('pc-vol').textContent=fmtB(coin.total_volume);document.getElementById('pc-cap').textContent=fmtB(coin.market_cap);const volHigh=coin.total_volume>3e10;document.getElementById('pc-volch').textContent=volHigh?'📈 高出来高':'📉 低出来高';document.getElementById('pc-volch').className='stat-sub '+(volHigh?'up':'down');const fgV=fgData?.value??50;const fgL=fgData?.value_classification??'Neutral';document.getElementById('fgVal').textContent=fgV;document.getElementById('fgLabel').textContent=fgL;const fgColor=fgV<25?'var(--red)':fgV<40?'var(--orange)':fgV>75?'var(--green)':'var(--blue)';document.getElementById('fgLabel').style.color=fgColor;const arcEl=document.getElementById('fgArc');arcEl.style.stroke=fgColor;arcEl.style.strokeDashoffset=110-(fgV/100)*110;document.getElementById('lv-r2').textContent=fmtPrice(r2);document.getElementById('lv-r1').textContent=fmtPrice(r1);document.getElementById('lv-cur').textContent=fmtPrice(cp);document.getElementById('lv-s1').textContent=fmtPrice(s1);document.getElementById('lv-s2').textContent=fmtPrice(s2);const rsiCls=rsiV<30?'bull':rsiV>70?'bear':'neutral-c';setInd('rsi',rsiV.toFixed(1),rsiV<30?'⬆ 強買い':rsiV>70?'⬇ 買われ過ぎ':'= 中立',rsiCls);const macdCls=macdH>0?'bull':'bear';setInd('macd',macdH.toFixed(0),macdH>0?'⬆ 上昇':'⬇ 下降',macdCls);const e20Cls=cp>e20v?'bull':'bear';setInd('ema20',fmtPrice(e20v),cp>e20v?'⬆ 上方':'⬇ 下方',e20Cls);const bbCls=pctBV<0.2?'bull':pctBV>0.8?'bear':'neutral-c';setInd('bb',(pctBV*100).toFixed(0)+'%',pctBV<0.2?'⬆ 過売り':pctBV>0.8?'⬇ 過買い':'= 中立',bbCls);const e50Cls=cp>e50v?'bull':'bear';setInd('ema50',fmtPrice(e50v),cp>e50v?'⬆ 上方':'⬇ 下方',e50Cls);const trendCls=adxV>40?'bull':adxV<20?'bear':'neutral-c';setInd('trend',adxV,adxV>40?'⬆ 強トレンド':adxV<20?'⬇ 弱トレンド':'= 中程度',trendCls);const{signal,label,conf}=computeSignal(rsiV,macdH,pctBV,cp,e20v,e50v);const sigBox=document.getElementById('sigBox');sigBox.className='signal-pill '+signal.toLowerCase();document.getElementById('sigVal').textContent=signal==='BUY'?'買い推奨':signal==='SELL'?'待機・売り':'中立様子見';document.getElementById('sigSub').textContent=label;document.getElementById('confTxt').textContent=conf+'%';document.getElementById('confFill').style.width=conf+'%';document.getElementById('riskDot').style.left=(signal==='BUY'?22:signal==='SELL'?75:50)+'%';document.getElementById('analysisText').textContent=makeAnalysis(signal,rsiV,macdH,pctBV,cp,e20v,e50v,conf,s1,r1,coinSym,fgV);const entLo=Math.min(s1,cp*0.99),entHi=cp*1.003;document.getElementById('entryPanel').innerHTML=`<div style="margin-bottom:8px;"><div style="font-size:14px;color:var(--muted);margin-bottom:2px;">推奨エントリーゾーン</div><div style="font-size:23px;font-weight:700;color:var(--green);">${fmtPrice(entLo)} 〜 ${fmtPrice(entHi)}</div></div><div style="line-height:2;font-size:16px;">🟢 第1エントリー: <strong>${fmtPrice(entLo*1.001)}</strong> (40%)<br>🟡 第2エントリー: <strong>${fmtPrice(s2*1.01)}</strong> (40%)<br>🔵 押し目枠: <strong>${fmtPrice(s2*0.99)}</strong> (20%)</div>`;const sl=s1*0.97,tp1=r1,tp2=r2;const rrr=cp>sl?((tp1-cp)/(cp-sl)).toFixed(1):'--';document.getElementById('slVal').textContent=fmtPrice(sl);document.getElementById('tp1Val').textContent=fmtPrice(tp1);document.getElementById('tp2Val').textContent=fmtPrice(tp2);document.getElementById('rrrVal').textContent='1 : '+rrr;const vol7=prices.slice(-7).reduce((a,b,i,arr)=>i===0?0:a+Math.abs(b-arr[i-1]),0)/6;const chg7=((prices[n]-prices[Math.max(0,n-7)])/prices[Math.max(0,n-7)]*100).toFixed(2);const mc50chg=((mc.p50[7]-cp)/cp*100).toFixed(1);document.getElementById('statsPanel').innerHTML=`<div><span>7日ボラ率</span><strong style="color:var(--text);">${(vol7/cp*100).toFixed(2)}%/日</strong></div><div><span>7日騰落率</span><strong style="color:${+chg7>=0?'var(--green)':'var(--red)'};">${+chg7>=0?'+':''}${chg7}%</strong></div><div><span>予測7日後中央値</span><strong style="color:var(--blue);">${fmtPrice(mc.p50[7])}</strong></div><div><span>予測変化率</span><strong style="color:${+mc50chg>=0?'var(--green)':'var(--red)'};">${+mc50chg>=0?'+':''}${mc50chg}%</strong></div><div><span>予測レンジ</span><strong>${fmtPrice(mc.p25[7])} 〜 ${fmtPrice(mc.p75[7])}</strong></div>`;document.getElementById('updateTime').textContent='最終更新: '+new Date().toLocaleTimeString('ja-JP');document.getElementById('dataSource').textContent=isDemoMode?'⚠ デモデータ':'✓ CoinGecko API';currentPrice=cp;}
 
-function buildWhaleSection(prices,cp,s1,s2,r1,r2,rsiV){const n=prices.length;const vol7=prices.slice(-7).reduce((a,b,i,arr)=>i===0?0:a+Math.abs(b-arr[i-1]),0)/6;const volPct=vol7/cp;const trend7=n>8?(prices[n-1]-prices[n-8])/prices[n-8]:0;const outflowPct=(rsiV<38&&trend7>-0.03)?62+Math.floor(Math.random()*8):(rsiV>68||trend7<-0.05)?32+Math.floor(Math.random()*8):48+Math.floor(Math.random()*8);const inflowPct=100-outflowPct;const isAccumulating=outflowPct>=55;document.getElementById('wh-flow-val').innerHTML=`<span style="color:${isAccumulating?'var(--green)':'var(--red)'};">${isAccumulating?'▲ 純流出 (蓄積中)':'▼ 純流入 (売り圧)'}</span>`;document.getElementById('wh-flow-sub').textContent=`流出 ${outflowPct}%  /  流入 ${inflowPct}%`;document.getElementById('wh-flowin').style.width=inflowPct+'%';document.getElementById('wh-flowout').style.width=outflowPct+'%';const txCount=Math.floor(volPct*12000+80+Math.random()*40);const txHigh=txCount>140;document.getElementById('wh-tx-val').innerHTML=`<span style="color:${txHigh?'var(--orange)':'var(--muted)'};">${txCount} 件</span>`;document.getElementById('wh-tx-note').textContent=txHigh?'⚠️ 大口取引が急増':'📊 通常レンジ';document.getElementById('wh-tx-fill').style.width=Math.min(txCount/280*100,100)+'%';const longPct=rsiV<38?42+Math.round(rsiV/2):rsiV>65?55+Math.round((rsiV-65)*0.5):50+Math.round(Math.random()*6);const shortPct=100-longPct;const lsColor=longPct>56?'var(--green)':longPct<44?'var(--red)':'var(--orange)';document.getElementById('wh-ls-val').innerHTML=`<span style="color:${lsColor};">L ${longPct}% / S ${shortPct}%</span>`;document.getElementById('wh-ls-note').textContent=longPct>56?'🐋 大口はロング優勢':longPct<44?'🐋 大口はショート優勢':'⚖️ 拮抗';document.getElementById('wh-ls-fill').style.width=longPct+'%';document.getElementById('wh-ls-fill').style.background=lsColor;let score=0;if(outflowPct>55)score+=2;else if(outflowPct<42)score-=2;if(rsiV<35)score+=2;else if(rsiV>72)score-=1;if(longPct>60)score+=1;if(cp<s1*1.015)score+=1;if(cp>r1*0.985)score-=1;const biasLabel=score>=3?'🐋 強い買い集めシグナル':score>=1?'🐋 緩やかな蓄積':score<=-2?'🐳 分散・売り局面':'⚖️ 様子見';const biasColor=score>=2?'var(--green)':score<=-2?'var(--red)':'var(--orange)';document.getElementById('wh-bias-val').innerHTML=`<span style="color:${biasColor};">${biasLabel}</span>`;document.getElementById('wh-bias-sub').textContent=`シグナル強度 ${Math.abs(score)}/5`;document.getElementById('wh-bias-detail').textContent=score>=2?'大口が現在水準で仕込んでいる可能性大。反発狙いに注目。':score<=-2?'大口が利確・分散している可能性。新規ロングは要注意。':'クジラの動向は不明確。サポート到達まで待つのが賢明。';const stopHunt=s1*0.983;const roundNum=Math.floor(cp/10000)*10000;const pts=[{type:'sell',icon:'🔴',price:r2,label:'強い分散・本格売り',desc:'R2到達でクジラが本格的な売り。ポジション解消ゾーン。',tag:'SELL'},{type:'sell',icon:'🔶',price:r1,label:'第1分散ポイント',desc:'R1付近でクジラが利確の売りを入れ始める。一部利確推奨。',tag:'SELL'},{type:'buy',icon:'🟡',price:s1*1.005,label:'打診買い・小口仕込み',desc:'S1直上。クジラが下値を試しながら少しずつ拾い始めるゾーン。',tag:'BUY'},{type:'hunt',icon:'💀',price:stopHunt,label:'ストップ狩りゾーン',desc:'S1のわずか下。大口が逆指値を刈った後、急反発することが多い。',tag:'WATCH'},{type:'buy',icon:'🐋',price:s2,label:'強い買い集め（最高の仕込み）',desc:'過去データでクジラが大量に拾う水準。絶好の仕込みチャンス。',tag:'BUY'}];if(roundNum>s1*1.01&&roundNum<cp*0.99){pts.push({type:'hunt',icon:'🎯',price:roundNum,label:`キリ番 $${(roundNum/1000).toFixed(0)}K`,desc:'ラウンドナンバー付近に逆指値が集中。ブレイク後の急反発に乗るチャンス。',tag:'WATCH'});}pts.sort((a,b)=>b.price-a.price);document.getElementById('whalePoints').innerHTML=pts.map(p=>`<div class="wpoint ${p.type}"><div class="wp-icon">${p.icon}</div><div class="wp-body"><div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;flex-wrap:wrap;"><span class="wp-price" style="color:${p.type==='buy'?'var(--green)':p.type==='sell'?'var(--red)':'var(--orange)'};">${fmtPrice(p.price)}</span><span class="wp-tag ${p.type==='hunt'?'hunt':p.type}">${p.tag}</span></div><div style="font-size:13px;font-weight:600;">${p.label}</div><div class="wp-desc">${p.desc}</div></div></div>`).join('');}
+function buildWhaleSection(prices,cp,s1,s2,r1,r2,rsiV){const n=prices.length;const vol7=prices.slice(-7).reduce((a,b,i,arr)=>i===0?0:a+Math.abs(b-arr[i-1]),0)/6;const volPct=vol7/cp;const trend7=n>8?(prices[n-1]-prices[n-8])/prices[n-8]:0;const outflowPct=(rsiV<38&&trend7>-0.03)?62+Math.floor(Math.random()*8):(rsiV>68||trend7<-0.05)?32+Math.floor(Math.random()*8):48+Math.floor(Math.random()*8);const inflowPct=100-outflowPct;const isAccumulating=outflowPct>=55;document.getElementById('wh-flow-val').innerHTML=`<span style="color:${isAccumulating?'var(--green)':'var(--red)'};">${isAccumulating?'▲ 純流出 (蓄積中)':'▼ 純流入 (売り圧)'}</span>`;document.getElementById('wh-flow-sub').textContent=`流出 ${outflowPct}%  /  流入 ${inflowPct}%`;document.getElementById('wh-flowin').style.width=inflowPct+'%';document.getElementById('wh-flowout').style.width=outflowPct+'%';const txCount=Math.floor(volPct*12000+80+Math.random()*40);const txHigh=txCount>140;document.getElementById('wh-tx-val').innerHTML=`<span style="color:${txHigh?'var(--orange)':'var(--muted)'};">${txCount} 件</span>`;document.getElementById('wh-tx-note').textContent=txHigh?'⚠️ 大口取引が急増':'📊 通常レンジ';document.getElementById('wh-tx-fill').style.width=Math.min(txCount/280*100,100)+'%';const longPct=rsiV<38?42+Math.round(rsiV/2):rsiV>65?55+Math.round((rsiV-65)*0.5):50+Math.round(Math.random()*6);const shortPct=100-longPct;const lsColor=longPct>56?'var(--green)':longPct<44?'var(--red)':'var(--orange)';document.getElementById('wh-ls-val').innerHTML=`<span style="color:${lsColor};">L ${longPct}% / S ${shortPct}%</span>`;document.getElementById('wh-ls-note').textContent=longPct>56?'🐋 大口はロング優勢':longPct<44?'🐋 大口はショート優勢':'⚖️ 拮抗';document.getElementById('wh-ls-fill').style.width=longPct+'%';document.getElementById('wh-ls-fill').style.background=lsColor;let score=0;if(outflowPct>55)score+=2;else if(outflowPct<42)score-=2;if(rsiV<35)score+=2;else if(rsiV>72)score-=1;if(longPct>60)score+=1;if(cp<s1*1.015)score+=1;if(cp>r1*0.985)score-=1;const biasLabel=score>=3?'🐋 強い買い集めシグナル':score>=1?'🐋 緩やかな蓄積':score<=-2?'🐳 分散・売り局面':'⚖️ 様子見';const biasColor=score>=2?'var(--green)':score<=-2?'var(--red)':'var(--orange)';document.getElementById('wh-bias-val').innerHTML=`<span style="color:${biasColor};">${biasLabel}</span>`;document.getElementById('wh-bias-sub').textContent=`シグナル強度 ${Math.abs(score)}/5`;document.getElementById('wh-bias-detail').textContent=score>=2?'大口が現在水準で仕込んでいる可能性大。反発狙いに注目。':score<=-2?'大口が利確・分散している可能性。新規ロングは要注意。':'クジラの動向は不明確。サポート到達まで待つのが賢明。';const stopHunt=s1*0.983;const roundNum=Math.floor(cp/10000)*10000;const pts=[{type:'sell',icon:'🔴',price:r2,label:'強い分散・本格売り',desc:'R2到達でクジラが本格的な売り。ポジション解消ゾーン。',tag:'SELL'},{type:'sell',icon:'🔶',price:r1,label:'第1分散ポイント',desc:'R1付近でクジラが利確の売りを入れ始める。一部利確推奨。',tag:'SELL'},{type:'buy',icon:'🟡',price:s1*1.005,label:'打診買い・小口仕込み',desc:'S1直上。クジラが下値を試しながら少しずつ拾い始めるゾーン。',tag:'BUY'},{type:'hunt',icon:'💀',price:stopHunt,label:'ストップ狩りゾーン',desc:'S1のわずか下。大口が逆指値を刈った後、急反発することが多い。',tag:'WATCH'},{type:'buy',icon:'🐋',price:s2,label:'強い買い集め（最高の仕込み）',desc:'過去データでクジラが大量に拾う水準。絶好の仕込みチャンス。',tag:'BUY'}];if(roundNum>s1*1.01&&roundNum<cp*0.99){pts.push({type:'hunt',icon:'🎯',price:roundNum,label:`キリ番 $${(roundNum/1000).toFixed(0)}K`,desc:'ラウンドナンバー付近に逆指値が集中。ブレイク後の急反発に乗るチャンス。',tag:'WATCH'});}pts.sort((a,b)=>b.price-a.price);document.getElementById('whalePoints').innerHTML=pts.map(p=>`<div class="wpoint ${p.type}"><div class="wp-icon">${p.icon}</div><div class="wp-body"><div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;flex-wrap:wrap;"><span class="wp-price" style="color:${p.type==='buy'?'var(--green)':p.type==='sell'?'var(--red)':'var(--orange)'};">${fmtPrice(p.price)}</span><span class="wp-tag ${p.type==='hunt'?'hunt':p.type}">${p.tag}</span></div><div style="font-size:16px;font-weight:600;">${p.label}</div><div class="wp-desc">${p.desc}</div></div></div>`).join('');}
 
 function genDemoData(coinSym){const basePrice={BTC:95000,ETH:3400,SOL:175,BNB:620}[coinSym]??90000;const n=days<=1?144:days*1;const prices=[],timestamps=[];let p=basePrice*(0.97+Math.random()*0.06);const now=Date.now();const step=days<=1?600000:86400000;for(let i=n;i>=0;i--){timestamps.push(now-i*step);p*=1+(Math.random()-.48)*0.012;prices.push(p);}const cp=prices[prices.length-1];const coin={current_price:cp,price_change_percentage_24h:(Math.random()-.4)*8,high_24h:Math.max(...prices.slice(-24))*1.005,low_24h:Math.min(...prices.slice(-24))*.995,total_volume:2.4e10*(0.8+Math.random()*.8),market_cap:cp*19.7e6};return{prices,timestamps,coin};}
 
