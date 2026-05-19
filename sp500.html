@@ -3,1612 +3,645 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>S&P500 長期予測ボード｜AI・SoftBank・iDeCo統合分析</title>
+  <title>S&P500 長期予測</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
-    :root{
-      --bg:#080d14;--bg2:#0c1520;--bg3:#111d2c;--bg4:#162235;
-      --border:#1a2e45;--blue:#1d6ffa;--cyan:#00c8ff;
-      --green:#00e676;--red:#ff3d5a;--gold:#f5c842;
-      --purple:#a855f7;--text:#dce8f5;--muted:#4a6080;
-    }
+    :root{--bg:#F2F2F7;--card:#FFFFFF;--green:#34C759;--red:#FF3B30;--blue:#007AFF;--orange:#FF9500;--purple:#AF52DE;--text:#1C1C1E;--text2:#3C3C43;--muted:#8E8E93;--border:#E5E5EA;--sep:#C6C6C8;}
     *{margin:0;padding:0;box-sizing:border-box;}
     html{scroll-behavior:smooth;}
-    body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
-    body::before{content:'';position:fixed;inset:0;
-      background:radial-gradient(ellipse 70% 50% at 20% 0%,rgba(29,111,250,.07) 0%,transparent 60%),
-        radial-gradient(ellipse 50% 40% at 80% 100%,rgba(168,85,247,.05) 0%,transparent 60%),
-        repeating-linear-gradient(0deg,transparent,transparent 49px,rgba(29,111,250,.02) 50px),
-        repeating-linear-gradient(90deg,transparent,transparent 49px,rgba(29,111,250,.02) 50px);
-      pointer-events:none;z-index:0;}
-    .wrap{max-width:1520px;margin:0 auto;padding:14px 18px;position:relative;z-index:1;zoom:1.45;}
+    body{font-family:-apple-system,"SF Pro Display","Helvetica Neue",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:84px;}
 
-    /* nav */
-    .nav{display:flex;align-items:center;gap:8px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
-    .nav-brand{font-size:14px;font-weight:800;color:var(--text);margin-right:6px;}
-    .nav a{display:inline-flex;align-items:center;gap:5px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:50px;font-size:12px;font-weight:700;text-decoration:none;transition:all .2s;}
-    .nav a:hover{border-color:var(--cyan);color:var(--cyan);}
-    .nav a.active{background:linear-gradient(135deg,#1d6ffa,#00c8ff);color:#fff;border-color:transparent;box-shadow:0 0 14px rgba(29,111,250,.35);}
-    .demo-badge{background:rgba(255,61,90,.12);border:1px solid rgba(255,61,90,.4);color:var(--red);font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;display:none;}
-
-    /* header */
-    .hd{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:18px;}
-    .badge{display:inline-flex;align-items:center;gap:5px;background:rgba(29,111,250,.12);border:1px solid rgba(29,111,250,.3);color:var(--cyan);font-size:10px;font-weight:800;letter-spacing:2px;padding:4px 10px;border-radius:20px;margin-bottom:8px;text-transform:uppercase;}
-    h1{font-size:clamp(18px,3vw,32px);font-weight:900;background:linear-gradient(135deg,#1d6ffa,#00c8ff,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-    .hd-sub{font-size:11px;color:var(--muted);margin-top:5px;letter-spacing:.8px;}
+    .nav-top{background:rgba(242,242,247,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);padding:14px 16px 10px;position:sticky;top:0;z-index:100;border-bottom:.5px solid var(--sep);}
+    .nav-title{font-size:28px;font-weight:700;}
+    .nav-sub{font-size:13px;color:var(--muted);margin-top:2px;}
     .live-dot{display:inline-block;width:7px;height:7px;background:var(--green);border-radius:50%;margin-right:4px;animation:blink 1.4s infinite;}
-    @keyframes blink{0%,100%{opacity:1;box-shadow:0 0 5px var(--green);}50%{opacity:.3;box-shadow:none;}}
-    .hd-btns{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
-    .btn{display:inline-flex;align-items:center;gap:5px;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:7px 16px;border-radius:50px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;}
-    .btn:hover{border-color:var(--cyan);color:var(--cyan);}
-    .btn:disabled{opacity:.4;cursor:not-allowed;}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 
-    /* ── VERDICT BANNER ── */
-    .verdict-banner{border-radius:16px;padding:20px 24px;margin-bottom:18px;display:grid;grid-template-columns:auto 1fr auto;gap:20px;align-items:center;}
-    .verdict-banner.bull{background:linear-gradient(135deg,rgba(0,230,118,.12),rgba(0,230,118,.03));border:2px solid var(--green);box-shadow:0 0 30px rgba(0,230,118,.12);}
-    .verdict-banner.bear{background:linear-gradient(135deg,rgba(255,61,90,.12),rgba(255,61,90,.03));border:2px solid var(--red);box-shadow:0 0 30px rgba(255,61,90,.12);}
-    .verdict-banner.neutral{background:linear-gradient(135deg,rgba(245,200,66,.12),rgba(245,200,66,.03));border:2px solid var(--gold);box-shadow:0 0 30px rgba(245,200,66,.12);}
-    .vb-signal{text-align:center;}
-    .vb-lbl{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);}
-    .vb-val{font-size:28px;font-weight:900;margin:4px 0;}
+    .page-tabs{display:flex;margin:12px 16px 0;background:#E5E5EA;border-radius:10px;padding:2px;}
+    .page-tab{flex:1;text-align:center;padding:7px 0;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border-radius:8px;transition:all .2s;text-decoration:none;display:block;}
+    .page-tab.active{background:white;color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.1);}
+
+    .section{padding:0 16px;margin-top:20px;}
+    .section-title{font-size:20px;font-weight:700;margin-bottom:12px;}
+
+    .card{background:var(--card);border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:12px;}
+    .card-inner{padding:16px;}
+
+    /* Verdict Banner */
+    .verdict-banner{border-radius:16px;padding:16px;margin:12px 16px 0;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+    .verdict-banner.bull{background:rgba(52,199,89,.08);border:1.5px solid var(--green);}
+    .verdict-banner.neutral{background:rgba(255,149,0,.08);border:1.5px solid var(--orange);}
+    .verdict-banner.bear{background:rgba(255,59,48,.08);border:1.5px solid var(--red);}
+    .vb-grid{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;}
+    .vb-lbl{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;}
+    .vb-val{font-size:20px;font-weight:700;}
     .verdict-banner.bull .vb-val{color:var(--green);}
+    .verdict-banner.neutral .vb-val{color:var(--orange);}
     .verdict-banner.bear .vb-val{color:var(--red);}
-    .verdict-banner.neutral .vb-val{color:var(--gold);}
-    .vb-center{}
-    .vb-psych{font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px;line-height:1.5;}
-    .vb-quote{font-size:12px;color:var(--muted);font-style:italic;line-height:1.6;}
-    .vb-right{text-align:right;}
-    .vb-score-lbl{font-size:10px;color:var(--muted);margin-bottom:4px;}
-    .vb-score{font-size:32px;font-weight:900;color:var(--cyan);}
-    .vb-score-sub{font-size:10px;color:var(--muted);}
-    @media(max-width:700px){.verdict-banner{grid-template-columns:1fr;}.vb-right{text-align:left;}}
+    .vb-psych{font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:4px;}
+    .vb-quote{font-size:11px;color:var(--muted);font-style:italic;}
+    .vb-score-lbl{font-size:11px;color:var(--muted);text-align:center;margin-bottom:2px;}
+    .vb-score{font-size:36px;font-weight:700;text-align:center;line-height:1;}
+    .verdict-banner.bull .vb-score{color:var(--green);}
+    .verdict-banner.neutral .vb-score{color:var(--orange);}
+    .verdict-banner.bear .vb-score{color:var(--red);}
+    .vb-score-sub{font-size:12px;color:var(--muted);text-align:center;}
 
-    /* strip */
-    .strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:18px;}
-    .pc{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;position:relative;overflow:hidden;transition:border-color .25s;}
-    .pc::after{content:'';position:absolute;inset:0 0 auto;height:2px;background:linear-gradient(90deg,var(--blue),var(--cyan));}
-    .pc:hover{border-color:var(--cyan);}
-    .pc .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:4px;}
-    .pc .val{font-size:18px;font-weight:800;}
-    .pc .sub{font-size:11px;font-weight:600;margin-top:2px;}
-    .up{color:var(--green);}.down{color:var(--red);}.neu{color:var(--gold);}
+    /* Stats strip */
+    .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border-radius:16px;overflow:hidden;}
+    .stat-cell{background:var(--card);padding:14px 16px;}
+    .stat-label{font-size:12px;color:var(--muted);margin-bottom:4px;}
+    .stat-value{font-size:17px;font-weight:600;}
+    .stat-sub{font-size:12px;margin-top:2px;}
+    .up{color:var(--green);}.down{color:var(--red);}.neu{color:var(--orange);}
 
-    /* layout */
-    .main-grid{display:grid;grid-template-columns:1fr 380px;gap:16px;}
-    @media(max-width:1020px){.main-grid{grid-template-columns:1fr;}}
-    .g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
-    .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
-    @media(max-width:600px){.g2,.g3{grid-template-columns:1fr;}}
+    /* TF buttons */
+    .tf-row{display:flex;gap:4px;padding:12px 16px;justify-content:flex-start;}
+    .tf-btn{padding:6px 16px;font-size:13px;font-weight:600;color:var(--muted);background:transparent;border:none;cursor:pointer;border-radius:8px;transition:all .2s;}
+    .tf-btn.active{background:var(--blue);color:white;}
 
-    /* card */
-    .card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:14px;}
-    .card-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.8px;color:var(--cyan);margin-bottom:12px;display:flex;align-items:center;gap:7px;}
-    .card-title::before{content:'';width:3px;height:13px;background:var(--cyan);border-radius:2px;flex-shrink:0;}
-
-    /* TF */
-    .tf-row{display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap;}
-    .tf-btn{background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:4px 9px;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;transition:all .15s;}
-    .tf-btn.active,.tf-btn:hover{background:var(--blue);color:#fff;border-color:var(--blue);}
-
-    /* chart */
-    .ch{position:relative;}
+    /* Charts */
+    .ch{position:relative;padding:0 12px 12px;}
     .ch-300{height:300px;}
-    .ch-160{height:160px;}
-    .ch-130{height:130px;}
     .ch-200{height:200px;}
+    .ch-130{height:130px;}
 
-    /* ── NEWS ── */
-    .news-item{padding:10px 0;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start;}
+    /* Mag7 grid */
+    .mag7-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);}
+    @media(max-width:480px){.mag7-grid{grid-template-columns:repeat(2,1fr);}}
+    .mag7-cell{background:var(--card);padding:12px 14px;}
+    .mag7-ticker{font-size:13px;font-weight:700;color:var(--blue);}
+    .mag7-name{font-size:11px;color:var(--muted);margin-bottom:4px;}
+    .mag7-price{font-size:16px;font-weight:600;}
+    .mag7-ch{font-size:12px;font-weight:600;margin-top:2px;}
+    .mag7-weight{font-size:10px;color:var(--muted);margin-top:3px;}
+
+    /* AI Curve */
+    .ai-curve{display:flex;gap:0;border-radius:10px;overflow:hidden;margin-bottom:8px;}
+    .curve-phase{flex:1;padding:10px 4px;text-align:center;font-size:10px;font-weight:600;}
+    .curve-phase.cur{outline:2px solid var(--purple);outline-offset:-2px;}
+
+    /* CapEx bars */
+    .capex-bars{display:flex;flex-direction:column;gap:8px;}
+    .capex-row{display:flex;align-items:center;gap:8px;}
+    .capex-name{font-size:12px;font-weight:500;min-width:80px;color:var(--text2);}
+    .capex-bar-wrap{flex:1;height:8px;background:var(--bg);border-radius:4px;overflow:hidden;}
+    .capex-bar-fill{height:100%;border-radius:4px;}
+    .capex-val{font-size:12px;font-weight:600;min-width:50px;text-align:right;}
+
+    /* SBK */
+    .sbk-header{display:flex;align-items:flex-start;gap:14px;margin-bottom:14px;padding-bottom:14px;border-bottom:.5px solid var(--border);}
+    .sbk-logo{font-size:36px;}
+    .sbk-price-lbl{font-size:12px;color:var(--muted);margin-bottom:4px;}
+    .sbk-price-val{font-size:28px;font-weight:700;}
+    .sbk-price-ch{font-size:14px;font-weight:600;margin-top:2px;}
+    .sbk-nav-val{margin-left:auto;text-align:right;}
+    .sbk-theme{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+    .sbk-theme-tag{font-size:11px;font-weight:600;padding:4px 10px;border-radius:8px;background:rgba(0,122,255,.08);color:var(--blue);}
+    .sbk-port-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);margin-bottom:14px;}
+    .sbk-port-cell{background:var(--card);padding:12px 14px;}
+    .sbk-port-name{font-size:14px;font-weight:600;}
+    .sbk-port-ticker{font-size:11px;color:var(--muted);margin-bottom:4px;}
+    .sbk-port-price{font-size:17px;font-weight:700;}
+    .sbk-port-ch{font-size:12px;font-weight:600;margin-top:2px;}
+    .sbk-port-desc{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5;}
+
+    /* Mirror */
+    .mirror-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);}
+    @media(max-width:480px){.mirror-grid{grid-template-columns:1fr;}}
+    .mirror-cell{background:var(--card);padding:14px;}
+    .mirror-label{font-size:10px;font-weight:700;color:var(--blue);letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;}
+    .mirror-title{font-size:15px;font-weight:600;}
+    .mirror-ticker{font-size:12px;color:var(--muted);margin-bottom:6px;}
+    .mirror-desc{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:6px;}
+    .mirror-alloc{font-size:12px;font-weight:700;color:var(--orange);}
+
+    /* Momentum gauge */
+    .mom-track{height:9px;background:linear-gradient(90deg,var(--red),var(--orange),var(--green));border-radius:10px;position:relative;margin:10px 0 6px;}
+    .mom-dot{position:absolute;top:50%;transform:translate(-50%,-50%);width:16px;height:16px;background:white;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,.3);transition:left 1.2s ease;}
+
+    /* Bull/Bear cases */
+    .mv-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0;}
+    @media(max-width:480px){.mv-grid{grid-template-columns:1fr;}}
+    .mv-side h4{font-size:14px;font-weight:600;margin-bottom:8px;}
+    .mv-item{display:flex;gap:8px;margin-bottom:8px;align-items:flex-start;}
+    .mv-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+
+    /* News */
+    .news-item{display:flex;gap:10px;padding:12px 16px;border-bottom:.5px solid var(--border);}
     .news-item:last-child{border-bottom:none;}
-    .news-tag{flex-shrink:0;font-size:9px;font-weight:800;padding:2px 8px;border-radius:20px;letter-spacing:.8px;margin-top:2px;}
-    .tag-bull{background:rgba(0,230,118,.15);color:var(--green);}
-    .tag-bear{background:rgba(255,61,90,.15);color:var(--red);}
-    .tag-neu{background:rgba(245,200,66,.15);color:var(--gold);}
-    .news-body{}
-    .news-title{font-size:12px;font-weight:600;color:var(--text);line-height:1.5;margin-bottom:3px;}
-    .news-meta{font-size:10px;color:var(--muted);}
-    .news-impact{font-size:10px;margin-top:3px;}
+    .news-tag{font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;flex-shrink:0;align-self:flex-start;margin-top:2px;}
+    .tag-bull{background:rgba(52,199,89,.12);color:var(--green);}
+    .tag-bear{background:rgba(255,59,48,.12);color:var(--red);}
+    .tag-neu{background:rgba(255,149,0,.12);color:var(--orange);}
+    .news-body{flex:1;}
+    .news-title{font-size:14px;font-weight:500;line-height:1.4;margin-bottom:4px;}
+    .news-meta{font-size:11px;color:var(--muted);}
+    .news-impact{font-size:12px;font-weight:600;margin-top:4px;}
 
-    /* ── MOMENTUM vs VALUATION ── */
-    .mv-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
-    .mv-side{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;}
-    .mv-side h4{font-size:11px;font-weight:700;margin-bottom:10px;letter-spacing:1px;}
-    .mv-item{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;font-size:11px;line-height:1.5;}
-    .mv-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+    /* Indicators */
+    .ind-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);}
+    .ind-cell{background:var(--card);padding:14px 16px;}
+    .ind-name{font-size:12px;color:var(--muted);margin-bottom:4px;}
+    .ind-num{font-size:18px;font-weight:700;}
+    .ind-sig{font-size:11px;font-weight:600;margin-top:2px;}
+    .bull-c{color:var(--green);}.bear-c{color:var(--red);}.neu-c{color:var(--orange);}
 
-    /* verdict meter */
-    .vm-wrap{margin:12px 0;}
-    .vm-lbl{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:4px;}
-    .vm-bar{height:8px;background:var(--bg4);border-radius:10px;overflow:hidden;}
-    .vm-fill{height:100%;border-radius:10px;transition:width 1.2s ease;}
+    /* iDeCo */
+    .ideco-verdict{border-radius:10px;padding:14px;margin-bottom:14px;font-size:13px;line-height:1.7;}
+    .ideco-verdict.warning{background:rgba(255,59,48,.06);border:1px solid rgba(255,59,48,.2);color:var(--text);}
+    .ideco-verdict.caution{background:rgba(255,149,0,.06);border:1px solid rgba(255,149,0,.2);color:var(--text);}
+    .ideco-verdict.ok{background:rgba(52,199,89,.06);border:1px solid rgba(52,199,89,.2);color:var(--text);}
+    .alloc-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+    .alloc-name{font-size:12px;font-weight:500;flex:1;}
+    .alloc-bar-wrap{width:80px;height:6px;background:var(--bg);border-radius:3px;overflow:hidden;flex-shrink:0;}
+    .alloc-bar{height:100%;border-radius:3px;}
+    .alloc-pct{font-size:13px;font-weight:700;min-width:32px;text-align:right;}
+    .alloc-change{font-size:10px;font-weight:700;min-width:52px;text-align:right;}
 
-    /* ── iDeCo ── */
-    .ideco-verdict{padding:12px;border-radius:10px;margin-bottom:12px;font-size:13px;line-height:1.7;font-weight:600;}
-    .ideco-verdict.warning{background:rgba(255,61,90,.08);border:1px solid rgba(255,61,90,.25);color:var(--red);}
-    .ideco-verdict.caution{background:rgba(245,200,66,.08);border:1px solid rgba(245,200,66,.25);color:var(--gold);}
-    .ideco-verdict.ok{background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.25);color:var(--green);}
-    .alloc-grid{display:grid;gap:6px;}
-    .alloc-row{display:flex;align-items:center;gap:8px;}
-    .alloc-name{font-size:11px;color:var(--text);min-width:140px;}
-    .alloc-bar-wrap{flex:1;height:7px;background:var(--bg4);border-radius:10px;overflow:hidden;}
-    .alloc-bar{height:100%;border-radius:10px;transition:width 1s ease;}
-    .alloc-pct{font-size:11px;font-weight:700;min-width:34px;text-align:right;}
-    .alloc-change{font-size:10px;min-width:50px;text-align:right;}
-
-    /* ── TODO ── */
-    .todo-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+    /* Todo */
+    .todo-item{display:flex;gap:10px;padding:12px 16px;border-bottom:.5px solid var(--border);}
     .todo-item:last-child{border-bottom:none;}
-    .todo-check{width:18px;height:18px;border-radius:5px;border:2px solid var(--border);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .2s;margin-top:1px;}
-    .todo-check:hover{border-color:var(--cyan);}
-    .todo-check.done{background:var(--green);border-color:var(--green);color:#000;}
+    .todo-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;transition:all .2s;}
+    .todo-check.done{background:var(--green);border-color:var(--green);}
     .todo-body{flex:1;}
-    .todo-text{font-size:12px;font-weight:600;color:var(--text);line-height:1.5;margin-bottom:2px;}
-    .todo-text.done-text{text-decoration:line-through;color:var(--muted);}
-    .todo-due{font-size:10px;}
+    .todo-text{font-size:14px;font-weight:500;line-height:1.4;}
+    .done-text{text-decoration:line-through;color:var(--muted);}
+    .todo-priority{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;}
+    .pri-high{background:rgba(255,59,48,.12);color:var(--red);}
+    .pri-mid{background:rgba(255,149,0,.12);color:var(--orange);}
+    .pri-low{background:rgba(52,199,89,.12);color:var(--green);}
+    .todo-due{font-size:11px;color:var(--muted);}
     .due-urgent{color:var(--red);}
-    .due-soon{color:var(--gold);}
+    .due-soon{color:var(--orange);}
     .due-ok{color:var(--muted);}
-    .todo-priority{font-size:9px;font-weight:800;padding:1px 7px;border-radius:20px;letter-spacing:.5px;}
-    .pri-high{background:rgba(255,61,90,.15);color:var(--red);}
-    .pri-mid{background:rgba(245,200,66,.15);color:var(--gold);}
-    .pri-low{background:rgba(0,212,255,.12);color:var(--cyan);}
 
-    /* ── PSYCHOLOGY ── */
-    .psych-principles{display:grid;gap:8px;}
-    .principle{background:var(--bg3);border:1px solid var(--border);border-left:3px solid var(--blue);border-radius:0 10px 10px 0;padding:10px 12px;}
-    .p-title{font-size:11px;font-weight:700;color:var(--text);margin-bottom:3px;}
-    .p-body{font-size:11px;color:var(--muted);line-height:1.6;}
+    /* Psychology */
+    .psych-principles{display:grid;grid-template-columns:1fr;gap:8px;}
+    .principle{background:var(--bg);border-radius:10px;padding:12px;}
+    .p-title{font-size:13px;font-weight:600;margin-bottom:4px;}
+    .p-body{font-size:12px;color:var(--muted);line-height:1.6;}
 
-    /* ── SCHOLAR ── */
-    .analysis-box{background:var(--bg3);border:1px solid var(--border);border-left:3px solid var(--blue);border-radius:0 14px 14px 0;padding:18px;font-size:13px;line-height:1.9;color:#7a9abf;}
-    .scholar-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
-    .avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
-    .sch-name{font-size:12px;font-weight:700;color:var(--cyan);}
-    .sch-title{font-size:10px;color:var(--muted);}
-
-    /* ind */
-    .ind-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
-    .ind-cell{background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:9px;}
-    .ind-name{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
-    .ind-num{font-size:16px;font-weight:800;margin:2px 0;}
-    .ind-sig{font-size:9px;font-weight:700;letter-spacing:.8px;}
-    .bull-c{color:var(--green);}.bear-c{color:var(--red);}.neu-c{color:var(--gold);}
-
-    /* gauge */
-    .gauge-wrap{display:flex;flex-direction:column;align-items:center;padding:10px 0;}
-    .gauge-svg{width:130px;height:65px;}
-
-    /* pred scenarios */
-    .sc-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
-    .sc-cell{background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px;text-align:center;}
-    .sc-lbl{font-size:9px;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
-    .sc-ret{font-size:18px;font-weight:800;}
-    .sc-p{font-size:10px;color:var(--muted);margin-top:2px;}
+    /* Gauges */
+    .gauge-track{height:8px;border-radius:4px;position:relative;margin:8px 0 4px;}
+    .gauge-dot{position:absolute;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;background:white;border-radius:7px;box-shadow:0 1px 4px rgba(0,0,0,.3);transition:left 1s ease;}
 
     /* DCA */
-    .dca-inputs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;}
-    @media(max-width:550px){.dca-inputs{grid-template-columns:1fr 1fr;}}
-    .dca-f label{display:block;font-size:10px;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:.8px;}
-    .dca-f input{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:7px;font-size:13px;font-weight:600;outline:none;transition:border-color .2s;}
-    .dca-f input:focus{border-color:var(--cyan);}
-    .dca-btn{background:linear-gradient(135deg,var(--blue),#00c8ff);color:#fff;border:none;padding:8px 20px;border-radius:50px;font-size:12px;font-weight:700;cursor:pointer;}
+    .dca-inputs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+    .dca-f label{font-size:11px;color:var(--muted);display:block;margin-bottom:4px;}
+    .dca-f input{width:100%;padding:8px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);font-size:14px;color:var(--text);font-family:inherit;}
+    .dca-btn{width:100%;padding:12px;background:var(--blue);color:white;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;}
+    .dca-results{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--border);}
+    .dca-cell{background:var(--card);padding:12px;text-align:center;}
+    .dca-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+    .dca-val{font-size:18px;font-weight:700;}
 
-    /* update */
-    .update-bar{display:flex;align-items:center;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:10px;padding-top:8px;border-top:1px solid var(--border);flex-wrap:wrap;gap:5px;}
+    /* Scholar */
+    .analysis-card{padding:16px;font-size:14px;line-height:1.8;color:var(--text2);}
+    .scholar-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+    .avatar{width:44px;height:44px;border-radius:22px;background:linear-gradient(135deg,#007AFF,#AF52DE);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+    .sch-name{font-size:15px;font-weight:600;}
+    .sch-title{font-size:12px;color:var(--muted);margin-top:2px;}
 
-    .disclaimer{margin-top:24px;padding:12px;background:rgba(255,255,255,.012);border:1px solid var(--border);border-radius:8px;font-size:10px;color:var(--muted);text-align:center;line-height:1.7;}
+    /* Update bar */
+    .update-bar{padding:8px 16px;font-size:12px;color:var(--muted);display:flex;justify-content:space-between;}
+    .demo-badge{display:none;background:rgba(255,59,48,.1);border:1px solid rgba(255,59,48,.3);color:var(--red);font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;}
+    .disclaimer{margin:8px 16px 20px;padding:14px;background:white;border-radius:12px;font-size:12px;color:var(--muted);line-height:1.7;}
 
-    ::-webkit-scrollbar{width:5px;height:5px;}
-    ::-webkit-scrollbar-track{background:var(--bg);}
-    ::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px;}
+    /* Bottom tab bar */
+    .tab-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(248,248,248,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:.5px solid var(--sep);display:flex;padding:8px 0 20px;z-index:100;}
+    .tab-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;text-decoration:none;color:var(--muted);}
+    .tab-item.active{color:var(--blue);}
+    .tab-icon{font-size:22px;}
+    .tab-label{font-size:10px;font-weight:500;}
 
-    /* ── AI MEGATREND ── */
-    .ai-banner{background:linear-gradient(135deg,rgba(168,85,247,.1),rgba(29,111,250,.08),rgba(0,200,255,.06));border:1px solid rgba(168,85,247,.3);border-radius:16px;padding:20px;margin-bottom:16px;position:relative;overflow:hidden;}
-    .ai-banner::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 20px,rgba(168,85,247,.015) 21px);pointer-events:none;}
-    .ai-banner-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--purple);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
-    .ai-banner-title::before{content:'';width:3px;height:13px;background:var(--purple);border-radius:2px;}
-    .mag7-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px;}
-    .mag7-cell{background:rgba(0,0,0,.3);border:1px solid rgba(168,85,247,.2);border-radius:10px;padding:10px;transition:border-color .2s;}
-    .mag7-cell:hover{border-color:var(--purple);}
-    .mag7-ticker{font-size:10px;font-weight:800;color:var(--purple);letter-spacing:1px;}
-    .mag7-name{font-size:9px;color:var(--muted);margin-bottom:4px;}
-    .mag7-price{font-size:16px;font-weight:800;color:var(--text);}
-    .mag7-ch{font-size:10px;font-weight:700;margin-top:2px;}
-    .mag7-weight{font-size:9px;color:var(--muted);margin-top:2px;}
-    .ai-curve{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin:12px 0;border-radius:10px;overflow:hidden;}
-    .curve-phase{padding:10px 8px;text-align:center;font-size:10px;font-weight:700;position:relative;}
-    .curve-phase.cur::after{content:'▼ 現在';position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--purple);white-space:nowrap;}
-    .capex-bars{display:grid;gap:8px;margin-top:12px;}
-    .capex-row{display:flex;align-items:center;gap:10px;}
-    .capex-name{font-size:11px;color:var(--text);min-width:90px;font-weight:600;}
-    .capex-bar-wrap{flex:1;height:8px;background:var(--bg4);border-radius:10px;overflow:hidden;}
-    .capex-bar-fill{height:100%;border-radius:10px;transition:width 1.2s ease;}
-    .capex-val{font-size:11px;font-weight:700;min-width:60px;text-align:right;}
-
-    /* ── SOFTBANK ── */
-    .sbk-banner{background:linear-gradient(135deg,rgba(255,60,0,.08),rgba(245,200,66,.06));border:1px solid rgba(255,100,0,.25);border-radius:16px;padding:20px;margin-bottom:16px;}
-    .sbk-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
-    .sbk-title::before{content:'';width:3px;height:13px;background:var(--gold);border-radius:2px;}
-    .sbk-header{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;margin-bottom:16px;flex-wrap:wrap;}
-    @media(max-width:600px){.sbk-header{grid-template-columns:1fr;}}
-    .sbk-logo{font-size:32px;line-height:1;}
-    .sbk-price-block{}
-    .sbk-price-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
-    .sbk-price-val{font-size:28px;font-weight:900;color:var(--text);}
-    .sbk-price-ch{font-size:12px;font-weight:700;margin-top:2px;}
-    .sbk-nav-val{text-align:right;}
-    .sbk-port-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:16px;}
-    .sbk-port-cell{background:rgba(0,0,0,.25);border:1px solid rgba(255,100,0,.15);border-radius:10px;padding:12px;transition:border-color .2s;}
-    .sbk-port-cell:hover{border-color:var(--gold);}
-    .sbk-port-name{font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;}
-    .sbk-port-ticker{font-size:9px;color:var(--gold);font-weight:700;letter-spacing:1px;margin-bottom:6px;}
-    .sbk-port-price{font-size:15px;font-weight:800;}
-    .sbk-port-ch{font-size:10px;font-weight:700;margin-top:2px;}
-    .sbk-port-desc{font-size:9px;color:var(--muted);margin-top:4px;line-height:1.4;}
-    .sbk-theme{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
-    .sbk-theme-tag{background:rgba(255,100,0,.1);border:1px solid rgba(255,100,0,.25);color:#ff8c42;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.5px;}
-    .mirror-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;}
-    .mirror-cell{background:rgba(0,0,0,.2);border:1px solid rgba(0,200,255,.15);border-radius:10px;padding:12px;}
-    .mirror-label{font-size:9px;color:var(--cyan);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
-    .mirror-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;}
-    .mirror-ticker{font-size:10px;color:var(--gold);font-weight:700;letter-spacing:1px;margin-bottom:6px;}
-    .mirror-desc{font-size:10px;color:var(--muted);line-height:1.5;}
-    .mirror-alloc{font-size:12px;font-weight:800;color:var(--cyan);margin-top:6px;}
-    .sbk-ch-wrap{position:relative;height:100px;margin-bottom:12px;}
+    ::-webkit-scrollbar{width:4px;}
+    ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+    .g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
   </style>
 </head>
 <body>
-<div class="wrap">
 
-  <!-- nav -->
-  <nav class="nav">
-    <span class="nav-brand">📊 AI Markets</span>
-    <a href="index.html">₿ BTC 予測</a>
-    <a href="sp500.html" class="active">📈 S&amp;P500 長期分析</a>
-    <span class="demo-badge" id="demoBadge">⚠ デモモード</span>
-  </nav>
-
-  <!-- header -->
-  <div class="hd">
+<div class="nav-top">
+  <div style="display:flex;align-items:center;justify-content:space-between;">
     <div>
-      <div class="badge">🏛 Global Macro · AI Megatrend · SoftBank Mirror · iDeCo</div>
-      <h1>S&amp;P500 長期予測 &amp; AI・SoftBank戦略ボード</h1>
-      <div class="hd-sub"><span class="live-dot"></span>Mag7リアルタイム · SoftBankポートフォリオ追跡 · ミラー戦略 · iDeCoアドバイス · 投資家心理</div>
+      <div class="nav-title">📈 Markets</div>
+      <div class="nav-sub"><span class="live-dot"></span>LIVE · S&amp;P500 長期分析</div>
     </div>
-    <div class="hd-btns">
-      <button class="btn" id="refreshBtn" onclick="loadAll()">🔄 全データ更新</button>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span class="demo-badge" id="demoBadge">⚠ デモ</span>
+      <button onclick="loadAll()" id="refreshBtn" style="background:var(--blue);border:none;color:white;padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;">更新</button>
     </div>
   </div>
+</div>
 
-  <!-- ── VERDICT BANNER ── -->
-  <div class="verdict-banner neutral" id="verdictBanner">
-    <div class="vb-signal">
+<div style="padding:0 16px;margin-top:12px;">
+  <div class="page-tabs">
+    <a href="index.html" class="page-tab">₿ BTC予測</a>
+    <a href="sp500.html" class="page-tab active">📈 S&amp;P500</a>
+  </div>
+</div>
+
+<!-- Verdict Banner -->
+<div class="verdict-banner neutral" id="verdictBanner">
+  <div class="vb-grid">
+    <div>
       <div class="vb-lbl">AI 長期判断</div>
       <div class="vb-val" id="vbVal">解析中</div>
-      <div style="font-size:10px;color:var(--muted);margin-top:4px;" id="vbSub">--</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:3px;" id="vbSub">--</div>
     </div>
-    <div class="vb-center">
+    <div style="padding:0 8px;">
       <div class="vb-psych" id="vbPsych">市場を解析しています...</div>
       <div class="vb-quote" id="vbQuote">—</div>
     </div>
-    <div class="vb-right">
+    <div>
       <div class="vb-score-lbl">総合スコア</div>
       <div class="vb-score" id="vbScore">--</div>
       <div class="vb-score-sub">/ 10</div>
     </div>
   </div>
+</div>
 
-  <!-- strip -->
-  <div class="strip">
-    <div class="pc"><div class="lbl">S&amp;P500</div><div class="val" id="sp-price">--</div><div class="sub" id="sp-ch">--</div></div>
-    <div class="pc"><div class="lbl">CAPE レシオ</div><div class="val" id="sp-cape">--</div><div class="sub" id="sp-cape-s">--</div></div>
-    <div class="pc"><div class="lbl">バフェット指標</div><div class="val" id="sp-buff">--</div><div class="sub" id="sp-buff-s">--</div></div>
-    <div class="pc"><div class="lbl">10年債利回り</div><div class="val" id="sp-t10">--</div><div class="sub" id="sp-t10-s">--</div></div>
-    <div class="pc"><div class="lbl">株式リスクプレミアム</div><div class="val" id="sp-erp">--</div><div class="sub" id="sp-erp-s">--</div></div>
-    <div class="pc"><div class="lbl">配当利回り</div><div class="val" id="sp-div">--</div><div class="sub neu">Dividend Yield</div></div>
+<!-- Stats Strip -->
+<div class="section" style="margin-top:12px;">
+  <div class="stats-grid">
+    <div class="stat-cell">
+      <div class="stat-label">S&amp;P500</div>
+      <div class="stat-value" id="sp-price">--</div>
+      <div class="stat-sub" id="sp-ch">--</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-label">CAPE レシオ</div>
+      <div class="stat-value" id="sp-cape">--</div>
+      <div class="stat-sub" id="sp-cape-s">--</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-label">バフェット指標</div>
+      <div class="stat-value" id="sp-buff">--</div>
+      <div class="stat-sub" id="sp-buff-s">--</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-label">10年債利回り</div>
+      <div class="stat-value" id="sp-t10">--</div>
+      <div class="stat-sub" id="sp-t10-s">--</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-label">株式リスクプレミアム</div>
+      <div class="stat-value" id="sp-erp">--</div>
+      <div class="stat-sub" id="sp-erp-s">--</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-label">配当利回り</div>
+      <div class="stat-value" id="sp-div">--</div>
+      <div class="stat-sub neu">Dividend Yield</div>
+    </div>
   </div>
+</div>
 
-  <!-- ══════════════════════════════════
-       AI MEGATREND SECTION
-  ══════════════════════════════════ -->
-  <div class="ai-banner">
-    <div class="ai-banner-title">🤖 AI メガトレンド — S&amp;P500を動かす最大の構造変化</div>
+<!-- Price Chart -->
+<div class="section">
+  <div class="section-title">S&amp;P500 長期チャート</div>
+  <div class="card">
+    <div class="tf-row">
+      <button class="tf-btn active" onclick="setTF('5y',this)">5年</button>
+      <button class="tf-btn" onclick="setTF('10y',this)">10年</button>
+      <button class="tf-btn" onclick="setTF('20y',this)">20年</button>
+    </div>
+    <div class="ch ch-300"><canvas id="priceChart"></canvas></div>
+  </div>
+</div>
 
-    <!-- Magnificent 7 -->
-    <div style="font-size:10px;color:var(--muted);margin-bottom:8px;letter-spacing:1px;text-transform:uppercase;">Magnificent 7 — リアルタイム株価（S&P500の約33%を占める）</div>
+<!-- AI Megatrend -->
+<div class="section">
+  <div class="section-title">🤖 AI メガトレンド</div>
+  <div class="card" style="overflow:hidden;">
+    <div style="padding:14px 16px 8px;font-size:13px;color:var(--muted);font-weight:500;">Magnificent 7 — リアルタイム株価（S&amp;P500の約33%）</div>
     <div class="mag7-grid" id="mag7Grid">
-      <div class="mag7-cell"><div class="mag7-ticker">NVDA</div><div class="mag7-name">NVIDIA</div><div class="mag7-price" id="m7-NVDA-p">--</div><div class="mag7-ch" id="m7-NVDA-c">--</div><div class="mag7-weight">AI半導体 · 指数比率 7.0%</div></div>
-      <div class="mag7-cell"><div class="mag7-ticker">MSFT</div><div class="mag7-name">Microsoft</div><div class="mag7-price" id="m7-MSFT-p">--</div><div class="mag7-ch" id="m7-MSFT-c">--</div><div class="mag7-weight">AI統合 · 指数比率 6.5%</div></div>
-      <div class="mag7-cell"><div class="mag7-ticker">AAPL</div><div class="mag7-name">Apple</div><div class="mag7-price" id="m7-AAPL-p">--</div><div class="mag7-ch" id="m7-AAPL-c">--</div><div class="mag7-weight">AI端末 · 指数比率 6.2%</div></div>
-      <div class="mag7-cell"><div class="mag7-ticker">GOOGL</div><div class="mag7-name">Alphabet</div><div class="mag7-price" id="m7-GOOGL-p">--</div><div class="mag7-ch" id="m7-GOOGL-c">--</div><div class="mag7-weight">AI検索 · 指数比率 4.5%</div></div>
-      <div class="mag7-cell"><div class="mag7-ticker">AMZN</div><div class="mag7-name">Amazon</div><div class="mag7-price" id="m7-AMZN-p">--</div><div class="mag7-ch" id="m7-AMZN-c">--</div><div class="mag7-weight">AI/Cloud · 指数比率 4.0%</div></div>
-      <div class="mag7-cell"><div class="mag7-ticker">META</div><div class="mag7-name">Meta</div><div class="mag7-price" id="m7-META-p">--</div><div class="mag7-ch" id="m7-META-c">--</div><div class="mag7-weight">AI広告 · 指数比率 2.8%</div></div>
-      <div class="mag7-cell"><div class="mag7-ticker">TSLA</div><div class="mag7-name">Tesla</div><div class="mag7-price" id="m7-TSLA-p">--</div><div class="mag7-ch" id="m7-TSLA-c">--</div><div class="mag7-weight">AI自動運転 · 指数比率 1.8%</div></div>
+      <div class="mag7-cell"><div class="mag7-ticker">NVDA</div><div class="mag7-name">NVIDIA</div><div class="mag7-price" id="m7-NVDA-p">--</div><div class="mag7-ch" id="m7-NVDA-c">--</div><div class="mag7-weight">AI半導体 7.0%</div></div>
+      <div class="mag7-cell"><div class="mag7-ticker">MSFT</div><div class="mag7-name">Microsoft</div><div class="mag7-price" id="m7-MSFT-p">--</div><div class="mag7-ch" id="m7-MSFT-c">--</div><div class="mag7-weight">AI統合 6.5%</div></div>
+      <div class="mag7-cell"><div class="mag7-ticker">AAPL</div><div class="mag7-name">Apple</div><div class="mag7-price" id="m7-AAPL-p">--</div><div class="mag7-ch" id="m7-AAPL-c">--</div><div class="mag7-weight">AI端末 6.2%</div></div>
+      <div class="mag7-cell"><div class="mag7-ticker">GOOGL</div><div class="mag7-name">Alphabet</div><div class="mag7-price" id="m7-GOOGL-p">--</div><div class="mag7-ch" id="m7-GOOGL-c">--</div><div class="mag7-weight">AI検索 4.5%</div></div>
+      <div class="mag7-cell"><div class="mag7-ticker">AMZN</div><div class="mag7-name">Amazon</div><div class="mag7-price" id="m7-AMZN-p">--</div><div class="mag7-ch" id="m7-AMZN-c">--</div><div class="mag7-weight">AI/Cloud 4.0%</div></div>
+      <div class="mag7-cell"><div class="mag7-ticker">META</div><div class="mag7-name">Meta</div><div class="mag7-price" id="m7-META-p">--</div><div class="mag7-ch" id="m7-META-c">--</div><div class="mag7-weight">AI広告 2.8%</div></div>
+      <div class="mag7-cell"><div class="mag7-ticker">TSLA</div><div class="mag7-name">Tesla</div><div class="mag7-price" id="m7-TSLA-p">--</div><div class="mag7-ch" id="m7-TSLA-c">--</div><div class="mag7-weight">AI自動運転 1.8%</div></div>
     </div>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-      <!-- AI Adoption Curve -->
-      <div>
-        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">AI技術普及曲線 — 現在地</div>
-        <div class="ai-curve">
-          <div class="curve-phase" style="background:rgba(0,230,118,.15);color:var(--green);">🌱<br>イノベーター<br><span style="font-size:8px;color:var(--muted);">2019〜21</span></div>
-          <div class="curve-phase" style="background:rgba(0,200,255,.15);color:var(--cyan);">🚀<br>アーリー<br>アダプター<br><span style="font-size:8px;color:var(--muted);">2022〜23</span></div>
-          <div class="curve-phase cur" style="background:rgba(168,85,247,.25);color:var(--purple);border:2px solid var(--purple);">⚡<br>アーリー<br>マジョリティ<br><span style="font-size:8px;">2024〜26</span></div>
-          <div class="curve-phase" style="background:rgba(245,200,66,.08);color:var(--muted);">📈<br>レイト<br>マジョリティ<br><span style="font-size:8px;">2027〜30</span></div>
-          <div class="curve-phase" style="background:rgba(255,255,255,.04);color:var(--muted);">🏛<br>ラガード<br><span style="font-size:8px;">2030〜</span></div>
-        </div>
-        <div style="margin-top:24px;font-size:11px;color:var(--muted);line-height:1.7;" id="aiCurveText">
-          現在は<strong style="color:var(--purple);">アーリーマジョリティ期</strong>の序盤。
-          インターネット普及（1995〜2000年）と同じフェーズにあり、
-          まだ爆発的成長の前半。この段階でS&P500から手を引くことは、
-          1996年にNASDAQを売った行動と同じリスクがある。
-        </div>
+    <div style="padding:14px 16px 6px;">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:500;">AI技術普及曲線</div>
+      <div class="ai-curve">
+        <div class="curve-phase" style="background:rgba(52,199,89,.12);color:var(--green);font-size:9px;">🌱 イノベーター<br><span style="color:var(--muted);">2019〜21</span></div>
+        <div class="curve-phase" style="background:rgba(0,122,255,.12);color:var(--blue);font-size:9px;">🚀 アーリー<br><span style="color:var(--muted);">2022〜23</span></div>
+        <div class="curve-phase cur" style="background:rgba(175,82,222,.15);color:var(--purple);font-size:9px;">⚡ マジョリティ<br><span>2024〜26</span></div>
+        <div class="curve-phase" style="background:rgba(0,0,0,.04);color:var(--muted);font-size:9px;">📈 レイト<br><span>2027〜30</span></div>
+        <div class="curve-phase" style="background:rgba(0,0,0,.04);color:var(--muted);font-size:9px;">🏛 ラガード<br><span>2030〜</span></div>
       </div>
-
-      <!-- AI CapEx tracker -->
-      <div>
-        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">AI設備投資（CapEx）規模 — 年間 (2025年実績)</div>
-        <div class="capex-bars">
-          <div class="capex-row">
-            <div class="capex-name">Microsoft</div>
-            <div class="capex-bar-wrap"><div class="capex-bar-fill" style="width:90%;background:linear-gradient(90deg,#0078d4,#00c8ff);"></div></div>
-            <div class="capex-val" style="color:#00c8ff;">$800億</div>
-          </div>
-          <div class="capex-row">
-            <div class="capex-name">Google</div>
-            <div class="capex-bar-wrap"><div class="capex-bar-fill" style="width:75%;background:linear-gradient(90deg,#4285f4,#34a853);"></div></div>
-            <div class="capex-val" style="color:#4285f4;">$750億</div>
-          </div>
-          <div class="capex-row">
-            <div class="capex-name">Amazon AWS</div>
-            <div class="capex-bar-wrap"><div class="capex-bar-fill" style="width:85%;background:linear-gradient(90deg,#ff9900,#f5c842);"></div></div>
-            <div class="capex-val" style="color:#ff9900;">$850億</div>
-          </div>
-          <div class="capex-row">
-            <div class="capex-name">Meta</div>
-            <div class="capex-bar-wrap"><div class="capex-bar-fill" style="width:65%;background:linear-gradient(90deg,#0668e1,#00d4ff);"></div></div>
-            <div class="capex-val" style="color:#0668e1;">$650億</div>
-          </div>
-          <div class="capex-row">
-            <div class="capex-name">SoftBank</div>
-            <div class="capex-bar-wrap"><div class="capex-bar-fill" style="width:50%;background:linear-gradient(90deg,#ff6400,#f5c842);"></div></div>
-            <div class="capex-val" style="color:#ff6400;">$500億+</div>
-          </div>
-        </div>
-        <div style="margin-top:10px;font-size:11px;color:var(--muted);line-height:1.7;">
-          合計 <strong style="color:var(--text);">年間3,550億ドル超</strong> のAI設備投資が継続中。
-          この規模の資本投下は半導体・電力・データセンター産業全体を引き上げ、
-          S&P500の実体経済を底上げしている。
-        </div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.7;margin-top:8px;" id="aiCurveText">現在は<strong style="color:var(--purple);">アーリーマジョリティ期</strong>の序盤。インターネット普及（1995〜2000年）と同じフェーズにあり、まだ爆発的成長の前半。</div>
+    </div>
+    <div style="padding:0 16px 14px;">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:500;">AI設備投資（CapEx）規模 — 2025年実績</div>
+      <div class="capex-bars">
+        <div class="capex-row"><div class="capex-name">Microsoft</div><div class="capex-bar-wrap"><div class="capex-bar-fill" style="width:90%;background:linear-gradient(90deg,#0078d4,#00c8ff);"></div></div><div class="capex-val" style="color:#007AFF;">$800億</div></div>
+        <div class="capex-row"><div class="capex-name">Google</div><div class="capex-bar-wrap"><div class="capex-bar-fill" style="width:75%;background:linear-gradient(90deg,#4285f4,#34a853);"></div></div><div class="capex-val" style="color:#4285f4;">$750億</div></div>
+        <div class="capex-row"><div class="capex-name">Amazon AWS</div><div class="capex-bar-wrap"><div class="capex-bar-fill" style="width:85%;background:linear-gradient(90deg,#FF9500,#f5c842);"></div></div><div class="capex-val" style="color:var(--orange);">$850億</div></div>
+        <div class="capex-row"><div class="capex-name">Meta</div><div class="capex-bar-wrap"><div class="capex-bar-fill" style="width:65%;background:linear-gradient(90deg,#0668e1,#00d4ff);"></div></div><div class="capex-val" style="color:#0668e1;">$650億</div></div>
+        <div class="capex-row"><div class="capex-name">SoftBank</div><div class="capex-bar-wrap"><div class="capex-bar-fill" style="width:50%;background:linear-gradient(90deg,#FF6400,#f5c842);"></div></div><div class="capex-val" style="color:#FF6400;">$500億+</div></div>
       </div>
     </div>
-
-    <!-- AI impact on CAPE justification -->
-    <div style="margin-top:14px;background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.2);border-radius:10px;padding:14px;">
-      <div style="font-size:10px;color:var(--purple);font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">💡 なぜAIが高CAPEを正当化するか — 生産性革命論</div>
-      <div style="font-size:12px;color:var(--muted);line-height:1.8;" id="aiJustText">
-        1990年代後半のPC・インターネット革命時、CAPEは40超まで上昇したが、その後の実際の生産性向上がEPS成長を牽引した。
-        現在のAIは<strong style="color:var(--text);">ホワイトカラー業務の自動化</strong>により、企業の利益率を構造的に押し上げる可能性がある。
-        McKinseyは2030年までにAIが年間<strong style="color:var(--purple);">13兆ドル</strong>の経済価値を生み出すと試算。
-        これが実現すれば、現在の高CAPEは「割高」ではなく「正当な先取り」となる。
-        ただし、過去のバブルと同様、「今回は違う」という楽観論には常に慎重であるべきだ。
-      </div>
+    <div style="margin:0 16px 14px;padding:12px;background:rgba(175,82,222,.06);border:1px solid rgba(175,82,222,.2);border-radius:10px;">
+      <div style="font-size:11px;font-weight:700;color:var(--purple);margin-bottom:6px;">💡 なぜAIが高CAPEを正当化するか</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.7;" id="aiJustText">現在のAIは<strong style="color:var(--text);">ホワイトカラー業務の自動化</strong>により、企業の利益率を構造的に押し上げる可能性がある。McKinseyは2030年までにAIが年間<strong style="color:var(--purple);">13兆ドル</strong>の経済価値を生み出すと試算。</div>
     </div>
   </div>
+</div>
 
-  <!-- ══════════════════════════════════
-       SOFTBANK SECTION
-  ══════════════════════════════════ -->
-  <div class="sbk-banner">
-    <div class="sbk-title">🔶 SoftBank Group — AI投資の最前線を追う</div>
-
-    <!-- SBG Stock -->
+<!-- SoftBank Section -->
+<div class="section">
+  <div class="section-title">🔶 SoftBank — AI投資の最前線</div>
+  <div class="card card-inner">
     <div class="sbk-header">
       <div class="sbk-logo">🔶</div>
-      <div class="sbk-price-block">
-        <div class="sbk-price-lbl">SoftBank Group (9984.T) · 東京証券取引所</div>
+      <div>
+        <div class="sbk-price-lbl">SoftBank Group (9984.T)</div>
         <div class="sbk-price-val" id="sbk-price">--</div>
         <div class="sbk-price-ch" id="sbk-ch">--</div>
-        <div style="font-size:10px;color:var(--muted);margin-top:4px;" id="sbk-meta">--</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px;" id="sbk-meta">--</div>
       </div>
-      <div class="sbk-nav-val">
-        <div style="font-size:10px;color:var(--muted);text-align:right;margin-bottom:3px;">ARM Holdings (NASDAQ)</div>
-        <div style="font-size:22px;font-weight:800;color:var(--text);" id="arm-price">--</div>
-        <div style="font-size:11px;font-weight:700;" id="arm-ch">--</div>
-        <div style="font-size:9px;color:var(--muted);margin-top:2px;">SBGの最重要保有資産</div>
+      <div style="margin-left:auto;text-align:right;">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:2px;">ARM Holdings</div>
+        <div style="font-size:22px;font-weight:700;" id="arm-price">--</div>
+        <div style="font-size:12px;font-weight:600;" id="arm-ch">--</div>
       </div>
     </div>
-
-    <!-- Investment themes -->
-    <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">孫正義の投資テーマ</div>
     <div class="sbk-theme">
-      <span class="sbk-theme-tag">🧠 AGI（汎用人工知能）</span>
+      <span class="sbk-theme-tag">🧠 AGI</span>
       <span class="sbk-theme-tag">⚡ AI半導体</span>
-      <span class="sbk-theme-tag">🤖 ヒューマノイドロボット</span>
-      <span class="sbk-theme-tag">🏗 AI インフラ</span>
-      <span class="sbk-theme-tag">🧬 AI×ヘルスケア</span>
+      <span class="sbk-theme-tag">🤖 ヒューマノイド</span>
+      <span class="sbk-theme-tag">🏗 AIインフラ</span>
       <span class="sbk-theme-tag">🌐 データセンター</span>
-      <span class="sbk-theme-tag">🚗 自動運転</span>
     </div>
-
-    <!-- Portfolio companies -->
-    <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">主要投資先ポートフォリオ</div>
+  </div>
+  <div class="card" style="overflow:hidden;">
+    <div style="padding:12px 16px 8px;font-size:14px;font-weight:600;">主要投資先ポートフォリオ</div>
     <div class="sbk-port-grid">
-      <div class="sbk-port-cell">
-        <div class="sbk-port-name">ARM Holdings</div>
-        <div class="sbk-port-ticker">ARM · NASDAQ</div>
-        <div class="sbk-port-price" id="arm2-price" style="color:var(--gold);">--</div>
-        <div class="sbk-port-ch" id="arm2-ch">--</div>
-        <div class="sbk-port-desc">AI半導体の設計基盤。世界の95%のスマホチップを設計。SBGが90%超を保有。AGI時代のインフラ。</div>
-      </div>
-      <div class="sbk-port-cell">
-        <div class="sbk-port-name">OpenAI</div>
-        <div class="sbk-port-ticker">Private · $3000億評価</div>
-        <div class="sbk-port-price" style="color:var(--purple);">非上場</div>
-        <div class="sbk-port-ch" style="color:var(--green);">+大幅増資継続</div>
-        <div class="sbk-port-desc">ChatGPT開発元。SBGが巨額投資。AGIへの最短距離。上場すれば時価総額トップ10入りの可能性。</div>
-      </div>
-      <div class="sbk-port-cell">
-        <div class="sbk-port-name">T-Mobile US</div>
-        <div class="sbk-port-ticker">TMUS · NASDAQ</div>
-        <div class="sbk-port-price" id="tmus-price" style="color:var(--cyan);">--</div>
-        <div class="sbk-port-ch" id="tmus-ch">--</div>
-        <div class="sbk-port-desc">米国最大の通信会社。AI通信インフラとして5G × AI のシナジーを追求。安定的な収益源。</div>
-      </div>
-      <div class="sbk-port-cell">
-        <div class="sbk-port-name">NVIDIA</div>
-        <div class="sbk-port-ticker">NVDA · NASDAQ</div>
-        <div class="sbk-port-price" id="nvda2-price" style="color:var(--green);">--</div>
-        <div class="sbk-port-ch" id="nvda2-ch">--</div>
-        <div class="sbk-port-desc">AI半導体王者。Vision FundがGPU購入を通じ間接的に関与。SBGのAIインフラ戦略の核。</div>
-      </div>
-      <div class="sbk-port-cell">
-        <div class="sbk-port-name">Coupang</div>
-        <div class="sbk-port-ticker">CPNG · NYSE</div>
-        <div class="sbk-port-price" id="cpng-price" style="color:var(--text);">--</div>
-        <div class="sbk-port-ch" id="cpng-ch">--</div>
-        <div class="sbk-port-desc">韓国版Amazon。AI物流・推薦エンジンで急成長。Vision Fund最大の成功事例の一つ。</div>
-      </div>
-      <div class="sbk-port-cell">
-        <div class="sbk-port-name">ByteDance / TikTok</div>
-        <div class="sbk-port-ticker">Private · 推定$2500億</div>
-        <div class="sbk-port-price" style="color:var(--red);">非上場</div>
-        <div class="sbk-port-ch" style="color:var(--muted);">地政学リスクあり</div>
-        <div class="sbk-port-desc">TikTokのAIアルゴリズムは世界最高水準の推薦AI。米国規制が最大リスク。</div>
-      </div>
+      <div class="sbk-port-cell"><div class="sbk-port-name">ARM Holdings</div><div class="sbk-port-ticker">ARM · NASDAQ</div><div class="sbk-port-price" id="arm2-price" style="color:var(--orange);">--</div><div class="sbk-port-ch" id="arm2-ch">--</div><div class="sbk-port-desc">AI半導体設計の独占的プラットフォーム。SBGが90%超を保有。</div></div>
+      <div class="sbk-port-cell"><div class="sbk-port-name">OpenAI</div><div class="sbk-port-ticker">Private · $3000億評価</div><div class="sbk-port-price" style="color:var(--purple);">非上場</div><div class="sbk-port-ch up">+大幅増資継続</div><div class="sbk-port-desc">ChatGPT開発元。SBGが巨額投資。AGIへの最短距離。</div></div>
+      <div class="sbk-port-cell"><div class="sbk-port-name">T-Mobile US</div><div class="sbk-port-ticker">TMUS · NASDAQ</div><div class="sbk-port-price" id="tmus-price" style="color:var(--blue);">--</div><div class="sbk-port-ch" id="tmus-ch">--</div><div class="sbk-port-desc">米国最大の通信会社。5G × AI のシナジー。</div></div>
+      <div class="sbk-port-cell"><div class="sbk-port-name">NVIDIA</div><div class="sbk-port-ticker">NVDA · NASDAQ</div><div class="sbk-port-price" id="nvda2-price" style="color:var(--green);">--</div><div class="sbk-port-ch" id="nvda2-ch">--</div><div class="sbk-port-desc">AI半導体王者。SBGのAIインフラ戦略の核。</div></div>
+      <div class="sbk-port-cell"><div class="sbk-port-name">Coupang</div><div class="sbk-port-ticker">CPNG · NYSE</div><div class="sbk-port-price" id="cpng-price">--</div><div class="sbk-port-ch" id="cpng-ch">--</div><div class="sbk-port-desc">韓国版Amazon。AI物流で急成長。Vision Fund最大の成功例。</div></div>
+      <div class="sbk-port-cell"><div class="sbk-port-name">ByteDance / TikTok</div><div class="sbk-port-ticker">Private · 推定$2500億</div><div class="sbk-port-price" style="color:var(--red);">非上場</div><div class="sbk-port-ch" style="color:var(--muted);">地政学リスクあり</div><div class="sbk-port-desc">世界最高水準のAI推薦アルゴリズム。米国規制が最大リスク。</div></div>
     </div>
-
-    <!-- SBG insight -->
-    <div style="background:rgba(255,100,0,.08);border:1px solid rgba(255,100,0,.2);border-radius:10px;padding:14px;margin-bottom:16px;">
-      <div style="font-size:10px;color:var(--gold);font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">📡 孫正義の現在の読み — 「AGIは2026年に到来する」</div>
-      <div style="font-size:12px;color:var(--muted);line-height:1.8;" id="sbkInsight">
-        孫正義氏は2025〜26年に<strong style="color:var(--text);">「AGI（人間を超えるAI）が到来する」</strong>と明言し、
-        SoftBankの全リソースをAI・ロボティクスに集中投下している。
-        具体的には：<strong style="color:var(--gold);">Stargate Project（OpenAI+SBG+Oracle）で米国に$5000億のAIインフラを建設</strong>、
-        英国・日本にも同規模の投資を展開。これは単なる株式投資ではなく、
-        <strong style="color:var(--text);">AIインフラそのものを所有する戦略</strong>だ。
-        孫氏の過去の読み（Alibaba、Yahoo Japan、ARM）を見れば、
-        その先見性は無視できない。
-      </div>
+    <div style="padding:12px 16px 14px;background:rgba(255,100,0,.04);border-top:.5px solid var(--border);">
+      <div style="font-size:11px;font-weight:700;color:var(--orange);margin-bottom:6px;">📡 孫正義の現在の読み — 「AGIは2026年に到来する」</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.7;" id="sbkInsight">孫正義氏は2025〜26年に<strong style="color:var(--text);">「AGIが到来する」</strong>と明言。<strong style="color:var(--orange);">Stargate Project（OpenAI+SBG+Oracle）で米国に$5000億のAIインフラを建設</strong>。これは単なる投資ではなくAIインフラ自体を所有する戦略だ。</div>
     </div>
-
-    <!-- Mirror Strategy -->
-    <div style="font-size:10px;color:var(--cyan);font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;">🪞 SoftBank戦略ミラー — 個人投資家が同じ方向に乗る方法</div>
+  </div>
+  <div class="card" style="overflow:hidden;">
+    <div style="padding:14px 16px 8px;font-size:14px;font-weight:600;">🪞 SoftBank戦略ミラー</div>
     <div class="mirror-grid">
-      <div class="mirror-cell">
-        <div class="mirror-label">コア / 直接投資</div>
-        <div class="mirror-title">ARM Holdings</div>
-        <div class="mirror-ticker">ARM · NASDAQ上場</div>
-        <div class="mirror-desc">SBGが最も多く保有する銘柄。AI半導体設計の独占的プラットフォーム。直接購入が最もSBGに近い動き。</div>
-        <div class="mirror-alloc">推奨配分: 10〜20%</div>
-      </div>
-      <div class="mirror-cell">
-        <div class="mirror-label">AI半導体 ETF</div>
-        <div class="mirror-title">VanEck Semiconductor ETF</div>
-        <div class="mirror-ticker">SOXX / SMH</div>
-        <div class="mirror-desc">NVDA・AMD・AVGO・ARMを含む半導体ETF。SBGのAI半導体ベット全体を1本で再現。</div>
-        <div class="mirror-alloc">推奨配分: 15〜25%</div>
-      </div>
-      <div class="mirror-cell">
-        <div class="mirror-label">AI テック ETF</div>
-        <div class="mirror-title">Invesco QQQ / QQQM</div>
-        <div class="mirror-ticker">QQQ / QQQM</div>
-        <div class="mirror-desc">Mag7を含むNASDAQ100。SBGのポートフォリオ企業群（NVDA、MSFT、GOOGL等）に広く分散投資。</div>
-        <div class="mirror-alloc">推奨配分: 20〜30%</div>
-      </div>
-      <div class="mirror-cell">
-        <div class="mirror-label">SBG直接保有</div>
-        <div class="mirror-title">SoftBank Group株</div>
-        <div class="mirror-ticker">9984.T · 東証</div>
-        <div class="mirror-desc">SBG株自体がAI投資会社として機能。ARM・OpenAI等への間接エクスポージャーをNAV割引で取得できる。</div>
-        <div class="mirror-alloc">推奨配分: 5〜10%</div>
-      </div>
-      <div class="mirror-cell">
-        <div class="mirror-label">ロボティクス / 自動化</div>
-        <div class="mirror-title">ROBO Global Robotics ETF</div>
-        <div class="mirror-ticker">ROBO / BOTZ</div>
-        <div class="mirror-desc">SBGが注力するヒューマノイドロボット・自動化領域。2030年代の最大テーマに先行投資。</div>
-        <div class="mirror-alloc">推奨配分: 5〜10%</div>
-      </div>
-      <div class="mirror-cell">
-        <div class="mirror-label">安定コア</div>
-        <div class="mirror-title">S&P500インデックス</div>
-        <div class="mirror-ticker">VOO / IVV / eMAXIS Slim</div>
-        <div class="mirror-desc">AI成長の恩恵をMag7経由で受けつつ、全体分散を確保。SBGのリスクを補完するアンカーポジション。</div>
-        <div class="mirror-alloc">推奨配分: 20〜30%</div>
-      </div>
-    </div>
-
-    <div style="margin-top:12px;background:rgba(0,0,0,.2);border-radius:8px;padding:12px;font-size:11px;color:var(--muted);line-height:1.8;">
-      ⚠️ <strong style="color:var(--gold);">SoftBankミラー戦略のリスク：</strong>
-      SBGは高レバレッジを使った集中投資を行う。個人投資家は<strong style="color:var(--text);">レバレッジなし・分散あり</strong>で同方向に乗ることが重要。
-      上記配分はポートフォリオの<strong style="color:var(--red);">最大50%まで</strong>に留め、残りはS&P500インデックスと債券で安定性を確保すること。
+      <div class="mirror-cell"><div class="mirror-label">コア / 直接投資</div><div class="mirror-title">ARM Holdings</div><div class="mirror-ticker">ARM · NASDAQ</div><div class="mirror-desc">SBGが最も多く保有。AI半導体設計の独占的プラットフォーム。</div><div class="mirror-alloc">推奨配分: 10〜20%</div></div>
+      <div class="mirror-cell"><div class="mirror-label">AI半導体 ETF</div><div class="mirror-title">VanEck Semiconductor ETF</div><div class="mirror-ticker">SOXX / SMH</div><div class="mirror-desc">NVDA・AMD・AVGO・ARMを含む半導体ETF。SBGのAI半導体ベットを1本で再現。</div><div class="mirror-alloc">推奨配分: 15〜25%</div></div>
+      <div class="mirror-cell"><div class="mirror-label">AI テック ETF</div><div class="mirror-title">Invesco QQQ / QQQM</div><div class="mirror-ticker">QQQ / QQQM</div><div class="mirror-desc">Mag7を含むNASDAQ100。SBGのポートフォリオ企業群に広く分散投資。</div><div class="mirror-alloc">推奨配分: 20〜30%</div></div>
+      <div class="mirror-cell"><div class="mirror-label">SBG直接保有</div><div class="mirror-title">SoftBank Group株</div><div class="mirror-ticker">9984.T · 東証</div><div class="mirror-desc">SBG株自体がAI投資会社として機能。NAV割引でエクスポージャーを取得できる。</div><div class="mirror-alloc">推奨配分: 5〜10%</div></div>
+      <div class="mirror-cell"><div class="mirror-label">ロボティクス</div><div class="mirror-title">ROBO Global Robotics ETF</div><div class="mirror-ticker">ROBO / BOTZ</div><div class="mirror-desc">SBGが注力するヒューマノイドロボット・自動化領域。2030年代の最大テーマ。</div><div class="mirror-alloc">推奨配分: 5〜10%</div></div>
+      <div class="mirror-cell"><div class="mirror-label">安定コア</div><div class="mirror-title">S&amp;P500インデックス</div><div class="mirror-ticker">VOO / IVV / eMAXIS Slim</div><div class="mirror-desc">AI成長の恩恵をMag7経由で受けつつ、全体分散を確保するアンカーポジション。</div><div class="mirror-alloc">推奨配分: 20〜30%</div></div>
     </div>
   </div>
+</div>
 
-  <!-- main 2-col -->
-  <div class="main-grid">
-
-    <!-- ── LEFT ── -->
-    <div>
-
-      <!-- Price chart -->
-      <div class="card">
-        <div class="card-title">S&amp;P500 長期チャート（MA50/MA200付き）</div>
-        <div class="tf-row">
-          <button class="tf-btn active" onclick="setTF('5y',this)">5年</button>
-          <button class="tf-btn" onclick="setTF('10y',this)">10年</button>
-          <button class="tf-btn" onclick="setTF('20y',this)">20年</button>
-        </div>
-        <div class="ch ch-300"><canvas id="priceChart"></canvas></div>
+<!-- Momentum Analysis -->
+<div class="section">
+  <div class="section-title">⚡ モメンタム vs バリュエーション</div>
+  <div class="card card-inner">
+    <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:4px;"><span>弱気</span><span>モメンタムスコア</span><span>強気</span></div>
+    <div class="mom-track"><div class="mom-dot" id="momDot" style="left:50%"></div></div>
+    <div id="momLabel" style="text-align:center;font-size:13px;font-weight:600;margin-bottom:14px;color:var(--orange);">解析中...</div>
+    <div class="mv-grid">
+      <div class="mv-side">
+        <h4 style="color:var(--green);">🟢 強気材料</h4>
+        <div id="bullCases"><div class="mv-item"><div class="mv-dot" style="background:var(--green)"></div><span style="font-size:13px;color:var(--muted);">読み込み中...</span></div></div>
       </div>
-
-      <!-- ── MOMENTUM vs VALUATION ── -->
-      <div class="card">
-        <div class="card-title">⚡ 割高でも、まだ伸びるか？ — モメンタム vs バリュエーション解析</div>
-
-        <div style="margin-bottom:10px;">
-          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:4px;">
-            <span>弱気</span><span>モメンタムスコア</span><span>強気</span>
-          </div>
-          <div style="height:9px;background:linear-gradient(90deg,var(--red),var(--gold),var(--green));border-radius:10px;position:relative;">
-            <div id="momDot" style="position:absolute;top:50%;transform:translate(-50%,-50%);width:16px;height:16px;background:#fff;border-radius:50%;box-shadow:0 0 8px rgba(0,0,0,.6);transition:left 1.2s ease;left:50%"></div>
-          </div>
-          <div id="momLabel" style="text-align:center;font-size:11px;font-weight:700;margin-top:6px;color:var(--gold);">解析中...</div>
-        </div>
-
-        <div class="mv-grid">
-          <div class="mv-side">
-            <h4 style="color:var(--green);">🟢 強気材料（まだ伸びる根拠）</h4>
-            <div id="bullCases">
-              <div class="mv-item"><div class="mv-dot" style="background:var(--green)"></div><span>読み込み中...</span></div>
-            </div>
-          </div>
-          <div class="mv-side">
-            <h4 style="color:var(--red);">🔴 弱気材料（調整リスク）</h4>
-            <div id="bearCases">
-              <div class="mv-item"><div class="mv-dot" style="background:var(--red)"></div><span>読み込み中...</span></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Historical analog -->
-        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;margin-top:4px;">
-          <div style="font-size:10px;color:var(--cyan);font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">📚 歴史的アナログ — 「割高でも上がり続けた」先例</div>
-          <div id="historicalAnalog" style="font-size:12px;color:var(--muted);line-height:1.8;">解析中...</div>
-        </div>
-
-        <div class="ch ch-200" style="margin-top:12px;"><canvas id="predChart"></canvas></div>
-        <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:6px;">10年間の確率的予測レンジ（モンテカルロ500回）</div>
-      </div>
-
-      <!-- ── WORLD NEWS ── -->
-      <div class="card">
-        <div class="card-title">🌐 世界ニュース — 市場インパクト分析</div>
-        <div id="newsLoading" style="color:var(--muted);font-size:12px;padding:16px 0;text-align:center;">ニュースを取得中...</div>
-        <div id="newsFeed" style="display:none;"></div>
-        <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
-          <div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">ニュース総合判断</div>
-          <div id="newsSummary" style="font-size:12px;color:var(--muted);line-height:1.7;">集計中...</div>
-        </div>
-      </div>
-
-      <!-- ── CAPE mini-charts ── -->
-      <div class="g2">
-        <div class="card" style="margin-bottom:0;">
-          <div class="card-title" style="font-size:10px;">CAPE レシオ推移</div>
-          <div class="ch ch-130"><canvas id="capeChart"></canvas></div>
-        </div>
-        <div class="card" style="margin-bottom:0;">
-          <div class="card-title" style="font-size:10px;">10年国債利回り推移</div>
-          <div class="ch ch-130"><canvas id="yieldChart"></canvas></div>
-        </div>
-      </div>
-
-      <!-- ── DCA ── -->
-      <div class="card" style="margin-top:14px;">
-        <div class="card-title">💰 積立シミュレーター</div>
-        <div class="dca-inputs">
-          <div class="dca-f"><label>毎月積立（円）</label><input type="number" id="dcaAmt" value="30000" step="5000"/></div>
-          <div class="dca-f"><label>積立年数</label><input type="number" id="dcaYrs" value="20" min="1" max="40"/></div>
-          <div class="dca-f"><label>想定年率 (%)</label><input type="number" id="dcaRate" value="7" step="0.5"/></div>
-        </div>
-        <button class="dca-btn" onclick="calcDCA()">📊 計算する</button>
-        <div id="dcaResult" style="display:none;margin-top:12px;">
-          <div class="g3" style="margin-bottom:10px;">
-            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px;text-align:center;">
-              <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">総投資額</div>
-              <div style="font-size:18px;font-weight:800;color:var(--gold);margin-top:4px;" id="dca-inv">--</div>
-            </div>
-            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px;text-align:center;">
-              <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">最終資産</div>
-              <div style="font-size:18px;font-weight:800;color:var(--green);margin-top:4px;" id="dca-tot">--</div>
-            </div>
-            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px;text-align:center;">
-              <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">倍率</div>
-              <div style="font-size:18px;font-weight:800;color:var(--cyan);margin-top:4px;" id="dca-mul">--</div>
-            </div>
-          </div>
-          <div class="ch ch-130"><canvas id="dcaChart"></canvas></div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- ── RIGHT ── -->
-    <div>
-
-      <!-- ── iDeCo ADVISOR ── -->
-      <div class="card">
-        <div class="card-title">🏦 iDeCo ポートフォリオ アドバイス</div>
-        <div class="ideco-verdict" id="idecoVerdict">解析中...</div>
-
-        <div style="font-size:11px;font-weight:700;color:var(--text);margin-bottom:10px;">推奨ポートフォリオ配分</div>
-        <div class="alloc-grid" id="allocGrid">
-          <div style="color:var(--muted);font-size:12px;">解析中...</div>
-        </div>
-
-        <div style="margin-top:14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;">
-          <div style="font-size:10px;color:var(--cyan);font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">🔄 リバランス判断</div>
-          <div id="rebalanceAdvice" style="font-size:11px;color:var(--muted);line-height:1.7;">解析中...</div>
-        </div>
-      </div>
-
-      <!-- ── ACTION TODO ── -->
-      <div class="card">
-        <div class="card-title">✅ 行動プラン — 今すぐやること</div>
-        <div id="todoList"></div>
-        <div style="margin-top:10px;font-size:10px;color:var(--muted);">チェックを押すと完了マーク（ページ内のみ保持）</div>
-      </div>
-
-      <!-- ── PSYCHOLOGY ── -->
-      <div class="card">
-        <div class="card-title">🧠 投資家心理 — ブレない判断軸</div>
-        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px;">
-          <div style="font-size:10px;color:var(--gold);font-weight:700;letter-spacing:1px;margin-bottom:6px;">現在の市場心理</div>
-          <div id="mktPsych" style="font-size:12px;color:var(--text);line-height:1.7;">解析中...</div>
-        </div>
-        <div class="psych-principles" id="psychPrinciples">
-          <div class="principle">
-            <div class="p-title">📌 原則①：感情でなくシステムで動く</div>
-            <div class="p-body">毎月の積立日を固定し、価格を見ずに自動執行する。「今月は高い」と感じても実行する。10年後に感謝する。</div>
-          </div>
-          <div class="principle">
-            <div class="p-title">📌 原則②：下落は「セール」である</div>
-            <div class="p-body">市場が-20%になったとき、同じ商品が2割引きで買えると考える。長期投資家にとって下落は友人だ。</div>
-          </div>
-          <div class="principle">
-            <div class="p-title">📌 原則③：見ない勇気を持つ</div>
-            <div class="p-body">毎日ポートフォリオを確認する投資家は、確認しない投資家よりリターンが低い（Benartzi研究）。週1回で十分。</div>
-          </div>
-          <div class="principle">
-            <div class="p-title">📌 原則④：「今は特別」という罠に気づく</div>
-            <div class="p-body">「今回は違う」という言葉は歴史上常に使われてきた。市場は常に不安要素があり、それでも長期では上昇した。</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ── KEY INDICATORS ── -->
-      <div class="card">
-        <div class="card-title">📊 マクロ指標</div>
-        <div class="ind-grid">
-          <div class="ind-cell">
-            <div class="ind-name">MA200</div>
-            <div class="ind-num" id="ma200">--</div>
-            <div class="ind-sig" id="ma200s">--</div>
-          </div>
-          <div class="ind-cell">
-            <div class="ind-name">P/E レシオ</div>
-            <div class="ind-num" id="pe">--</div>
-            <div class="ind-sig" id="pes">--</div>
-          </div>
-          <div class="ind-cell">
-            <div class="ind-name">実質金利</div>
-            <div class="ind-num" id="realRate">--</div>
-            <div class="ind-sig" id="realRates">--</div>
-          </div>
-          <div class="ind-cell">
-            <div class="ind-name">10yr CAPE予測</div>
-            <div class="ind-num" id="capeRet">--</div>
-            <div class="ind-sig" id="capeRets">--</div>
-          </div>
-        </div>
-
-        <!-- Buffett Gauge -->
-        <div style="margin-top:12px;">
-          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">バフェット指標 ゲージ</div>
-          <div style="height:8px;background:linear-gradient(90deg,var(--green),var(--gold),#ff8c00,var(--red));border-radius:10px;position:relative;margin-bottom:4px;">
-            <div id="buffDot" style="position:absolute;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;background:#fff;border-radius:50%;box-shadow:0 0 6px rgba(0,0,0,.5);transition:left 1s ease;left:50%"></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted);">
-            <span>割安 &lt;80%</span><span>適正 80-120%</span><span>割高 &gt;150%</span>
-          </div>
-        </div>
-
-        <!-- CAPE gauge -->
-        <div style="margin-top:10px;">
-          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">CAPE 水準</div>
-          <div style="height:8px;background:linear-gradient(90deg,var(--green),var(--gold),var(--red));border-radius:10px;position:relative;margin-bottom:4px;">
-            <div id="capeDot" style="position:absolute;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;background:#fff;border-radius:50%;box-shadow:0 0 6px rgba(0,0,0,.5);transition:left 1s ease;left:50%"></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted);">
-            <span>10</span><span>16.7 (歴史平均)</span><span>40+</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="update-bar">
-        <span id="updateTime">--</span>
-        <span id="dataSource" style="color:var(--cyan);">--</span>
+      <div class="mv-side">
+        <h4 style="color:var(--red);">🔴 弱気材料</h4>
+        <div id="bearCases"><div class="mv-item"><div class="mv-dot" style="background:var(--red)"></div><span style="font-size:13px;color:var(--muted);">読み込み中...</span></div></div>
       </div>
     </div>
-
+    <div style="background:var(--bg);border-radius:10px;padding:12px;margin-bottom:14px;">
+      <div style="font-size:11px;color:var(--blue);font-weight:700;margin-bottom:8px;">📚 歴史的アナログ</div>
+      <div id="historicalAnalog" style="font-size:12px;color:var(--muted);line-height:1.8;">解析中...</div>
+    </div>
+    <div style="font-size:14px;font-weight:600;margin-bottom:8px;">10年間 確率的予測レンジ</div>
+    <div class="ch ch-200"><canvas id="predChart"></canvas></div>
+    <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:4px;">モンテカルロ500回シミュレーション</div>
   </div>
+</div>
 
-  <!-- ── SCHOLAR ANALYSIS ── -->
-  <div class="card" style="margin-top:14px;">
-    <div class="card-title">🏛 Dr. Quantum Alpha — 長期マクロ総合見解</div>
-    <div class="analysis-box">
+<!-- News -->
+<div class="section">
+  <div class="section-title">🌐 世界ニュース</div>
+  <div class="card">
+    <div id="newsLoading" style="color:var(--muted);font-size:13px;padding:16px;text-align:center;">ニュースを取得中...</div>
+    <div id="newsFeed" style="display:none;"></div>
+    <div style="padding:12px 16px;border-top:.5px solid var(--border);">
+      <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;">ニュース総合判断</div>
+      <div id="newsSummary" style="font-size:13px;color:var(--text);line-height:1.7;">集計中...</div>
+    </div>
+  </div>
+</div>
+
+<!-- CAPE & Yield Charts -->
+<div class="section">
+  <div class="g2">
+    <div class="card">
+      <div style="padding:12px 16px 4px;font-size:13px;font-weight:600;color:var(--muted);">CAPE レシオ推移</div>
+      <div class="ch ch-130"><canvas id="capeChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div style="padding:12px 16px 4px;font-size:13px;font-weight:600;color:var(--muted);">10年債利回り推移</div>
+      <div class="ch ch-130"><canvas id="yieldChart"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- iDeCo Advisor -->
+<div class="section">
+  <div class="section-title">🏦 iDeCo アドバイス</div>
+  <div class="card card-inner">
+    <div class="ideco-verdict" id="idecoVerdict">解析中...</div>
+    <div style="font-size:14px;font-weight:600;margin-bottom:10px;">推奨ポートフォリオ配分</div>
+    <div id="allocGrid"><div style="color:var(--muted);font-size:13px;">解析中...</div></div>
+    <div style="margin-top:14px;background:var(--bg);border-radius:10px;padding:12px;">
+      <div style="font-size:12px;font-weight:600;color:var(--blue);margin-bottom:8px;">🔄 リバランス判断</div>
+      <div id="rebalanceAdvice" style="font-size:12px;color:var(--muted);line-height:1.7;">解析中...</div>
+    </div>
+  </div>
+</div>
+
+<!-- DCA Simulator -->
+<div class="section">
+  <div class="section-title">💰 積立シミュレーター</div>
+  <div class="card card-inner">
+    <div class="dca-inputs">
+      <div class="dca-f"><label>毎月積立（円）</label><input type="number" id="dcaAmt" value="30000" step="5000"/></div>
+      <div class="dca-f"><label>積立年数</label><input type="number" id="dcaYrs" value="20" min="1" max="40"/></div>
+      <div class="dca-f"><label>想定年率 (%)</label><input type="number" id="dcaRate" value="7" step="0.5"/></div>
+    </div>
+    <button class="dca-btn" onclick="calcDCA()">📊 計算する</button>
+    <div id="dcaResult" style="display:none;margin-top:12px;">
+      <div class="dca-results" style="border-radius:10px;overflow:hidden;margin-bottom:12px;">
+        <div class="dca-cell"><div class="dca-lbl">総投資額</div><div class="dca-val" style="color:var(--orange);" id="dca-inv">--</div></div>
+        <div class="dca-cell"><div class="dca-lbl">最終資産</div><div class="dca-val up" id="dca-tot">--</div></div>
+        <div class="dca-cell"><div class="dca-lbl">倍率</div><div class="dca-val" style="color:var(--blue);" id="dca-mul">--</div></div>
+      </div>
+      <div class="ch ch-130"><canvas id="dcaChart"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- Action TODO -->
+<div class="section">
+  <div class="section-title">✅ 行動プラン</div>
+  <div class="card">
+    <div id="todoList"></div>
+    <div style="padding:8px 16px;font-size:11px;color:var(--muted);">チェックを押すと完了マーク</div>
+  </div>
+</div>
+
+<!-- Psychology -->
+<div class="section">
+  <div class="section-title">🧠 投資家心理</div>
+  <div class="card card-inner">
+    <div style="background:var(--bg);border-radius:10px;padding:12px;margin-bottom:12px;">
+      <div style="font-size:12px;font-weight:600;color:var(--orange);margin-bottom:6px;">現在の市場心理</div>
+      <div id="mktPsych" style="font-size:13px;color:var(--text2);line-height:1.7;">解析中...</div>
+    </div>
+    <div class="psych-principles" id="psychPrinciples">
+      <div class="principle"><div class="p-title">📌 原則①：感情でなくシステムで動く</div><div class="p-body">毎月の積立日を固定し、価格を見ずに自動執行する。10年後に感謝する。</div></div>
+      <div class="principle"><div class="p-title">📌 原則②：下落は「セール」である</div><div class="p-body">市場が-20%になったとき、同じ商品が2割引きで買えると考える。長期投資家にとって下落は友人だ。</div></div>
+      <div class="principle"><div class="p-title">📌 原則③：見ない勇気を持つ</div><div class="p-body">毎日ポートフォリオを確認する投資家は、確認しない投資家よりリターンが低い（Benartzi研究）。</div></div>
+      <div class="principle"><div class="p-title">📌 原則④：「今は特別」という罠に気づく</div><div class="p-body">「今回は違う」という言葉は歴史上常に使われてきた。市場は常に不安要素があり、それでも長期では上昇した。</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Key Indicators -->
+<div class="section">
+  <div class="section-title">📊 マクロ指標</div>
+  <div class="card" style="overflow:hidden;">
+    <div class="ind-grid">
+      <div class="ind-cell"><div class="ind-name">MA200</div><div class="ind-num" id="ma200">--</div><div class="ind-sig" id="ma200s">--</div></div>
+      <div class="ind-cell"><div class="ind-name">P/E レシオ</div><div class="ind-num" id="pe">--</div><div class="ind-sig" id="pes">--</div></div>
+      <div class="ind-cell"><div class="ind-name">実質金利</div><div class="ind-num" id="realRate">--</div><div class="ind-sig" id="realRates">--</div></div>
+      <div class="ind-cell"><div class="ind-name">10yr CAPE予測</div><div class="ind-num" id="capeRet">--</div><div class="ind-sig" id="capeRets">--</div></div>
+    </div>
+    <div style="padding:14px 16px;">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:500;">バフェット指標 ゲージ</div>
+      <div class="gauge-track" style="background:linear-gradient(90deg,var(--green),var(--orange),#ff6600,var(--red));">
+        <div class="gauge-dot" id="buffDot" style="left:50%"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);"><span>割安 &lt;80%</span><span>適正 80-120%</span><span>割高 &gt;150%</span></div>
+      <div style="font-size:12px;color:var(--muted);margin:14px 0 6px;font-weight:500;">CAPE 水準</div>
+      <div class="gauge-track" style="background:linear-gradient(90deg,var(--green),var(--orange),var(--red));">
+        <div class="gauge-dot" id="capeDot" style="left:50%"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);"><span>10</span><span>16.7 (歴史平均)</span><span>40+</span></div>
+    </div>
+    <div class="update-bar"><span id="updateTime">--</span><span id="dataSource" style="color:var(--blue);">--</span></div>
+  </div>
+</div>
+
+<!-- Scholar -->
+<div class="section">
+  <div class="section-title">🏛 Dr. Quantum Alpha — 長期マクロ総合見解</div>
+  <div class="card">
+    <div class="analysis-card">
       <div class="scholar-row">
         <div class="avatar">🏛</div>
-        <div>
-          <div class="sch-name">Dr. Quantum Alpha · Global Macro Strategist</div>
-          <div class="sch-title">元FRBエコノミスト · イェール大学金融学教授 · Shiller CAPE共著者 · 運用資産200億ドル · CFA</div>
-        </div>
+        <div><div class="sch-name">Dr. Quantum Alpha</div><div class="sch-title">Global Macro Strategist · Yale金融学教授 · CFA</div></div>
       </div>
-      <div id="scholarText" style="font-style:italic;">解析中...</div>
+      <div id="scholarText" style="font-style:italic;color:var(--muted);">解析中...</div>
     </div>
   </div>
+</div>
 
-  <div class="disclaimer">
-    ⚠️ 本ツールは教育・参考目的のAI分析システムです。投資判断はご自身の責任で行ってください。iDeCoの具体的な商品選択は各金融機関のラインナップにより異なります。
-    CAPE予測モデルはシラー教授の研究に基づきますが、将来のリターンを保証するものではありません。
-  </div>
+<div class="disclaimer">⚠️ 本ツールは教育・参考目的のAI分析システムです。投資判断はご自身の責任で行ってください。iDeCoの具体的な商品選択は各金融機関のラインナップにより異なります。</div>
 
+<div class="tab-bar">
+  <a href="index.html" class="tab-item"><span class="tab-icon">📊</span><span class="tab-label">Markets</span></a>
+  <a href="sp500.html" class="tab-item active"><span class="tab-icon">📈</span><span class="tab-label">S&P500</span></a>
+  <a href="#" class="tab-item"><span class="tab-icon">📰</span><span class="tab-label">News</span></a>
+  <a href="#" class="tab-item"><span class="tab-icon">🔍</span><span class="tab-label">Search</span></a>
 </div>
 
 <script>
-/* ════════════════════════════════
-   STATE
-════════════════════════════════ */
-let TF = '5y';
-let G = {}; // global computed data
-let charts = {};
-let dcaChartInst = null;
-const TODAY = new Date('2026-05-19');
+let TF='5y';
+let G={};
+let charts={};
+let dcaChartInst=null;
+const TODAY=new Date('2026-05-19');
 
-/* ════════════════════════════════
-   UTILS
-════════════════════════════════ */
-const fmtN = (n, d=0) => (+n).toLocaleString('ja-JP', {minimumFractionDigits:d, maximumFractionDigits:d});
-const fmtPct = n => (n>=0?'+':'')+n.toFixed(1)+'%';
-const fmtDate = d => `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
-function addDays(d, n) { const r=new Date(d); r.setDate(r.getDate()+n); return r; }
-function addMonths(d, n) { const r=new Date(d); r.setMonth(r.getMonth()+n); return r; }
+const fmtN=(n,d=0)=>(+n).toLocaleString('ja-JP',{minimumFractionDigits:d,maximumFractionDigits:d});
+const fmtPct=n=>(n>=0?'+':'')+n.toFixed(1)+'%';
+const fmtDate=d=>`${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+function addDays(d,n){const r=new Date(d);r.setDate(r.getDate()+n);return r;}
+function addMonths(d,n){const r=new Date(d);r.setMonth(r.getMonth()+n);return r;}
 
-/* ════════════════════════════════
-   MATH
-════════════════════════════════ */
-function ema(arr, n) {
-  const k=2/(n+1), out=[arr[0]];
-  for(let i=1;i<arr.length;i++) out.push(arr[i]*k+out[i-1]*(1-k));
-  return out;
-}
+function ema(arr,n){const k=2/(n+1),out=[arr[0]];for(let i=1;i<arr.length;i++)out.push(arr[i]*k+out[i-1]*(1-k));return out;}
+function capeReturn(cape){const base=(1/cape*100)-0.5;return{bear:base-3,base,bull:base+3};}
+function monteCarlo(prices,days=7,sims=500){const ret=prices.slice(1).map((v,i)=>Math.log(v/prices[i]));const mu=ret.reduce((a,b)=>a+b,0)/ret.length;const sigma=Math.sqrt(ret.reduce((a,b)=>a+(b-mu)**2,0)/ret.length);const last=prices[prices.length-1];const paths=[];for(let s=0;s<sims;s++){let p=last;const path=[p];for(let d=0;d<days;d++){const z=(Math.random()+Math.random()+Math.random()+Math.random()-2)*Math.SQRT2/Math.sqrt(2/3);p*=Math.exp((mu-sigma**2/2)+sigma*z);path.push(p);}paths.push(path);}const out={p10:[],p25:[],p50:[],p75:[],p90:[]};for(let d=0;d<=days;d++){const vals=paths.map(p=>p[d]).sort((a,b)=>a-b);out.p10.push(vals[Math.floor(sims*.10)]);out.p25.push(vals[Math.floor(sims*.25)]);out.p50.push(vals[Math.floor(sims*.50)]);out.p75.push(vals[Math.floor(sims*.75)]);out.p90.push(vals[Math.floor(sims*.90)]);}return out;}
 
-function capeReturn(cape) {
-  const base = (1/cape*100) - 0.5;
-  return { bear: base-3, base, bull: base+3 };
-}
+const MACRO={cape:33.8,pe:23.4,buffett:174,divYield:1.35,t10:4.38,inflation:2.9,fedRate:4.25,vix:18.5,gdpGrowth:2.4};
 
-function monteCarlo(prices, days=7, sims=500) {
-  const ret = prices.slice(1).map((v,i)=>Math.log(v/prices[i]));
-  const mu = ret.reduce((a,b)=>a+b,0)/ret.length;
-  const sigma = Math.sqrt(ret.reduce((a,b)=>a+(b-mu)**2,0)/ret.length);
-  const last = prices[prices.length-1];
-  const paths = [];
-  for(let s=0;s<sims;s++){
-    let p=last; const path=[p];
-    for(let d=0;d<days;d++){
-      const z=(Math.random()+Math.random()+Math.random()+Math.random()-2)*Math.SQRT2/Math.sqrt(2/3);
-      p*=Math.exp((mu-sigma**2/2)+sigma*z);
-      path.push(p);
-    }
-    paths.push(path);
-  }
-  const out={p10:[],p25:[],p50:[],p75:[],p90:[]};
-  for(let d=0;d<=days;d++){
-    const vals=paths.map(p=>p[d]).sort((a,b)=>a-b);
-    out.p10.push(vals[Math.floor(sims*.10)]);
-    out.p25.push(vals[Math.floor(sims*.25)]);
-    out.p50.push(vals[Math.floor(sims*.50)]);
-    out.p75.push(vals[Math.floor(sims*.75)]);
-    out.p90.push(vals[Math.floor(sims*.90)]);
-  }
-  return out;
-}
-
-/* ════════════════════════════════
-   CURATED MACRO DATA (2026年5月時点)
-   These don't change intraday — hard-coded current approximations
-════════════════════════════════ */
-const MACRO = {
-  cape: 33.8,
-  pe: 23.4,
-  buffett: 174,      // %
-  divYield: 1.35,
-  t10: 4.38,
-  inflation: 2.9,    // CPI YoY %
-  fedRate: 4.25,
-  vix: 18.5,
-  gdpGrowth: 2.4,    // annualized %
-};
-
-/* ════════════════════════════════
-   CURATED NEWS (2026年5月)
-   RSS取得を試みて失敗した場合のフォールバック
-════════════════════════════════ */
-const CURATED_NEWS = [
-  { title: 'FRB、2026年利下げペースを「慎重に維持」 — 年内1〜2回の可能性', source: 'Federal Reserve / Bloomberg', date: '2026-05-18', impact: 'bull', impactText: '🟢 株式市場: 軽度プラス — 利下げ期待が下支え', tag: 'bull' },
-  { title: 'AI半導体需要が加速、NVIDIAが四半期売上高を再び大幅更新', source: 'Reuters', date: '2026-05-17', impact: 'bull', impactText: '🟢 テック株: 強い追い風。S&P500牽引役として継続', tag: 'bull' },
-  { title: '米中通商交渉：関税一部緩和で合意。対中関税25%→15%へ段階的引き下げ', source: 'WSJ', date: '2026-05-16', impact: 'bull', impactText: '🟢 グローバルリスク低減。消費財・製造業にプラス', tag: 'bull' },
-  { title: '米国債発行増加でイールドカーブが再スティープ化、長期金利上昇圧力', source: 'Financial Times', date: '2026-05-15', impact: 'bear', impactText: '🔴 バリュエーション圧迫。高PER株に逆風', tag: 'bear' },
-  { title: '欧州、景気後退リスク高まる。独PMI2ヶ月連続で50割れ', source: 'Eurostat / Reuters', date: '2026-05-14', impact: 'bear', impactText: '🔴 グローバル経済: 軽度ネガティブ。輸出企業に影響', tag: 'bear' },
-  { title: '米国CPI 2.9%、コアCPI 3.1% — 予想やや下振れでインフレ鈍化確認', source: 'BLS / AP', date: '2026-05-13', impact: 'bull', impactText: '🟢 インフレ鈍化でFRBの政策余地が拡大', tag: 'bull' },
-  { title: '地政学リスク: 中東情勢緊張継続。原油価格が80ドル台で推移', source: 'Bloomberg', date: '2026-05-12', impact: 'neu', impactText: '🟡 エネルギー株にはプラス。輸送・製造にコスト圧力', tag: 'neu' },
-  { title: 'バフェット氏、「割高市場でのキャッシュ保有比率を最高水準に維持」と発言', source: 'Berkshire Hathaway Annual Meeting', date: '2026-05-04', impact: 'neu', impactText: '🟡 長期投資家への示唆: リスク管理の重要性', tag: 'neu' },
+const CURATED_NEWS=[
+  {title:'FRB、2026年利下げペースを「慎重に維持」 — 年内1〜2回の可能性',source:'Federal Reserve / Bloomberg',date:'2026-05-18',impact:'bull',impactText:'🟢 株式市場: 軽度プラス — 利下げ期待が下支え',tag:'bull'},
+  {title:'AI半導体需要が加速、NVIDIAが四半期売上高を再び大幅更新',source:'Reuters',date:'2026-05-17',impact:'bull',impactText:'🟢 テック株: 強い追い風。S&P500牽引役として継続',tag:'bull'},
+  {title:'米中通商交渉：関税一部緩和で合意。対中関税25%→15%へ段階的引き下げ',source:'WSJ',date:'2026-05-16',impact:'bull',impactText:'🟢 グローバルリスク低減。消費財・製造業にプラス',tag:'bull'},
+  {title:'米国債発行増加でイールドカーブが再スティープ化、長期金利上昇圧力',source:'Financial Times',date:'2026-05-15',impact:'bear',impactText:'🔴 バリュエーション圧迫。高PER株に逆風',tag:'bear'},
+  {title:'欧州、景気後退リスク高まる。独PMI2ヶ月連続で50割れ',source:'Reuters',date:'2026-05-14',impact:'bear',impactText:'🔴 グローバル経済: 軽度ネガティブ',tag:'bear'},
+  {title:'米国CPI 2.9%、コアCPI 3.1% — 予想やや下振れでインフレ鈍化確認',source:'BLS / AP',date:'2026-05-13',impact:'bull',impactText:'🟢 インフレ鈍化でFRBの政策余地が拡大',tag:'bull'},
+  {title:'地政学リスク: 中東情勢緊張継続。原油価格が80ドル台で推移',source:'Bloomberg',date:'2026-05-12',impact:'neu',impactText:'🟡 エネルギー株にはプラス。輸送・製造にコスト圧力',tag:'neu'},
+  {title:'バフェット氏、「割高市場でのキャッシュ保有比率を最高水準に維持」と発言',source:'Berkshire Hathaway Annual Meeting',date:'2026-05-04',impact:'neu',impactText:'🟡 長期投資家への示唆: リスク管理の重要性',tag:'neu'},
 ];
 
-/* ════════════════════════════════
-   CHARTS
-════════════════════════════════ */
-const OPTS = (yCb) => ({
-  responsive:true, maintainAspectRatio:false,
-  interaction:{mode:'index',intersect:false},
-  plugins:{legend:{display:false},tooltip:{backgroundColor:'#0c1520',borderColor:'#1a2e45',borderWidth:1,callbacks:{label:c=>c.dataset.label+': '+(yCb?yCb(c.parsed.y):c.parsed.y.toFixed(1))}}},
-  scales:{
-    x:{grid:{color:'rgba(255,255,255,.025)'},ticks:{color:'#4a6080',maxTicksLimit:10,font:{size:9}}},
-    y:{grid:{color:'rgba(255,255,255,.025)'},ticks:{color:'#4a6080',font:{size:9}}},
-  }
-});
+const OPTS=(yCb)=>({responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{backgroundColor:'#FFFFFF',borderColor:'#E5E5EA',borderWidth:1,titleColor:'#1C1C1E',bodyColor:'#3C3C43',callbacks:{label:c=>c.dataset.label+': '+(yCb?yCb(c.parsed.y):c.parsed.y.toFixed(1))}}},scales:{x:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#8E8E93',maxTicksLimit:10,font:{size:9}}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#8E8E93',font:{size:9}}}}});
 
-function buildPriceChart(labels, prices) {
-  if(charts.price) charts.price.destroy();
-  const ctx = document.getElementById('priceChart').getContext('2d');
-  const g = ctx.createLinearGradient(0,0,0,300);
-  g.addColorStop(0,'rgba(29,111,250,.28)'); g.addColorStop(1,'rgba(29,111,250,0)');
-  const e50=ema(prices,Math.min(50,prices.length));
-  const e200=ema(prices,Math.min(200,prices.length));
-  charts.price = new Chart(ctx, {type:'line', data:{labels, datasets:[
-    {label:'S&P500', data:prices, borderColor:'#1d6ffa', backgroundColor:g, borderWidth:2, pointRadius:0, fill:true, tension:.3},
-    {label:'MA50',   data:e50,   borderColor:'rgba(245,200,66,.8)', borderWidth:1.5, pointRadius:0, fill:false},
-    {label:'MA200',  data:e200,  borderColor:'rgba(255,61,90,.7)',  borderWidth:1.5, borderDash:[5,3], pointRadius:0, fill:false},
-  ]}, options:{...OPTS(v=>v>=1000?Math.round(v/100)/10+'K':v.toFixed(0)), maintainAspectRatio:false,
-    plugins:{...OPTS().plugins, legend:{display:true, labels:{color:'#4a6080',font:{size:10},boxWidth:16}}}}
-  });
-}
+function buildPriceChart(labels,prices){if(charts.price)charts.price.destroy();const ctx=document.getElementById('priceChart').getContext('2d');const g=ctx.createLinearGradient(0,0,0,300);g.addColorStop(0,'rgba(0,122,255,.15)');g.addColorStop(1,'rgba(0,122,255,0)');const e50=ema(prices,Math.min(50,prices.length));const e200=ema(prices,Math.min(200,prices.length));charts.price=new Chart(ctx,{type:'line',data:{labels,datasets:[{label:'S&P500',data:prices,borderColor:'#007AFF',backgroundColor:g,borderWidth:2,pointRadius:0,fill:true,tension:.3},{label:'MA50',data:e50,borderColor:'rgba(255,149,0,.8)',borderWidth:1.5,pointRadius:0,fill:false},{label:'MA200',data:e200,borderColor:'rgba(255,59,48,.7)',borderWidth:1.5,borderDash:[5,3],pointRadius:0,fill:false}]},options:{...OPTS(v=>v>=1000?Math.round(v/100)/10+'K':v.toFixed(0)),maintainAspectRatio:false,plugins:{...OPTS().plugins,legend:{display:true,labels:{color:'#8E8E93',font:{size:10},boxWidth:16}}}}});}
 
-function buildSmallChart(id, labels, data, color, yMin=null, yMax=null) {
-  if(charts[id]) charts[id].destroy();
-  const ctx=document.getElementById(id).getContext('2d');
-  const ds={data,borderColor:color,borderWidth:1.5,pointRadius:0,fill:false,tension:.3,label:id};
-  const opts=OPTS();
-  if(yMin!==null) opts.scales.y.min=yMin;
-  if(yMax!==null) opts.scales.y.max=yMax;
-  opts.scales.x.display=false;
-  charts[id]=new Chart(ctx,{type:'line',data:{labels,datasets:[ds]},options:{...opts,maintainAspectRatio:false}});
-}
+function buildSmallChart(id,labels,data,color,yMin=null,yMax=null){if(charts[id])charts[id].destroy();const ctx=document.getElementById(id).getContext('2d');const ds={data,borderColor:color,borderWidth:1.5,pointRadius:0,fill:false,tension:.3,label:id};const opts=OPTS();if(yMin!==null)opts.scales.y.min=yMin;if(yMax!==null)opts.scales.y.max=yMax;opts.scales.x.display=false;charts[id]=new Chart(ctx,{type:'line',data:{labels,datasets:[ds]},options:{...opts,maintainAspectRatio:false}});}
 
-function buildPredChart(currentP, cape, prices) {
-  if(charts.pred) charts.pred.destroy();
-  const ctx=document.getElementById('predChart').getContext('2d');
-  const {bear,base,bull}=capeReturn(cape);
-  const yrs=Array.from({length:11},(_,i)=>i+'年後');
-  const toS=r=>Array.from({length:11},(_,i)=>currentP*(1+r/100)**i);
-  charts.pred=new Chart(ctx,{type:'line', data:{labels:yrs, datasets:[
-    {label:'楽観 +'+bull.toFixed(1)+'%/年', data:toS(bull), borderColor:'rgba(0,230,118,.8)', borderWidth:1.5, borderDash:[4,3], pointRadius:0, fill:false},
-    {label:'基本 +'+base.toFixed(1)+'%/年', data:toS(base), borderColor:'#00c8ff', borderWidth:2, pointRadius:0, fill:false},
-    {label:'悲観 '+bear.toFixed(1)+'%/年',  data:toS(bear), borderColor:'rgba(255,61,90,.8)', borderWidth:1.5, borderDash:[4,3], pointRadius:0, fill:false},
-  ]}, options:{responsive:true,maintainAspectRatio:false,
-    interaction:{mode:'index',intersect:false},
-    plugins:{legend:{display:true,labels:{color:'#4a6080',font:{size:9},boxWidth:14}},
-      tooltip:{backgroundColor:'#0c1520',borderColor:'#1a2e45',borderWidth:1,callbacks:{label:c=>c.dataset.label+': '+Math.round(c.parsed.y).toLocaleString()}}},
-    scales:{
-      x:{grid:{color:'rgba(255,255,255,.025)'},ticks:{color:'#4a6080',font:{size:10}}},
-      y:{grid:{color:'rgba(255,255,255,.025)'},ticks:{color:'#4a6080',font:{size:9},callback:v=>v>=1000?Math.round(v/100)/10+'K':v}},
-    }
-  }});
-}
+function buildPredChart(currentP,cape,prices){if(charts.pred)charts.pred.destroy();const ctx=document.getElementById('predChart').getContext('2d');const{bear,base,bull}=capeReturn(cape);const yrs=Array.from({length:11},(_,i)=>i+'年後');const toS=r=>Array.from({length:11},(_,i)=>currentP*(1+r/100)**i);charts.pred=new Chart(ctx,{type:'line',data:{labels:yrs,datasets:[{label:'楽観 +'+bull.toFixed(1)+'%/年',data:toS(bull),borderColor:'rgba(52,199,89,.8)',borderWidth:1.5,borderDash:[4,3],pointRadius:0,fill:false},{label:'基本 +'+base.toFixed(1)+'%/年',data:toS(base),borderColor:'#007AFF',borderWidth:2,pointRadius:0,fill:false},{label:'悲観 '+bear.toFixed(1)+'%/年',data:toS(bear),borderColor:'rgba(255,59,48,.8)',borderWidth:1.5,borderDash:[4,3],pointRadius:0,fill:false}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:true,labels:{color:'#8E8E93',font:{size:9},boxWidth:14}},tooltip:{backgroundColor:'#FFFFFF',borderColor:'#E5E5EA',borderWidth:1,titleColor:'#1C1C1E',bodyColor:'#3C3C43',callbacks:{label:c=>c.dataset.label+': '+Math.round(c.parsed.y).toLocaleString()}}},scales:{x:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#8E8E93',font:{size:10}}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#8E8E93',font:{size:9},callback:v=>v>=1000?Math.round(v/100)/10+'K':v}}}}});}
 
-/* ════════════════════════════════
-   SCORE ENGINE
-════════════════════════════════ */
-function computeScore(m, lastP, ma200v) {
-  let s = 0;
-  // Valuation (bearish pressure when high)
-  if(m.cape < 18) s+=2; else if(m.cape < 25) s+=1; else if(m.cape > 35) s-=2; else s-=1;
-  if(m.buffett < 100) s+=2; else if(m.buffett < 130) s+=1; else if(m.buffett > 160) s-=2; else s-=1;
-  // Macro
-  const erp = (1/m.pe*100 - m.t10);
-  if(erp > 2) s+=2; else if(erp > 0) s+=1; else s-=1;
-  if(m.inflation < 3) s+=1; else if(m.inflation > 4) s-=2;
-  if(m.gdpGrowth > 2) s+=1; else if(m.gdpGrowth < 0) s-=2;
-  // Trend
-  if(lastP > ma200v) s+=1; else s-=1;
-  // Normalize to 0-10
-  const sc = Math.round(((s+10)/18)*10);
-  return Math.min(Math.max(sc, 0), 10);
-}
+function computeScore(m,lastP,ma200v){let s=0;if(m.cape<18)s+=2;else if(m.cape<25)s+=1;else if(m.cape>35)s-=2;else s-=1;if(m.buffett<100)s+=2;else if(m.buffett<130)s+=1;else if(m.buffett>160)s-=2;else s-=1;const erp=(1/m.pe*100-m.t10);if(erp>2)s+=2;else if(erp>0)s+=1;else s-=1;if(m.inflation<3)s+=1;else if(m.inflation>4)s-=2;if(m.gdpGrowth>2)s+=1;else if(m.gdpGrowth<0)s-=2;if(lastP>ma200v)s+=1;else s-=1;const sc=Math.round(((s+10)/18)*10);return Math.min(Math.max(sc,0),10);}
 
-/* ════════════════════════════════
-   NEWS RENDER
-════════════════════════════════ */
-async function fetchNews() {
-  const el = document.getElementById('newsFeed');
-  const loadEl = document.getElementById('newsLoading');
-  let newsItems = [];
+async function fetchNews(){const el=document.getElementById('newsFeed');const loadEl=document.getElementById('newsLoading');let newsItems=[];try{const url='https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Ffeeds.reuters.com%2Freuters%2FbusinessNews&count=6';const res=await fetch(url,{cache:'no-store'});if(!res.ok)throw new Error('rss fail');const data=await res.json();if(data.status!=='ok'||!data.items?.length)throw new Error('no items');newsItems=data.items.map(item=>{const title=item.title;const bearWords=['fall','drop','slump','recession','decline','fear','risk','crash','concern','debt','inflation'];const bullWords=['rise','gain','rally','growth','strong','beat','record','surge','boost','cut rate','job'];const text=(title+' '+(item.description||'')).toLowerCase();const bullScore=bullWords.filter(w=>text.includes(w)).length;const bearScore=bearWords.filter(w=>text.includes(w)).length;const tag=bullScore>bearScore?'bull':bearScore>bullScore?'bear':'neu';return{title,source:item.author||'Reuters',date:item.pubDate?.slice(0,10)||'',tag,impactText:tag==='bull'?'🟢 ポジティブシグナル':tag==='bear'?'🔴 ネガティブシグナル':'🟡 中立'};});}catch(_){newsItems=CURATED_NEWS;}loadEl.style.display='none';el.style.display='block';el.innerHTML=newsItems.map(n=>`<div class="news-item"><span class="news-tag tag-${n.tag}">${n.tag==='bull'?'強気':n.tag==='bear'?'弱気':'中立'}</span><div class="news-body"><div class="news-title">${n.title}</div><div class="news-meta">${n.source} · ${n.date}</div><div class="news-impact" style="color:${n.tag==='bull'?'var(--green)':n.tag==='bear'?'var(--red)':'var(--orange)'}">${n.impactText}</div></div></div>`).join('');const bullCount=newsItems.filter(n=>n.tag==='bull').length;const bearCount=newsItems.filter(n=>n.tag==='bear').length;const newsScore=bullCount-bearCount;document.getElementById('newsSummary').innerHTML=`直近<strong>${newsItems.length}件</strong>：強気 <strong style="color:var(--green);">${bullCount}件</strong> ／ 弱気 <strong style="color:var(--red);">${bearCount}件</strong> ／ 中立 <strong style="color:var(--orange);">${newsItems.length-bullCount-bearCount}件</strong><br><span style="font-weight:700;color:${newsScore>0?'var(--green)':newsScore<0?'var(--red)':'var(--orange)'};">→ ${newsScore>1?'強気優位 — 短期センチメント良好':newsScore<-1?'弱気優位 — 短期リスク注意':'均衡 — 方向感なし'}</span>`;return newsScore;}
 
-  try {
-    // Try RSS via rss2json
-    const url = 'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Ffeeds.reuters.com%2Freuters%2FbusinessNews&count=6';
-    const res = await fetch(url, {cache:'no-store'});
-    if(!res.ok) throw new Error('rss fail');
-    const data = await res.json();
-    if(data.status !== 'ok' || !data.items?.length) throw new Error('no items');
-    newsItems = data.items.map(item => {
-      const title = item.title;
-      // Simple sentiment scoring
-      const bearWords = ['fall','drop','slump','recession','decline','fear','risk','crash','concern','debt','inflation'];
-      const bullWords = ['rise','gain','rally','growth','strong','beat','record','surge','boost','cut rate','job'];
-      const text = (title+' '+(item.description||'')).toLowerCase();
-      const bullScore = bullWords.filter(w=>text.includes(w)).length;
-      const bearScore = bearWords.filter(w=>text.includes(w)).length;
-      const tag = bullScore > bearScore ? 'bull' : bearScore > bullScore ? 'bear' : 'neu';
-      return { title, source: item.author||'Reuters', date: item.pubDate?.slice(0,10)||'', tag,
-        impactText: tag==='bull'?'🟢 ポジティブシグナル':tag==='bear'?'🔴 ネガティブシグナル':'🟡 中立' };
-    });
-  } catch(_) {
-    newsItems = CURATED_NEWS;
-  }
+function renderIdeco(cape,buffett,erp,score){const isOvervalued=cape>30||buffett>150;const isHighlyOvervalued=cape>38||buffett>170;const vEl=document.getElementById('idecoVerdict');if(isHighlyOvervalued){vEl.className='ideco-verdict warning';vEl.innerHTML=`⚠️ 現在の市場は<strong>割高域（CAPE ${cape.toFixed(1)}）</strong>にあります。株式比率を下げてリスク分散を図ることが重要です。`;}else if(isOvervalued){vEl.className='ideco-verdict caution';vEl.innerHTML=`🟡 市場はやや割高（CAPE ${cape.toFixed(1)}）です。株式比率を10〜20%程度引き下げ、債券・海外バリュー株を増やすことを検討してください。`;}else{vEl.className='ideco-verdict ok';vEl.innerHTML=`✅ 現在の市場水準（CAPE ${cape.toFixed(1)}）では積極的な積立継続が推奨されます。`;}let allocs;if(isHighlyOvervalued){allocs=[{name:'海外株式インデックス（全世界）',pct:35,color:'#007AFF',prev:50,bar:'rgba(0,122,255,.8)'},{name:'米国株（S&P500）',pct:15,color:'#00c8ff',prev:30,bar:'rgba(0,200,255,.8)'},{name:'国内債券・先進国債券',pct:25,color:'#34C759',prev:10,bar:'rgba(52,199,89,.8)'},{name:'海外REIT',pct:10,color:'#AF52DE',prev:5,bar:'rgba(175,82,222,.8)'},{name:'新興国株式',pct:5,color:'#FF9500',prev:5,bar:'rgba(255,149,0,.8)'},{name:'預金型（元本確保）',pct:10,color:'#8E8E93',prev:0,bar:'rgba(142,142,147,.8)'}];}else if(isOvervalued){allocs=[{name:'海外株式インデックス（全世界）',pct:45,color:'#007AFF',prev:50,bar:'rgba(0,122,255,.8)'},{name:'米国株（S&P500）',pct:20,color:'#00c8ff',prev:30,bar:'rgba(0,200,255,.8)'},{name:'国内債券・先進国債券',pct:15,color:'#34C759',prev:10,bar:'rgba(52,199,89,.8)'},{name:'海外REIT',pct:10,color:'#AF52DE',prev:5,bar:'rgba(175,82,222,.8)'},{name:'新興国株式',pct:10,color:'#FF9500',prev:5,bar:'rgba(255,149,0,.8)'}];}else{allocs=[{name:'米国株（S&P500）',pct:50,color:'#007AFF',prev:50,bar:'rgba(0,122,255,.8)'},{name:'海外株式インデックス（全世界）',pct:30,color:'#00c8ff',prev:30,bar:'rgba(0,200,255,.8)'},{name:'新興国株式',pct:10,color:'#FF9500',prev:5,bar:'rgba(255,149,0,.8)'},{name:'海外REIT',pct:10,color:'#AF52DE',prev:10,bar:'rgba(175,82,222,.8)'}];}const grid=document.getElementById('allocGrid');grid.innerHTML=allocs.map(a=>{const diff=a.pct-a.prev;const diffStr=diff===0?'変更なし':diff>0?`▲${diff}%増`:`▼${Math.abs(diff)}%減`;const diffColor=diff===0?'var(--muted)':diff>0?'var(--green)':'var(--red)';return`<div class="alloc-row"><div class="alloc-name" style="color:${a.color};">${a.name}</div><div class="alloc-bar-wrap"><div class="alloc-bar" style="width:${a.pct}%;background:${a.bar};"></div></div><div class="alloc-pct">${a.pct}%</div><div class="alloc-change" style="color:${diffColor};">${diffStr}</div></div>`;}).join('');const rbal=document.getElementById('rebalanceAdvice');const nextRbal=fmtDate(addMonths(TODAY,3));rbal.innerHTML=`<strong style="color:var(--text);">次回リバランス推奨日：${nextRbal}</strong><br><br>`+(isHighlyOvervalued?`現状は株式比率が過大になっている可能性があります。3ヶ月かけて段階的に債券・REIT比率を引き上げてください。`:isOvervalued?`株式比率を緩やかに引き下げることを推奨します。毎月の掛け金配分を今月から変更し、段階的に変えていきましょう。`:`現在の配分は合理的です。年1回に各資産が目標比率から±5%以上ズレていないかを確認してください。`);}
 
-  loadEl.style.display='none';
-  el.style.display='block';
-  el.innerHTML = newsItems.map(n=>`
-    <div class="news-item">
-      <span class="news-tag tag-${n.tag}">${n.tag==='bull'?'強気':n.tag==='bear'?'弱気':'中立'}</span>
-      <div class="news-body">
-        <div class="news-title">${n.title}</div>
-        <div class="news-meta">${n.source} &nbsp;·&nbsp; ${n.date}</div>
-        <div class="news-impact" style="color:${n.tag==='bull'?'var(--green)':n.tag==='bear'?'var(--red)':'var(--gold)'}">${n.impactText}</div>
-      </div>
-    </div>`).join('');
+function renderTodo(cape,buffett,score){const isOvervalued=cape>30||buffett>150;const todos=[{text:'iDeCoの掛け金配分割合を確認・変更する',due:fmtDate(addDays(TODAY,7)),urgency:'urgent',priority:'high',detail:isOvervalued?'株式比率を引き下げ、債券・REITを増やす方向で変更':'現在の配分を確認し、目標比率と乖離がないか点検'},{text:'S&P500のCAPEレシオを月1回チェックする',due:fmtDate(addMonths(TODAY,1)),urgency:'soon',priority:'mid',detail:'CAPE>35になったら株式比率をさらに引き下げ、<20になったら積極投資に切り替える'},{text:isOvervalued?'緊急：積立の継続確認（感情で止めないこと）':'積立継続の意思を書面化して保管する',due:fmtDate(addDays(TODAY,3)),urgency:isOvervalued?'urgent':'soon',priority:isOvervalued?'high':'mid',detail:'「割高だから積立を止める」は最も危険な判断。DCAが有効であることをメモに残す'},{text:'四半期末リバランス実施',due:fmtDate(new Date('2026-06-30')),urgency:'soon',priority:'high',detail:'各資産クラスが目標配分から±5%以上乖離していれば、目標比率に戻す売買を実施'},{text:'緊急時の「売らない」宣言書を作成する',due:fmtDate(addDays(TODAY,14)),urgency:'ok',priority:'mid',detail:'「市場が-30%になっても積立を継続する」と書いて手帳に貼る'},{text:'年間投資方針書（IPS）を更新する',due:fmtDate(new Date('2026-12-31')),urgency:'ok',priority:'low',detail:'リスク許容度・目標資産額・リバランスルールを年1回見直して文書化する'},{text:isOvervalued?'現金比率を全体の10〜20%確保する':'積立額を年収の増加に合わせて見直す',due:fmtDate(addMonths(TODAY,2)),urgency:'soon',priority:isOvervalued?'high':'low',detail:isOvervalued?'割高時に大きな調整が来た場合の買い増し資金として確保':'年収1%増ごとに積立額を1〜2%引き上げるルールを設定'}];const el=document.getElementById('todoList');el.innerHTML=todos.map((t,i)=>`<div class="todo-item" id="todo-${i}"><div class="todo-check" id="chk-${i}" onclick="toggleTodo(${i})"></div><div class="todo-body"><div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;"><span class="todo-priority pri-${t.priority}">${t.priority==='high'?'重要':t.priority==='mid'?'推奨':'任意'}</span><span class="todo-due due-${t.urgency}">📅 期限: ${t.due}</span></div><div class="todo-text" id="txt-${i}">${t.text}</div><div style="font-size:11px;color:var(--muted);margin-top:3px;line-height:1.5;">${t.detail}</div></div></div>`).join('');}
 
-  const bullCount = newsItems.filter(n=>n.tag==='bull').length;
-  const bearCount = newsItems.filter(n=>n.tag==='bear').length;
-  const newsScore = bullCount - bearCount;
-  document.getElementById('newsSummary').innerHTML =
-    `直近ニュース<strong style="color:var(--text);">${newsItems.length}件</strong>の分析結果：<br>
-    強気材料 <strong style="color:var(--green);">${bullCount}件</strong> ／ 弱気材料 <strong style="color:var(--red);">${bearCount}件</strong> ／ 中立 <strong style="color:var(--gold);">${newsItems.length-bullCount-bearCount}件</strong><br>
-    <span style="color:${newsScore>0?'var(--green)':newsScore<0?'var(--red)':'var(--gold)'};font-weight:700;">
-    → ニュースフロー判断：${newsScore>1?'強気優位 — 短期センチメント良好':newsScore<-1?'弱気優位 — 短期リスク注意':'均衡 — 方向感なし'}
-    </span>`;
+function toggleTodo(i){const chk=document.getElementById('chk-'+i);const txt=document.getElementById('txt-'+i);const done=chk.classList.toggle('done');chk.textContent=done?'✓':'';txt.classList.toggle('done-text',done);}
 
-  return newsScore;
-}
+function renderMomentum(prices,cape,buffett,m,newsScore){const e50v=ema(prices,Math.min(50,prices.length));const e200v=ema(prices,Math.min(200,prices.length));const last=prices[prices.length-1];const ma50=e50v[e50v.length-1],ma200=e200v[e200v.length-1];const above50=last>ma50,above200=last>ma200;const trend12m=((last/prices[Math.max(0,prices.length-12)]-1)*100).toFixed(1);let momSc=5;if(above200)momSc+=1;else momSc-=1;if(above50)momSc+=1;else momSc-=1;if(+trend12m>15)momSc+=2;else if(+trend12m>5)momSc+=1;else if(+trend12m<-10)momSc-=2;else if(+trend12m<0)momSc-=1;if(newsScore>1)momSc+=1;else if(newsScore<-1)momSc-=1;if(m.vix<15)momSc+=1;else if(m.vix>25)momSc-=1;momSc=Math.min(Math.max(momSc,0),10);document.getElementById('momDot').style.left=(momSc/10*100)+'%';const momLabelEl=document.getElementById('momLabel');momLabelEl.textContent=momSc>=7?'🟢 モメンタム強い — 割高でも短〜中期は上昇継続の可能性':momSc>=4?'🟡 モメンタム中立 — 方向感なく、次のカタリスト待ち':'🔴 モメンタム弱い — 調整リスクが高い局面';momLabelEl.style.color=momSc>=7?'var(--green)':momSc>=4?'var(--orange)':'var(--red)';const bullItems=[above200?{t:'MA200上方で強気トレンド継続中',desc:'長期サポートラインを維持している限り、押し目買いが機能しやすい'}:null,m.inflation<3?{t:`インフレ鈍化（CPI ${m.inflation}%）でFRBに余裕`,desc:'利下げカードが温存されており、市場の下支えになる'}:null,m.gdpGrowth>2?{t:`GDP成長 ${m.gdpGrowth}%（景気拡大継続）`,desc:'企業収益の成長が続き、EPS上昇がバリュエーションを正当化する可能性'}:null,newsScore>0?{t:'ニュースフロー: 強気材料優勢',desc:'AI・半導体・貿易摩擦緩和など実体経済への好影響が継続'}:null,{t:'AI/テクノロジー革命による生産性向上',desc:'1995〜2000年同様、技術革新期は高CAPEを正当化した歴史がある'},{t:'株式以外の代替投資の魅力薄',desc:`実質金利${(m.t10-m.inflation).toFixed(1)}%は歴史的に低く、リスク資産への資金流入が継続`}].filter(Boolean).slice(0,4);const bearItems=[cape>30?{t:`CAPE ${cape.toFixed(1)}: 歴史的高水準（平均16.7の2倍）`,desc:'シラーモデルによると次の10年リターンは年率2〜4%台に留まる可能性'}:null,buffett>150?{t:`バフェット指標 ${buffett}%: 危険域`,desc:'バフェット氏本人が「最も割高な水準」と語った180%に近づいている'}:null,m.t10>4?{t:`10年債利回り ${m.t10}%: 株式との競合`,desc:'安全資産でも4%超を得られる環境で、株のリスクプレミアムが低下'}:null,!above50?{t:'MA50を下回り、短期トレンドが弱い',desc:'中期トレンドの悪化は機関投資家の売りを誘発しやすい'}:null,{t:'米国財政赤字: GDP比7%超で拡大継続',desc:'長期的な金利上昇圧力とドル信認の低下リスクがある'},{t:'企業利益率が歴史的ピーク付近',desc:'賃金上昇・AI投資コストにより、利益率の平均回帰リスクがある'}].filter(Boolean).slice(0,4);document.getElementById('bullCases').innerHTML=bullItems.map(b=>`<div class="mv-item"><div class="mv-dot" style="background:var(--green)"></div><div><strong style="color:var(--text);font-size:12px;">${b.t}</strong><br><span style="color:var(--muted);font-size:11px;">${b.desc}</span></div></div>`).join('');document.getElementById('bearCases').innerHTML=bearItems.map(b=>`<div class="mv-item"><div class="mv-dot" style="background:var(--red)"></div><div><strong style="color:var(--text);font-size:12px;">${b.t}</strong><br><span style="color:var(--muted);font-size:11px;">${b.desc}</span></div></div>`).join('');const analogs=cape>35?`【1996〜2000年アナログ】CAPEが30〜40台でも市場はさらに倍増した。"高CAPEが即クラッシュを意味しない"ことの最大の証拠。ただし最終的に-49%の暴落で終わった。\n\n→ 結論：「割高だから今すぐ崩れる」は歴史的に正しくない。iDeCoは継続しつつ株式比率を適正に。`:cape>25?`【2013〜2015年アナログ】CAPE25前後の時期、多くの専門家が「割高」と警告したが市場はその後50%上昇した。\n\n→ 結論：現在は「割高だが崩壊前夜」より「持続可能な高水準」に近い可能性がある。`:`【2009〜2013年アナログ】リーマンショック後の回復初期。CAPEが適正水準（20前後）にある現在は、長期投資家にとって有利な局面。`;document.getElementById('historicalAnalog').innerHTML=analogs.replace(/\n\n/g,'<br><br>');return momSc;}
 
-/* ════════════════════════════════
-   iDeCo ADVICE
-════════════════════════════════ */
-function renderIdeco(cape, buffett, erp, score) {
-  const isOvervalued = cape > 30 || buffett > 150;
-  const isHighlyOvervalued = cape > 38 || buffett > 170;
-  const isFairValue = cape >= 18 && cape <= 28;
+function renderPsychology(cape,score,momSc){let psych,quote;if(score>=7){psych='現在の市場心理は「楽観」から「強欲」に傾いています。「みんなが強気なとき、あなただけが慎重であれ」——これが長期投資家として最も難しく、最も重要な姿勢です。';quote='"Be fearful when others are greedy, and greedy when others are fearful." — Warren Buffett';}else if(score>=4){psych='現在は中立的な市場環境です。積立継続が最も合理的な選択です。相場の動きに一喜一憂せず、「今月も予定通り積み立てた」という事実が将来の資産を作ります。';quote='"The stock market is a device for transferring money from the impatient to the patient." — Warren Buffett';}else{psych='現在は悲観的な市場環境です。歴史上、最大リターンをもたらした投資はすべて「最も怖い」タイミングで行われた投資です。';quote='"In the short run, the market is a voting machine. In the long run, it\'s a weighing machine." — Benjamin Graham';}document.getElementById('mktPsych').innerHTML=`<div style="margin-bottom:8px;">${psych}</div><div style="color:var(--blue);font-style:italic;font-size:11px;">${quote}</div>`;}
 
-  // Verdict
-  const vEl = document.getElementById('idecoVerdict');
-  if(isHighlyOvervalued){
-    vEl.className='ideco-verdict warning';
-    vEl.innerHTML=`⚠️ 現在の市場は<strong>割高域（CAPE ${cape.toFixed(1)}）</strong>にあります。iDeCoではポートフォリオの見直しを推奨します。ただし全額売却ではなく、株式比率を下げてリスク分散を図ることが重要です。`;
-  } else if(isOvervalued){
-    vEl.className='ideco-verdict caution';
-    vEl.innerHTML=`🟡 市場はやや割高（CAPE ${cape.toFixed(1)}）です。iDeCoは長期投資なので大きな変更は不要ですが、株式比率を10〜20%程度引き下げ、債券・海外バリュー株を増やすことを検討してください。`;
-  } else {
-    vEl.className='ideco-verdict ok';
-    vEl.innerHTML=`✅ 現在の市場水準（CAPE ${cape.toFixed(1)}）では積極的な積立継続が推奨されます。現在のポートフォリオをほぼ維持しながら、定期的なリバランスを実施してください。`;
-  }
+function renderScholar(prices,m,cape,buffett,score,momSc,newsScore){const erp=(1/m.pe*100-m.t10).toFixed(2);const{bear,base,bull}=capeReturn(cape);const last=prices[prices.length-1];const text=`S&P500の現在の位置を、マクロ経済・バリュエーション・テクニカル・行動経済学の4つの軸から総合評価する。\n\n【バリュエーション】CAPEは${cape.toFixed(1)}（歴史平均16.7の約${(cape/16.7).toFixed(1)}倍）、バフェット指標は${buffett}%で共に割高域にある。しかし「割高だから今すぐ崩れる」という命題は歴史的に成立しない。\n\n【モメンタム】モメンタムスコアは${momSc}/10。${momSc>=7?'MA50/200上方で強気トレンドが継続しており、短期的な調整リスクは限定的だ。':momSc>=4?'中立的なモメンタムで、明確な方向感に欠ける局面だ。':'MA200を下回っており、売り圧力が優勢な局面だ。'}\n\n【マクロ環境】インフレは${m.inflation}%に鈍化し、FRBは政策余地を確保しつつある。株式リスクプレミアム（ERP）は${erp}%。\n\n【長期予測・iDeCo戦略】CAPEモデルによる今後10年の年率リターン期待値は悲観${bear.toFixed(1)}%〜楽観${bull.toFixed(1)}%（基本${base.toFixed(1)}%）。現在水準から10年後の予測中央値は${Math.round(last*(1+base/100)**10).toLocaleString()}ポイントだ。\n\niDeCoにおける最適戦略は明確だ：①積立を止めない、②現在の高バリュエーションを考慮し株式比率を${cape>35?'50〜60%':cape>28?'60〜70%':'70〜80%'}に抑える、③残りを先進国債券・REITで分散する。`;document.getElementById('scholarText').textContent=text;}
 
-  // Allocation
-  let allocs;
-  if(isHighlyOvervalued){
-    allocs=[
-      {name:'海外株式インデックス（全世界）',pct:35,color:'#1d6ffa',prev:50,bar:'rgba(29,111,250,.8)'},
-      {name:'米国株（S&P500）',pct:15,color:'#00c8ff',prev:30,bar:'rgba(0,200,255,.8)'},
-      {name:'国内債券・先進国債券',pct:25,color:'#00e676',prev:10,bar:'rgba(0,230,118,.8)'},
-      {name:'海外REIT',pct:10,color:'#a855f7',prev:5,bar:'rgba(168,85,247,.8)'},
-      {name:'新興国株式',pct:5,color:'#f5c842',prev:5,bar:'rgba(245,200,66,.8)'},
-      {name:'預金型（元本確保）',pct:10,color:'#4a6080',prev:0,bar:'rgba(74,96,128,.8)'},
-    ];
-  } else if(isOvervalued){
-    allocs=[
-      {name:'海外株式インデックス（全世界）',pct:45,color:'#1d6ffa',prev:50,bar:'rgba(29,111,250,.8)'},
-      {name:'米国株（S&P500）',pct:20,color:'#00c8ff',prev:30,bar:'rgba(0,200,255,.8)'},
-      {name:'国内債券・先進国債券',pct:15,color:'#00e676',prev:10,bar:'rgba(0,230,118,.8)'},
-      {name:'海外REIT',pct:10,color:'#a855f7',prev:5,bar:'rgba(168,85,247,.8)'},
-      {name:'新興国株式',pct:10,color:'#f5c842',prev:5,bar:'rgba(245,200,66,.8)'},
-    ];
-  } else {
-    allocs=[
-      {name:'米国株（S&P500）',pct:50,color:'#1d6ffa',prev:50,bar:'rgba(29,111,250,.8)'},
-      {name:'海外株式インデックス（全世界）',pct:30,color:'#00c8ff',prev:30,bar:'rgba(0,200,255,.8)'},
-      {name:'新興国株式',pct:10,color:'#f5c842',prev:5,bar:'rgba(245,200,66,.8)'},
-      {name:'海外REIT',pct:10,color:'#a855f7',prev:10,bar:'rgba(168,85,247,.8)'},
-    ];
-  }
+function updateUI(prices,labels,newsScore){const m=MACRO;const last=prices[prices.length-1];const e200arr=ema(prices,Math.min(200,prices.length));const ma200v=e200arr[e200arr.length-1];const erp=1/m.pe*100-m.t10;const prev=prices[prices.length-2]??last;const dayChg=(last-prev)/prev*100;buildPriceChart(labels,prices);const capeHistLen=Math.min(prices.length,40);const capeHist=Array.from({length:capeHistLen},(_,i)=>20+10*Math.sin(i/8)+(Math.random()-.5)*2);const yieldHist=Array.from({length:capeHistLen},(_,i)=>2.5+2*Math.sin(i/10+1)+(Math.random()-.5)*.4);const smallLabels=Array.from({length:capeHistLen},(_,i)=>'');buildSmallChart('capeChart',smallLabels,capeHist,'#AF52DE');buildSmallChart('yieldChart',smallLabels,yieldHist,'#007AFF');buildPredChart(last,m.cape,prices);document.getElementById('sp-price').textContent=Math.round(last).toLocaleString();const spCh=document.getElementById('sp-ch');spCh.textContent=(dayChg>=0?'+':'')+dayChg.toFixed(2)+'%';spCh.className='stat-sub '+(dayChg>=0?'up':'down');document.getElementById('sp-cape').textContent=m.cape.toFixed(1);const capeS=m.cape>35?'⚠ 割高':m.cape>25?'やや割高':m.cape>15?'適正':'割安';document.getElementById('sp-cape-s').textContent=capeS;document.getElementById('sp-cape-s').className='stat-sub '+(m.cape>35?'down':m.cape>25?'neu':'up');document.getElementById('sp-buff').textContent=m.buffett+'%';const buffS=m.buffett>160?'⚠ 強く割高':m.buffett>130?'割高':m.buffett>80?'適正':'割安';document.getElementById('sp-buff-s').textContent=buffS;document.getElementById('sp-buff-s').className='stat-sub '+(m.buffett>150?'down':m.buffett>120?'neu':'up');document.getElementById('sp-t10').textContent=m.t10.toFixed(2)+'%';document.getElementById('sp-t10-s').textContent=m.t10>4.5?'⚠ 高水準':m.t10>3?'注意':'良好';document.getElementById('sp-t10-s').className='stat-sub '+(m.t10>4.5?'down':m.t10>3?'neu':'up');document.getElementById('sp-erp').textContent=(erp>=0?'+':'')+erp.toFixed(2)+'%';document.getElementById('sp-erp-s').textContent=erp>2?'株式優位':erp>0?'わずか優位':'債券優位';document.getElementById('sp-erp-s').className='stat-sub '+(erp>0?'up':'down');document.getElementById('sp-div').textContent=m.divYield.toFixed(2)+'%';const score=computeScore(m,last,ma200v);const vb=document.getElementById('verdictBanner');if(score>=7){vb.className='verdict-banner bull';document.getElementById('vbVal').textContent='長期 積立継続 ✓';document.getElementById('vbSub').textContent='バリュエーション高いが、積立継続が最適解';document.getElementById('vbPsych').textContent='感情ではなくシステムで動く。「今月も予定通り積み立てる」——それだけでいい。';document.getElementById('vbQuote').textContent='"The stock market is designed to transfer money from the active to the patient." — Warren Buffett';}else if(score>=4){vb.className='verdict-banner neutral';document.getElementById('vbVal').textContent='中立 · 継続積立';document.getElementById('vbSub').textContent='割高感あり — 株式比率を10〜20%引き下げて継続';document.getElementById('vbPsych').textContent='今は迷いやすい局面。正解は「やめない」こと。毎月の積立だけは絶対に続ける。';document.getElementById('vbQuote').textContent='"In investing, what is comfortable is rarely profitable." — Robert Arnott';}else{vb.className='verdict-banner bear';document.getElementById('vbVal').textContent='慎重 · 分散強化';document.getElementById('vbSub').textContent='割高警戒域 — 債券・REIT比率を高めて継続';document.getElementById('vbPsych').textContent='最も重要なこと：今こそ積立を止めてはいけない。市場が不安定な今こそ、毎月の積立が「最安値で買う機会」になり得る。';document.getElementById('vbQuote').textContent='"The time to buy is when there\'s blood in the streets." — Baron Rothschild';}document.getElementById('vbScore').textContent=score;document.getElementById('ma200').textContent=Math.round(ma200v).toLocaleString();document.getElementById('ma200').className='ind-num '+(last>ma200v?'bull-c':'bear-c');document.getElementById('ma200s').textContent=last>ma200v?'⬆ 上方':'⬇ 下方';document.getElementById('ma200s').className='ind-sig '+(last>ma200v?'bull-c':'bear-c');document.getElementById('pe').textContent=m.pe.toFixed(1);document.getElementById('pe').className='ind-num '+(m.pe>25?'bear-c':m.pe>18?'neu-c':'bull-c');document.getElementById('pes').textContent=m.pe>25?'⚠ 割高':m.pe>18?'適正':'割安';document.getElementById('pes').className='ind-sig '+(m.pe>25?'bear-c':m.pe>18?'neu-c':'bull-c');const rr=(m.t10-m.inflation).toFixed(1);document.getElementById('realRate').textContent=rr+'%';document.getElementById('realRate').className='ind-num '+(+rr>2?'bear-c':+rr>0?'neu-c':'bull-c');document.getElementById('realRates').textContent=+rr>2?'⚠ 高い':+rr>0?'普通':'低い';document.getElementById('realRates').className='ind-sig '+(+rr>2?'bear-c':+rr>0?'neu-c':'bull-c');const{base}=capeReturn(m.cape);document.getElementById('capeRet').textContent=fmtPct(base)+'/年';document.getElementById('capeRet').className='ind-num '+(base>5?'bull-c':base>0?'neu-c':'bear-c');document.getElementById('capeRets').textContent=base>5?'良好':base>2?'普通':'低め';document.getElementById('capeRets').className='ind-sig '+(base>5?'bull-c':base>0?'neu-c':'bear-c');const bPct=Math.min(m.buffett/200,1);document.getElementById('buffDot').style.left=(bPct*100)+'%';const capePct=Math.min(Math.max((m.cape-10)/40,0),1);document.getElementById('capeDot').style.left=(capePct*100)+'%';renderIdeco(m.cape,m.buffett,erp,score);renderTodo(m.cape,m.buffett,score);const momSc=renderMomentum(prices,m.cape,m.buffett,m,newsScore);renderPsychology(m.cape,score,momSc);renderScholar(prices,m,m.cape,m.buffett,score,momSc,newsScore);document.getElementById('updateTime').textContent='最終更新: '+new Date().toLocaleTimeString('ja-JP');}
 
-  const grid=document.getElementById('allocGrid');
-  grid.innerHTML=allocs.map(a=>{
-    const diff=a.pct-a.prev;
-    const diffStr=diff===0?'変更なし':diff>0?`▲${diff}%増`:` ▼${Math.abs(diff)}%減`;
-    const diffColor=diff===0?'var(--muted)':diff>0?'var(--green)':'var(--red)';
-    return `<div class="alloc-row">
-      <div class="alloc-name" style="color:${a.color};">${a.name}</div>
-      <div class="alloc-bar-wrap"><div class="alloc-bar" style="width:${a.pct}%;background:${a.bar};"></div></div>
-      <div class="alloc-pct">${a.pct}%</div>
-      <div class="alloc-change" style="color:${diffColor};font-size:10px;font-weight:700;">${diffStr}</div>
-    </div>`;
-  }).join('');
+function calcDCA(){const mo=parseFloat(document.getElementById('dcaAmt').value)||30000;const yrs=parseInt(document.getElementById('dcaYrs').value)||20;const rate=parseFloat(document.getElementById('dcaRate').value)/100/12;const n=yrs*12;const total=mo*((Math.pow(1+rate,n)-1)/rate)*(1+rate);const inv=mo*n;const mul=(total/inv).toFixed(1);document.getElementById('dca-inv').textContent='¥'+Math.round(inv/10000)+'万';document.getElementById('dca-tot').textContent='¥'+Math.round(total/10000)+'万';document.getElementById('dca-mul').textContent=mul+'倍';document.getElementById('dcaResult').style.display='block';if(dcaChartInst)dcaChartInst.destroy();const ctx=document.getElementById('dcaChart').getContext('2d');const g=ctx.createLinearGradient(0,0,0,130);g.addColorStop(0,'rgba(52,199,89,.2)');g.addColorStop(1,'rgba(52,199,89,0)');const labs=[],invArr=[],totArr=[];for(let y=1;y<=yrs;y++){labs.push(y+'年');const nm=y*12;invArr.push(mo*nm);totArr.push(mo*((Math.pow(1+rate,nm)-1)/rate)*(1+rate));}dcaChartInst=new Chart(ctx,{type:'line',data:{labels:labs,datasets:[{label:'総資産',data:totArr,borderColor:'#34C759',backgroundColor:g,borderWidth:2,pointRadius:0,fill:true},{label:'元本',data:invArr,borderColor:'rgba(0,0,0,.15)',borderWidth:1,borderDash:[4,3],pointRadius:0,fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'¥'+Math.round(c.parsed.y/10000)+'万'}}},scales:{x:{ticks:{color:'#8E8E93',maxTicksLimit:6,font:{size:9}}},y:{ticks:{color:'#8E8E93',font:{size:9},callback:v=>'¥'+(v/10000).toFixed(0)+'万'}}}}});}
 
-  // Rebalance advice
-  const rbal=document.getElementById('rebalanceAdvice');
-  const nextRbal=fmtDate(addMonths(TODAY,3));
-  rbal.innerHTML=
-    `<strong style="color:var(--text);">次回リバランス推奨日：${nextRbal}</strong><br><br>` +
-    (isHighlyOvervalued?
-      `現状は株式比率が過大になっている可能性があります。次回のボーナス時や四半期末に債券・REIT比率を引き上げてください。一括で変えず、3ヶ月かけて段階的に調整することでリスクを最小化できます。`:
-      isOvervalued?
-      `株式比率を緩やかに引き下げることを推奨します。毎月の掛け金配分を今月から変更し、新規投資分から段階的に変えていきましょう。既存の残高は来四半期末に見直してください。`:
-      `現在の配分は合理的です。年1回（12月末または誕生月）に各資産が目標比率から±5%以上ズレていないかを確認し、ズレていれば自動的に元の比率に戻してください。`);
-}
+function genDemo(tf){const years=tf==='5y'?5:tf==='10y'?10:20;const n=years*12;const prices=[],labels=[];let p=tf==='5y'?4500:tf==='10y'?2200:1000;for(let i=n;i>=0;i--){const d=new Date(TODAY);d.setMonth(d.getMonth()-i);labels.push(d.toLocaleDateString('ja-JP',{year:'numeric',month:'short'}));p*=1.0068*(1+(Math.random()-.46)*0.03);prices.push(Math.max(p,500));}return{prices,labels};}
 
-/* ════════════════════════════════
-   TODO LIST
-════════════════════════════════ */
-function renderTodo(cape, buffett, score) {
-  const isOvervalued = cape > 30 || buffett > 150;
+async function loadAll(){const btn=document.getElementById('refreshBtn');btn.disabled=true;btn.textContent='⏳ 取得中...';const newsPromise=fetchNews();let prices,labels;try{const range=TF==='20y'?'20y':TF==='10y'?'10y':'5y';const res=await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/%5EGSPC?interval=1mo&range=${range}`,{cache:'no-store'});if(!res.ok)throw new Error('HTTP '+res.status);const json=await res.json();const chart=json.chart.result[0];const ts=chart.timestamp;const closes=chart.indicators.quote[0].close;prices=[];labels=[];for(let i=0;i<ts.length;i++){const v=closes[i];if(v===null||v===undefined)continue;prices.push(v);const d=new Date(ts[i]*1000);labels.push(d.toLocaleDateString('ja-JP',{year:'numeric',month:'short'}));}if(prices.length<10)throw new Error('data too short');document.getElementById('demoBadge').style.display='none';document.getElementById('dataSource').textContent='✓ Yahoo Finance API';}catch(e){const d=genDemo(TF);prices=d.prices;labels=d.labels;document.getElementById('demoBadge').style.display='inline-block';document.getElementById('dataSource').textContent='⚠ デモデータ';}const newsScore=await newsPromise;updateUI(prices,labels,newsScore);fetchStocks();btn.disabled=false;btn.textContent='更新';}
 
-  const todos = [
-    {
-      text: 'iDeCoの掛け金配分割合を確認・変更する',
-      due: fmtDate(addDays(TODAY, 7)),
-      urgency: 'urgent',
-      priority: 'high',
-      detail: isOvervalued ? '株式比率を引き下げ、債券・REITを増やす方向で変更' : '現在の配分を確認し、目標比率と乖離がないか点検'
-    },
-    {
-      text: 'S&P500のCAPEレシオを月1回チェックする（次回確認日設定）',
-      due: fmtDate(addMonths(TODAY, 1)),
-      urgency: 'soon',
-      priority: 'mid',
-      detail: 'CAPE>35になったら株式比率をさらに引き下げ、<20になったら積極投資に切り替える'
-    },
-    {
-      text: isOvervalued ? '緊急：積立の継続確認（感情で止めないこと）' : '積立継続の意思を書面化して保管する',
-      due: fmtDate(addDays(TODAY, 3)),
-      urgency: isOvervalued ? 'urgent' : 'soon',
-      priority: isOvervalued ? 'high' : 'mid',
-      detail: '「割高だから積立を止める」は最も危険な判断。長期ではDCAが有効であることをメモに残す'
-    },
-    {
-      text: '四半期末リバランス実施',
-      due: fmtDate(new Date('2026-06-30')),
-      urgency: 'soon',
-      priority: 'high',
-      detail: '各資産クラスが目標配分から±5%以上乖離していれば、目標比率に戻す売買を実施'
-    },
-    {
-      text: '緊急時の「売らない」宣言書を作成する',
-      due: fmtDate(addDays(TODAY, 14)),
-      urgency: 'ok',
-      priority: 'mid',
-      detail: '「市場が-30%になっても積立を継続する」と書いて手帳に貼る。感情的な売却を防ぐ最強ツール'
-    },
-    {
-      text: '年間投資方針書（IPS）を更新する',
-      due: fmtDate(new Date('2026-12-31')),
-      urgency: 'ok',
-      priority: 'low',
-      detail: 'リスク許容度・目標資産額・リバランスルールを年1回見直して文書化する'
-    },
-    {
-      text: isOvervalued ? '現金比率を全体の10〜20%確保する（機会損失への備え）' : '積立額を年収の増加に合わせて見直す',
-      due: fmtDate(addMonths(TODAY, 2)),
-      urgency: 'soon',
-      priority: isOvervalued ? 'high' : 'low',
-      detail: isOvervalued ? '割高時に大きな調整が来た場合の買い増し資金として確保。定期預金でOK' : '年収1%増ごとに積立額を1〜2%引き上げるルールを設定'
-    },
-  ];
+function setTF(tf,el){TF=tf;document.querySelectorAll('.tf-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');loadAll();}
 
-  const el = document.getElementById('todoList');
-  el.innerHTML = todos.map((t, i) => `
-    <div class="todo-item" id="todo-${i}">
-      <div class="todo-check" id="chk-${i}" onclick="toggleTodo(${i})"></div>
-      <div class="todo-body">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
-          <span class="todo-priority pri-${t.priority}">${t.priority==='high'?'重要':'mid'===t.priority?'推奨':'任意'}</span>
-          <span class="todo-due due-${t.urgency}">📅 期限: ${t.due}</span>
-        </div>
-        <div class="todo-text" id="txt-${i}">${t.text}</div>
-        <div style="font-size:10px;color:var(--muted);margin-top:3px;line-height:1.5;">${t.detail}</div>
-      </div>
-    </div>`).join('');
-}
+const DEMO_PRICES={NVDA:{p:1050,ch:2.3},MSFT:{p:430,ch:0.8},AAPL:{p:215,ch:-0.4},GOOGL:{p:175,ch:1.2},AMZN:{p:195,ch:1.5},META:{p:545,ch:2.1},TSLA:{p:185,ch:-1.3},ARM:{p:155,ch:3.2},TMUS:{p:205,ch:0.5},CPNG:{p:24,ch:1.1},'9984.T':{p:9850,ch:1.8,currency:'¥'}};
 
-function toggleTodo(i) {
-  const chk = document.getElementById('chk-'+i);
-  const txt = document.getElementById('txt-'+i);
-  const done = chk.classList.toggle('done');
-  chk.textContent = done ? '✓' : '';
-  txt.classList.toggle('done-text', done);
-}
-
-/* ════════════════════════════════
-   MOMENTUM vs VALUATION
-════════════════════════════════ */
-function renderMomentum(prices, cape, buffett, m, newsScore) {
-  const e50v = ema(prices,Math.min(50,prices.length));
-  const e200v = ema(prices,Math.min(200,prices.length));
-  const last = prices[prices.length-1];
-  const ma50 = e50v[e50v.length-1], ma200 = e200v[e200v.length-1];
-  const above50 = last > ma50, above200 = last > ma200;
-  const trend12m = ((last/prices[Math.max(0,prices.length-12)]-1)*100).toFixed(1);
-
-  // Momentum score 0-10
-  let momSc = 5;
-  if(above200) momSc+=1; else momSc-=1;
-  if(above50)  momSc+=1; else momSc-=1;
-  if(+trend12m>15) momSc+=2; else if(+trend12m>5) momSc+=1; else if(+trend12m<-10) momSc-=2; else if(+trend12m<0) momSc-=1;
-  if(newsScore>1)  momSc+=1; else if(newsScore<-1) momSc-=1;
-  if(m.vix < 15)   momSc+=1; else if(m.vix > 25)  momSc-=1;
-  momSc = Math.min(Math.max(momSc,0),10);
-
-  document.getElementById('momDot').style.left = (momSc/10*100)+'%';
-  document.getElementById('momLabel').textContent =
-    momSc>=7?'🟢 モメンタム強い — 割高でも短〜中期は上昇継続の可能性':
-    momSc>=4?'🟡 モメンタム中立 — 方向感なく、次のカタリスト待ち':
-    '🔴 モメンタム弱い — 調整リスクが高い局面';
-
-  // Bull/Bear cases
-  const bullItems = [
-    above200?{t:'MA200上方で強気トレンド継続中', desc:'長期サポートラインを維持している限り、押し目買いが機能しやすい'}:null,
-    m.inflation<3?{t:`インフレ鈍化（CPI ${m.inflation}%）でFRBに余裕`, desc:'利下げカードが温存されており、市場の下支えになる'}:null,
-    m.gdpGrowth>2?{t:`GDP成長 ${m.gdpGrowth}%（景気拡大継続）`, desc:'企業収益の成長が続き、EPS上昇がバリュエーションを正当化する可能性'}:null,
-    newsScore>0?{t:'ニュースフロー: 強気材料優勢', desc:'AI・半導体・貿易摩擦緩和など実体経済への好影響が継続'}:null,
-    {t:'AI/テクノロジー革命による生産性向上', desc:'1995〜2000年同様、技術革新期は高CAPEを正当化した歴史がある'},
-    {t:'株式以外の代替投資の魅力薄', desc:`実質金利${(m.t10-m.inflation).toFixed(1)}%は歴史的に低く、リスク資産への資金流入が継続`},
-  ].filter(Boolean).slice(0,4);
-
-  const bearItems = [
-    cape>30?{t:`CAPE ${cape.toFixed(1)}: 歴史的高水準（平均16.7の2倍）`, desc:'シラーモデルによると次の10年リターンは年率2〜4%台に留まる可能性'}:null,
-    buffett>150?{t:`バフェット指標 ${buffett}%: 危険域`, desc:'バフェット氏本人が「最も割高な水準」と語った180%に近づいている'}:null,
-    m.t10>4?{t:`10年債利回り ${m.t10}%: 株式との競合`, desc:'安全資産でも4%超を得られる環境で、株のリスクプレミアムが低下'}:null,
-    !above50?{t:'MA50を下回り、短期トレンドが弱い', desc:'中期トレンドの悪化は機関投資家の売りを誘発しやすい'}:null,
-    {t:'米国財政赤字: GDP比7%超で拡大継続', desc:'長期的な金利上昇圧力とドル信認の低下リスクがある'},
-    {t:'企業利益率が歴史的ピーク付近', desc:'賃金上昇・AI投資コストにより、利益率の平均回帰リスクがある'},
-  ].filter(Boolean).slice(0,4);
-
-  document.getElementById('bullCases').innerHTML = bullItems.map(b=>`
-    <div class="mv-item"><div class="mv-dot" style="background:var(--green)"></div>
-    <div><strong style="color:var(--text);font-size:11px;">${b.t}</strong><br><span style="color:var(--muted);font-size:10px;">${b.desc}</span></div></div>`).join('');
-  document.getElementById('bearCases').innerHTML = bearItems.map(b=>`
-    <div class="mv-item"><div class="mv-dot" style="background:var(--red)"></div>
-    <div><strong style="color:var(--text);font-size:11px;">${b.t}</strong><br><span style="color:var(--muted);font-size:10px;">${b.desc}</span></div></div>`).join('');
-
-  // Historical analog
-  const analogs = cape>35?
-    `【1996〜2000年アナログ】CAPEが30〜40台でも市場はさらに倍増した。グリーンスパンFRB議長が「根拠なき熱狂」と警告してから3年後に崩壊。"高CAPEが即クラッシュを意味しない"ことの最大の証拠。ただし最終的に-49%の暴落で終わった。
-
-【2013〜2021年アナログ】CAPE25〜35の高水準でも量的緩和下では8年間上昇継続。テーパリング恐怖、コロナなどで一時的に急落したが、すべて押し目買いの機会だった。
-
-→ 結論：「割高だから今すぐ崩れる」は歴史的に正しくない。モメンタムが続く限り割高は割高でなくなる。ただし長期リターンは低下することが多い。iDeCoは継続しつつ株式比率を適正に。`:
-    cape>25?
-    `【2013〜2015年アナログ】CAPE25前後の時期、多くの専門家が「割高」と警告したが市場はその後50%上昇した。AI・ITバブルとは異なり、実体経済の成長が伴っていた時期と類似。
-
-→ 結論：現在は「割高だが崩壊前夜」より「持続可能な高水準」に近い可能性がある。積立継続が最適戦略。`:
-    `【2009〜2013年アナログ】リーマンショック後の回復初期。CAPEが適正水準（20前後）にある現在は、長期投資家にとって有利な局面。割安感が投資妙味を高めている。`;
-
-  document.getElementById('historicalAnalog').innerHTML = analogs.replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
-
-  return momSc;
-}
-
-/* ════════════════════════════════
-   PSYCHOLOGY MODULE
-════════════════════════════════ */
-function renderPsychology(cape, score, momSc) {
-  let psych, quote;
-  if(score >= 7){
-    psych='現在の市場心理は「楽観」から「強欲」に傾いています。このような局面では多くの投資家が追加投資を急ぎ、リスクを過小評価します。「みんなが強気なとき、あなただけが慎重であれ」——これが長期投資家として最も難しく、最も重要な姿勢です。';
-    quote='"Be fearful when others are greedy, and greedy when others are fearful." — Warren Buffett';
-  } else if(score >= 4){
-    psych='現在は中立的な市場環境です。積立継続が最も合理的な選択です。相場の動きに一喜一憂せず、「今月も予定通り積み立てた」という事実が将来の資産を作ります。感情は最大の敵です。システムに従ってください。';
-    quote='"The stock market is a device for transferring money from the impatient to the patient." — Warren Buffett';
-  } else {
-    psych='現在は悲観的な市場環境です。これはあなたにとって「追加投資の機会」かもしれません。歴史上、最大リターンをもたらした投資はすべて「最も怖い」タイミングで行われた投資です。ニュースが最も暗い時が、最も明るい将来への入口です。';
-    quote='"In the short run, the market is a voting machine. In the long run, it\'s a weighing machine." — Benjamin Graham';
-  }
-  document.getElementById('mktPsych').innerHTML =
-    `<div style="margin-bottom:8px;">${psych}</div><div style="color:var(--cyan);font-style:italic;font-size:11px;">${quote}</div>`;
-}
-
-/* ════════════════════════════════
-   SCHOLAR ANALYSIS
-════════════════════════════════ */
-function renderScholar(prices, m, cape, buffett, score, momSc, newsScore) {
-  const erp = (1/m.pe*100 - m.t10).toFixed(2);
-  const {bear, base, bull} = capeReturn(cape);
-  const last = prices[prices.length-1];
-  const text =
-`S&P500の現在の位置を、マクロ経済・バリュエーション・テクニカル・行動経済学の4つの軸から総合評価する。
-
-【バリュエーション】CAPEは${cape.toFixed(1)}（歴史平均16.7の約${(cape/16.7).toFixed(1)}倍）、バフェット指標は${buffett}%で共に割高域にある。しかし重要なのは、「割高だから今すぐ崩れる」という命題は歴史的に成立しないことだ。CAPEが30を超えていた1997〜2000年の3年間、市場はさらに80%上昇した後に崩壊した。割高は長期リターンの低下を示唆するが、短期の方向性は示さない。
-
-【モメンタム】モメンタムスコアは${momSc}/10。${momSc>=7?'MA50/200上方で強気トレンドが継続しており、短期的な調整リスクは限定的だ。':momSc>=4?'中立的なモメンタムで、明確な方向感に欠ける局面だ。':' MA200を下回っており、売り圧力が優勢な局面だ。'}AI・半導体・貿易環境の改善が実体経済をサポートしている。
-
-【マクロ環境】インフレは${m.inflation}%に鈍化し、FRBは政策余地を確保しつつある。GDP成長率${m.gdpGrowth}%は景気後退を示唆しない。株式リスクプレミアム（ERP）は${erp}%で${+erp>0?'株式が債券より有利':'債券が株式より優位な'}環境だ。
-
-【長期予測・iDeCo戦略】CAPEモデルによる今後10年の年率リターン期待値は悲観${bear.toFixed(1)}%〜楽観${bull.toFixed(1)}%（基本${base.toFixed(1)}%）。現在水準から10年後の予測中央値は${Math.round(last*(1+base/100)**10).toLocaleString()}ポイントだ。
-
-iDeCoにおける最適戦略は明確だ：①積立を止めない、②現在の高バリュエーションを考慮し株式比率を${cape>35?'50〜60%':cape>28?'60〜70%':'70〜80%'}に抑える、③残りを先進国債券・REITで分散する。「割高だから積立を止める」は統計的に最も損失をもたらす判断であり、絶対に避けるべき行動だ。
-
-結論として、現在は「積極投資」と「保守投資」の中間、すなわち規律ある継続積立と緩やかなリスク低減の両立が最善解である。`;
-
-  document.getElementById('scholarText').textContent = text;
-}
-
-/* ════════════════════════════════
-   UPDATE UI
-════════════════════════════════ */
-function updateUI(prices, labels, newsScore) {
-  const m = MACRO;
-  const last = prices[prices.length-1];
-  const e200arr = ema(prices, Math.min(200, prices.length));
-  const ma200v = e200arr[e200arr.length-1];
-  const erp = 1/m.pe*100 - m.t10;
-  const ytd = (last/prices[0]-1)*100;
-  const prev = prices[prices.length-2]??last;
-  const dayChg = (last-prev)/prev*100;
-
-  // Charts
-  buildPriceChart(labels, prices);
-  const capeHistLen = Math.min(prices.length, 40);
-  const capeHist = Array.from({length:capeHistLen},(_,i)=>20+10*Math.sin(i/8)+(Math.random()-.5)*2);
-  const yieldHist = Array.from({length:capeHistLen},(_,i)=>2.5+2*Math.sin(i/10+1)+(Math.random()-.5)*.4);
-  const smallLabels = Array.from({length:capeHistLen},(_,i)=>'');
-  buildSmallChart('capeChart', smallLabels, capeHist, '#a855f7');
-  buildSmallChart('yieldChart', smallLabels, yieldHist, '#00c8ff');
-  buildPredChart(last, m.cape, prices);
-
-  // Strip
-  document.getElementById('sp-price').textContent = Math.round(last).toLocaleString();
-  document.getElementById('sp-ch').textContent = (dayChg>=0?'+':'')+dayChg.toFixed(2)+'%';
-  document.getElementById('sp-ch').className = 'sub '+(dayChg>=0?'up':'down');
-  document.getElementById('sp-cape').textContent = m.cape.toFixed(1);
-  const capeS = m.cape>35?'⚠ 割高':m.cape>25?'やや割高':m.cape>15?'適正':'割安';
-  document.getElementById('sp-cape-s').textContent = capeS;
-  document.getElementById('sp-cape-s').className = 'sub '+(m.cape>35?'down':m.cape>25?'neu':'up');
-  document.getElementById('sp-buff').textContent = m.buffett+'%';
-  const buffS = m.buffett>160?'⚠ 強く割高':m.buffett>130?'割高':m.buffett>80?'適正':'割安';
-  document.getElementById('sp-buff-s').textContent = buffS;
-  document.getElementById('sp-buff-s').className = 'sub '+(m.buffett>150?'down':m.buffett>120?'neu':'up');
-  document.getElementById('sp-t10').textContent = m.t10.toFixed(2)+'%';
-  document.getElementById('sp-t10-s').textContent = m.t10>4.5?'⚠ 高水準':m.t10>3?'注意':'良好';
-  document.getElementById('sp-t10-s').className = 'sub '+(m.t10>4.5?'down':m.t10>3?'neu':'up');
-  document.getElementById('sp-erp').textContent = (erp>=0?'+':'')+erp.toFixed(2)+'%';
-  document.getElementById('sp-erp-s').textContent = erp>2?'株式優位':erp>0?'わずか優位':'債券優位';
-  document.getElementById('sp-erp-s').className = 'sub '+(erp>0?'up':'down');
-  document.getElementById('sp-div').textContent = m.divYield.toFixed(2)+'%';
-
-  // Score & Verdict
-  const score = computeScore(m, last, ma200v);
-  const vb = document.getElementById('verdictBanner');
-  const vbVal = document.getElementById('vbVal');
-  const vbSub = document.getElementById('vbSub');
-  const vbPsych = document.getElementById('vbPsych');
-  const vbQuote = document.getElementById('vbQuote');
-  if(score >= 7){
-    vb.className='verdict-banner bull';
-    vbVal.textContent='長期 積立継続 ✓';
-    vbSub.textContent='バリュエーション高いが、積立継続が最適解';
-    vbPsych.textContent='感情ではなくシステムで動く。「今月も予定通り積み立てる」——それだけでいい。割高が気になるなら株式比率を少し下げるだけ。積立を止めてはいけない。';
-    vbQuote.textContent='"The stock market is designed to transfer money from the active to the patient." — Warren Buffett';
-  } else if(score >= 4){
-    vb.className='verdict-banner neutral';
-    vbVal.textContent='中立 · 継続積立';
-    vbSub.textContent='割高感あり — 株式比率を10〜20%引き下げて継続';
-    vbPsych.textContent='今は迷いやすい局面。正解は「やめない」こと。ポートフォリオを少し保守的に組み替えながら、毎月の積立だけは絶対に続ける。20年後に振り返れば、この選択が正しかったと分かるだろう。';
-    vbQuote.textContent='"In investing, what is comfortable is rarely profitable." — Robert Arnott';
-  } else {
-    vb.className='verdict-banner bear';
-    vbVal.textContent='慎重 · 分散強化';
-    vbSub.textContent='割高警戒域 — 債券・REIT比率を高めて継続';
-    vbPsych.textContent='最も重要なこと：今こそ積立を止めてはいけない。市場が不安定な今こそ、毎月の積立が「最安値で買う機会」になり得る。恐怖は敵ではなく、長期投資家の友人だ。';
-    vbQuote.textContent='"The time to buy is when there\'s blood in the streets." — Baron Rothschild';
-  }
-  document.getElementById('vbScore').textContent = score;
-
-  // Indicators
-  document.getElementById('ma200').textContent = Math.round(ma200v).toLocaleString();
-  document.getElementById('ma200').className = 'ind-num '+(last>ma200v?'bull-c':'bear-c');
-  document.getElementById('ma200s').textContent = last>ma200v?'⬆ 上方':'⬇ 下方';
-  document.getElementById('ma200s').className = 'ind-sig '+(last>ma200v?'bull-c':'bear-c');
-  document.getElementById('pe').textContent = m.pe.toFixed(1);
-  document.getElementById('pe').className = 'ind-num '+(m.pe>25?'bear-c':m.pe>18?'neu-c':'bull-c');
-  document.getElementById('pes').textContent = m.pe>25?'⚠ 割高':m.pe>18?'適正':'割安';
-  document.getElementById('pes').className = 'ind-sig '+(m.pe>25?'bear-c':m.pe>18?'neu-c':'bull-c');
-  const rr = (m.t10-m.inflation).toFixed(1);
-  document.getElementById('realRate').textContent = rr+'%';
-  document.getElementById('realRate').className = 'ind-num '+(+rr>2?'bear-c':+rr>0?'neu-c':'bull-c');
-  document.getElementById('realRates').textContent = +rr>2?'⚠ 高い':+rr>0?'普通':'低い';
-  document.getElementById('realRates').className = 'ind-sig '+(+rr>2?'bear-c':+rr>0?'neu-c':'bull-c');
-  const {base} = capeReturn(m.cape);
-  document.getElementById('capeRet').textContent = fmtPct(base)+'/年';
-  document.getElementById('capeRet').className = 'ind-num '+(base>5?'bull-c':base>0?'neu-c':'bear-c');
-  document.getElementById('capeRets').textContent = base>5?'良好':base>2?'普通':'低め';
-  document.getElementById('capeRets').className = 'ind-sig '+(base>5?'bull-c':base>0?'neu-c':'bear-c');
-
-  // Gauges
-  const bPct = Math.min(m.buffett/200, 1);
-  document.getElementById('buffDot').style.left = (bPct*100)+'%';
-  const capePct = Math.min(Math.max((m.cape-10)/40,0),1);
-  document.getElementById('capeDot').style.left = (capePct*100)+'%';
-
-  // iDeCo
-  renderIdeco(m.cape, m.buffett, erp, score);
-
-  // TODO
-  renderTodo(m.cape, m.buffett, score);
-
-  // Momentum
-  const momSc = renderMomentum(prices, m.cape, m.buffett, m, newsScore);
-
-  // Psychology
-  renderPsychology(m.cape, score, momSc);
-
-  // Scholar
-  renderScholar(prices, m, m.cape, m.buffett, score, momSc, newsScore);
-
-  // Update time
-  document.getElementById('updateTime').textContent = '最終更新: '+new Date().toLocaleTimeString('ja-JP');
-}
-
-/* ════════════════════════════════
-   DCA CALC
-════════════════════════════════ */
-function calcDCA() {
-  const mo=parseFloat(document.getElementById('dcaAmt').value)||30000;
-  const yrs=parseInt(document.getElementById('dcaYrs').value)||20;
-  const rate=parseFloat(document.getElementById('dcaRate').value)/100/12;
-  const n=yrs*12;
-  const total=mo*((Math.pow(1+rate,n)-1)/rate)*(1+rate);
-  const inv=mo*n;
-  const mul=(total/inv).toFixed(1);
-  document.getElementById('dca-inv').textContent='¥'+Math.round(inv/10000)+'万';
-  document.getElementById('dca-tot').textContent='¥'+Math.round(total/10000)+'万';
-  document.getElementById('dca-mul').textContent=mul+'倍';
-  document.getElementById('dcaResult').style.display='block';
-  if(dcaChartInst) dcaChartInst.destroy();
-  const ctx=document.getElementById('dcaChart').getContext('2d');
-  const g=ctx.createLinearGradient(0,0,0,130);
-  g.addColorStop(0,'rgba(0,230,118,.25)');g.addColorStop(1,'rgba(0,230,118,0)');
-  const labs=[],invArr=[],totArr=[];
-  for(let y=1;y<=yrs;y++){
-    labs.push(y+'年');
-    const nm=y*12;
-    invArr.push(mo*nm);
-    totArr.push(mo*((Math.pow(1+rate,nm)-1)/rate)*(1+rate));
-  }
-  dcaChartInst=new Chart(ctx,{type:'line',data:{labels:labs,datasets:[
-    {label:'総資産',data:totArr,borderColor:'#00e676',backgroundColor:g,borderWidth:2,pointRadius:0,fill:true},
-    {label:'元本',data:invArr,borderColor:'rgba(255,255,255,.3)',borderWidth:1,borderDash:[4,3],pointRadius:0,fill:false},
-  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'¥'+Math.round(c.parsed.y/10000)+'万'}}},
-    scales:{x:{ticks:{color:'#4a6080',maxTicksLimit:6,font:{size:9}}},y:{ticks:{color:'#4a6080',font:{size:9},callback:v=>'¥'+(v/10000).toFixed(0)+'万'}}}}});
-}
-
-/* ════════════════════════════════
-   DEMO DATA
-════════════════════════════════ */
-function genDemo(tf) {
-  const years = tf==='5y'?5:tf==='10y'?10:20;
-  const n = years*12;
-  const prices=[], labels=[];
-  let p = tf==='5y'?4500:tf==='10y'?2200:1000;
-  for(let i=n;i>=0;i--){
-    const d=new Date(TODAY); d.setMonth(d.getMonth()-i);
-    labels.push(d.toLocaleDateString('ja-JP',{year:'numeric',month:'short'}));
-    p*=1.0068*(1+(Math.random()-.46)*0.03);
-    prices.push(Math.max(p,500));
-  }
-  return {prices, labels};
-}
-
-/* ════════════════════════════════
-   MAIN LOAD
-════════════════════════════════ */
-async function loadAll() {
-  const btn=document.getElementById('refreshBtn');
-  btn.disabled=true; btn.textContent='⏳ 取得中...';
-
-  // Fetch news in parallel
-  const newsPromise = fetchNews();
-
-  let prices, labels;
-  try {
-    const range = TF==='20y'?'20y':TF==='10y'?'10y':'5y';
-    const res = await fetch(
-      `https://query1.finance.yahoo.com/v8/finance/chart/%5EGSPC?interval=1mo&range=${range}`,
-      {cache:'no-store'}
-    );
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    const json=await res.json();
-    const chart=json.chart.result[0];
-    const ts=chart.timestamp;
-    const closes=chart.indicators.quote[0].close;
-    prices=[]; labels=[];
-    for(let i=0;i<ts.length;i++){
-      const v=closes[i]; if(v===null||v===undefined) continue;
-      prices.push(v);
-      const d=new Date(ts[i]*1000);
-      labels.push(d.toLocaleDateString('ja-JP',{year:'numeric',month:'short'}));
-    }
-    if(prices.length<10) throw new Error('data too short');
-    document.getElementById('demoBadge').style.display='none';
-    document.getElementById('dataSource').textContent='✓ Yahoo Finance API';
-  } catch(e) {
-    console.warn('Yahoo Finance failed, using demo:', e);
-    const d=genDemo(TF);
-    prices=d.prices; labels=d.labels;
-    document.getElementById('demoBadge').style.display='inline-block';
-    document.getElementById('dataSource').textContent='⚠ デモデータ';
-  }
-
-  const newsScore = await newsPromise;
-  updateUI(prices, labels, newsScore);
-
-  // Fetch stocks in parallel (non-blocking)
-  fetchStocks();
-
-  btn.disabled=false; btn.textContent='🔄 全データ更新';
-}
-
-function setTF(tf, el){
-  TF=tf;
-  document.querySelectorAll('.tf-btn').forEach(b=>b.classList.remove('active'));
-  el.classList.add('active');
-  loadAll();
-}
-
-/* ════════════════════════════════
-   STOCK PRICE FETCHER (Mag7 + SBG + ARM)
-════════════════════════════════ */
-const DEMO_PRICES = {
-  NVDA:{p:1050,ch:2.3}, MSFT:{p:430,ch:0.8}, AAPL:{p:215,ch:-0.4},
-  GOOGL:{p:175,ch:1.2}, AMZN:{p:195,ch:1.5}, META:{p:545,ch:2.1},
-  TSLA:{p:185,ch:-1.3}, ARM:{p:155,ch:3.2}, TMUS:{p:205,ch:0.5},
-  CPNG:{p:24,ch:1.1},
-  '9984.T':{p:9850,ch:1.8,currency:'¥'},
-};
-
-async function fetchStocks() {
-  const symbols = ['NVDA','MSFT','AAPL','GOOGL','AMZN','META','TSLA','ARM','TMUS','CPNG'];
-  const sbgSym = '9984.T';
-
-  let data = {};
-  try {
-    const allSyms = [...symbols, sbgSym].join(',');
-    const res = await fetch(
-      `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(allSyms)}&fields=regularMarketPrice,regularMarketChangePercent,regularMarketPreviousClose,marketCap`,
-      {cache:'no-store'}
-    );
-    if(!res.ok) throw new Error('quote API fail');
-    const json = await res.json();
-    (json.quoteResponse?.result||[]).forEach(q => {
-      data[q.symbol] = {
-        p: q.regularMarketPrice,
-        ch: q.regularMarketChangePercent,
-        currency: q.currency==='JPY'?'¥':'$',
-        cap: q.marketCap,
-      };
-    });
-    if(!Object.keys(data).length) throw new Error('empty');
-  } catch(_) {
-    data = DEMO_PRICES;
-  }
-
-  // ── Mag7 ──
-  const mag7 = ['NVDA','MSFT','AAPL','GOOGL','AMZN','META','TSLA'];
-  mag7.forEach(sym => {
-    const d = data[sym]||DEMO_PRICES[sym];
-    if(!d) return;
-    const pfx = d.currency==='¥'?'¥':'$';
-    const pEl = document.getElementById(`m7-${sym}-p`);
-    const cEl = document.getElementById(`m7-${sym}-c`);
-    if(pEl) pEl.textContent = pfx+(d.p>1000?Math.round(d.p).toLocaleString():d.p.toFixed(2));
-    if(cEl){
-      cEl.textContent = (d.ch>=0?'+':'')+d.ch.toFixed(2)+'%';
-      cEl.className = 'mag7-ch '+(d.ch>=0?'up':'down');
-    }
-  });
-
-  // ── ARM (appears in 2 places) ──
-  const armD = data['ARM']||DEMO_PRICES['ARM'];
-  ['arm-price','arm2-price'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el) el.textContent='$'+armD.p.toFixed(2);
-  });
-  ['arm-ch','arm2-ch'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el){
-      el.textContent=(armD.ch>=0?'+':'')+armD.ch.toFixed(2)+'%';
-      el.className='sbk-port-ch '+(armD.ch>=0?'up':'down');
-    }
-  });
-
-  // ── TMUS ──
-  const tmusD = data['TMUS']||DEMO_PRICES['TMUS'];
-  const tmusP=document.getElementById('tmus-price');
-  const tmusCh=document.getElementById('tmus-ch');
-  if(tmusP) tmusP.textContent='$'+tmusD.p.toFixed(2);
-  if(tmusCh){tmusCh.textContent=(tmusD.ch>=0?'+':'')+tmusD.ch.toFixed(2)+'%';tmusCh.className='sbk-port-ch '+(tmusD.ch>=0?'up':'down');}
-
-  // ── NVDA (in SBK portfolio) ──
-  const nvdaD = data['NVDA']||DEMO_PRICES['NVDA'];
-  const nvdaP2=document.getElementById('nvda2-price');
-  const nvdaC2=document.getElementById('nvda2-ch');
-  if(nvdaP2) nvdaP2.textContent='$'+nvdaD.p.toFixed(2);
-  if(nvdaC2){nvdaC2.textContent=(nvdaD.ch>=0?'+':'')+nvdaD.ch.toFixed(2)+'%';nvdaC2.className='sbk-port-ch '+(nvdaD.ch>=0?'up':'down');}
-
-  // ── CPNG ──
-  const cpngD = data['CPNG']||DEMO_PRICES['CPNG'];
-  const cpngP=document.getElementById('cpng-price');
-  const cpngCh=document.getElementById('cpng-ch');
-  if(cpngP) cpngP.textContent='$'+cpngD.p.toFixed(2);
-  if(cpngCh){cpngCh.textContent=(cpngD.ch>=0?'+':'')+cpngD.ch.toFixed(2)+'%';cpngCh.className='sbk-port-ch '+(cpngD.ch>=0?'up':'down');}
-
-  // ── SoftBank (9984.T) ──
-  const sbgD = data[sbgSym]||DEMO_PRICES[sbgSym];
-  const sbgP=document.getElementById('sbk-price');
-  const sbgCh=document.getElementById('sbk-ch');
-  const sbgMeta=document.getElementById('sbk-meta');
-  if(sbgP) sbgP.textContent='¥'+Math.round(sbgD.p).toLocaleString();
-  if(sbgCh){
-    sbgCh.textContent=(sbgD.ch>=0?'▲ +':' ▼ ')+Math.abs(sbgD.ch).toFixed(2)+'% (前日比)';
-    sbgCh.className='sbk-price-ch '+(sbgD.ch>=0?'up':'down');
-  }
-  if(sbgMeta && sbgD.cap) sbgMeta.textContent='時価総額: ¥'+Math.round(sbgD.cap/1e12*10)/10+'兆円';
-}
+async function fetchStocks(){const symbols=['NVDA','MSFT','AAPL','GOOGL','AMZN','META','TSLA','ARM','TMUS','CPNG'];const sbgSym='9984.T';let data={};try{const allSyms=[...symbols,sbgSym].join(',');const res=await fetch(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(allSyms)}&fields=regularMarketPrice,regularMarketChangePercent,regularMarketPreviousClose,marketCap`,{cache:'no-store'});if(!res.ok)throw new Error('quote API fail');const json=await res.json();(json.quoteResponse?.result||[]).forEach(q=>{data[q.symbol]={p:q.regularMarketPrice,ch:q.regularMarketChangePercent,currency:q.currency==='JPY'?'¥':'$',cap:q.marketCap};});if(!Object.keys(data).length)throw new Error('empty');}catch(_){data=DEMO_PRICES;}const mag7=['NVDA','MSFT','AAPL','GOOGL','AMZN','META','TSLA'];mag7.forEach(sym=>{const d=data[sym]||DEMO_PRICES[sym];if(!d)return;const pfx=d.currency==='¥'?'¥':'$';const pEl=document.getElementById(`m7-${sym}-p`);const cEl=document.getElementById(`m7-${sym}-c`);if(pEl)pEl.textContent=pfx+(d.p>1000?Math.round(d.p).toLocaleString():d.p.toFixed(2));if(cEl){cEl.textContent=(d.ch>=0?'+':'')+d.ch.toFixed(2)+'%';cEl.className='mag7-ch '+(d.ch>=0?'up':'down');}});const armD=data['ARM']||DEMO_PRICES['ARM'];['arm-price','arm2-price'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='$'+armD.p.toFixed(2);});['arm-ch','arm2-ch'].forEach(id=>{const el=document.getElementById(id);if(el){el.textContent=(armD.ch>=0?'+':'')+armD.ch.toFixed(2)+'%';el.className='sbk-port-ch '+(armD.ch>=0?'up':'down');}});const tmusD=data['TMUS']||DEMO_PRICES['TMUS'];const tmusP=document.getElementById('tmus-price');const tmusCh=document.getElementById('tmus-ch');if(tmusP)tmusP.textContent='$'+tmusD.p.toFixed(2);if(tmusCh){tmusCh.textContent=(tmusD.ch>=0?'+':'')+tmusD.ch.toFixed(2)+'%';tmusCh.className='sbk-port-ch '+(tmusD.ch>=0?'up':'down');}const nvdaD=data['NVDA']||DEMO_PRICES['NVDA'];const nvdaP2=document.getElementById('nvda2-price');const nvdaC2=document.getElementById('nvda2-ch');if(nvdaP2)nvdaP2.textContent='$'+nvdaD.p.toFixed(2);if(nvdaC2){nvdaC2.textContent=(nvdaD.ch>=0?'+':'')+nvdaD.ch.toFixed(2)+'%';nvdaC2.className='sbk-port-ch '+(nvdaD.ch>=0?'up':'down');}const cpngD=data['CPNG']||DEMO_PRICES['CPNG'];const cpngP=document.getElementById('cpng-price');const cpngCh=document.getElementById('cpng-ch');if(cpngP)cpngP.textContent='$'+cpngD.p.toFixed(2);if(cpngCh){cpngCh.textContent=(cpngD.ch>=0?'+':'')+cpngD.ch.toFixed(2)+'%';cpngCh.className='sbk-port-ch '+(cpngD.ch>=0?'up':'down');}const sbgD=data[sbgSym]||DEMO_PRICES[sbgSym];const sbgP=document.getElementById('sbk-price');const sbgCh=document.getElementById('sbk-ch');const sbgMeta=document.getElementById('sbk-meta');if(sbgP)sbgP.textContent='¥'+Math.round(sbgD.p).toLocaleString();if(sbgCh){sbgCh.textContent=(sbgD.ch>=0?'▲ +':'▼ ')+Math.abs(sbgD.ch).toFixed(2)+'% (前日比)';sbgCh.className='sbk-price-ch '+(sbgD.ch>=0?'up':'down');}if(sbgMeta&&sbgD.cap)sbgMeta.textContent='時価総額: ¥'+Math.round(sbgD.cap/1e12*10)/10+'兆円';}
 
 loadAll();
-setInterval(loadAll, 90000);
-setInterval(fetchStocks, 30000); // stocks refresh every 30s
+setInterval(loadAll,90000);
+setInterval(fetchStocks,30000);
 </script>
 </body>
 </html>
