@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>💼 デモトレード</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root{--bg:#F2F2F7;--card:#FFFFFF;--green:#34C759;--red:#FF3B30;--blue:#007AFF;--orange:#FF9500;--purple:#AF52DE;--deepgreen:#00A550;--text:#1C1C1E;--text2:#3C3C43;--muted:#8E8E93;--border:#E5E5EA;--sep:#C6C6C8;}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:-apple-system,"SF Pro Display","Helvetica Neue",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:90px;}
+    .nav-top{background:rgba(242,242,247,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);padding:14px 16px 10px;position:sticky;top:0;z-index:100;border-bottom:.5px solid var(--sep);}
+    .nav-title{font-size:35px;font-weight:700;}
+    .nav-sub{font-size:18px;color:var(--muted);margin-top:2px;}
+    .live-dot{display:inline-block;width:7px;height:7px;background:var(--green);border-radius:50%;margin-right:4px;animation:blink 1.4s infinite;}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+    .page-tabs{display:flex;margin:12px 16px 0;background:#E5E5EA;border-radius:10px;padding:2px;}
+    .page-tab{flex:1;text-align:center;padding:7px 2px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border-radius:8px;transition:all .2s;text-decoration:none;display:block;}
+    .page-tab.active{background:white;color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.1);}
+    .section{padding:0 16px;margin-top:18px;}
+    .section-title{font-size:22px;font-weight:700;margin-bottom:10px;}
+    .card{background:var(--card);border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+    .tab-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(248,248,248,.95);backdrop-filter:blur(20px);border-top:.5px solid var(--sep);display:flex;padding:8px 0 20px;z-index:100;}
+    .tab-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;text-decoration:none;color:var(--muted);}
+    .tab-item.active{color:var(--deepgreen);}
+    .tab-icon{font-size:22px;}
+    .tab-label{font-size:11px;font-weight:500;}
+    .up{color:var(--green);}.down{color:var(--red);}
+
+    /* Portfolio summary */
+    .pf-card{background:var(--card);border-radius:20px;margin:12px 16px 0;box-shadow:0 2px 12px rgba(0,0,0,.08);padding:20px 18px 18px;}
+    .pf-row{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px;}
+    .pf-label{font-size:14px;color:var(--muted);font-weight:500;margin-bottom:3px;}
+    .pf-value{font-size:22px;font-weight:700;}
+    .pf-pnl-big{font-size:40px;font-weight:700;line-height:1;}
+    .pf-pnl-pct{font-size:20px;font-weight:600;margin-top:2px;}
+    .pf-days{font-size:14px;color:var(--muted);}
+
+    /* P&L meter */
+    .pnl-meter-wrap{margin-top:14px;}
+    .pnl-meter-track{height:10px;border-radius:5px;background:linear-gradient(90deg,#FF3B30 0%,#FF9500 25%,#FFDD00 50%,#34C759 75%,#00A550 100%);position:relative;}
+    .pnl-meter-center{position:absolute;top:-3px;left:50%;width:2px;height:16px;background:var(--muted);transform:translateX(-50%);border-radius:1px;}
+    .pnl-meter-dot{position:absolute;top:50%;transform:translate(-50%,-50%);width:18px;height:18px;background:white;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.3);transition:left 1.2s ease;}
+    .pnl-meter-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px;}
+
+    /* Summary grid */
+    .pf-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--border);border-radius:12px;overflow:hidden;margin-top:14px;}
+    .pf-cell{background:var(--card);padding:11px;text-align:center;}
+    .pf-cell-lbl{font-size:12px;color:var(--muted);margin-bottom:3px;}
+    .pf-cell-val{font-size:17px;font-weight:700;}
+
+    /* Chart */
+    .chart-card{background:var(--card);border-radius:16px;margin:12px 16px 0;box-shadow:0 2px 8px rgba(0,0,0,.06);padding:16px;}
+    .chart-card canvas{max-height:160px;}
+
+    /* Position card */
+    .pos-card{background:var(--card);border-radius:14px;margin:0 16px 10px;box-shadow:0 2px 8px rgba(0,0,0,.06);overflow:hidden;}
+    .pos-header{display:flex;align-items:center;gap:10px;padding:13px 14px 10px;}
+    .pos-flag{font-size:24px;}
+    .pos-info{flex:1;}
+    .pos-ticker{font-size:18px;font-weight:700;}
+    .pos-name{font-size:13px;color:var(--muted);}
+    .pos-pnl{text-align:right;}
+    .pos-pnl-num{font-size:20px;font-weight:700;}
+    .pos-pnl-pct{font-size:14px;font-weight:600;}
+    .pos-body{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--border);}
+    .pos-cell{background:var(--card);padding:9px 10px;}
+    .pos-cell-lbl{font-size:11px;color:var(--muted);margin-bottom:2px;}
+    .pos-cell-val{font-size:15px;font-weight:600;}
+    .pos-footer{display:flex;gap:6px;padding:10px 12px;border-top:.5px solid var(--border);}
+    .pos-btn{flex:1;padding:8px;border-radius:9px;border:none;font-size:14px;font-weight:600;cursor:pointer;}
+    .pos-btn-chart{background:rgba(0,122,255,.1);color:var(--blue);text-decoration:none;text-align:center;}
+    .pos-btn-close{background:rgba(255,59,48,.1);color:var(--red);}
+
+    /* FAB */
+    .fab-wrap{position:fixed;bottom:80px;right:18px;z-index:90;display:flex;flex-direction:column;gap:10px;align-items:flex-end;}
+    .fab{border:none;border-radius:28px;padding:14px 20px;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.18);display:flex;align-items:center;gap:8px;}
+    .fab-primary{background:var(--deepgreen);color:white;}
+    .fab-auto{background:#1a1a2e;color:#FF9500;}
+
+    /* Modal overlay */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:flex-end;}
+    .modal-overlay.open{display:flex;}
+    .modal-sheet{background:var(--card);border-radius:20px 20px 0 0;padding:20px 16px 40px;width:100%;max-height:88vh;overflow-y:auto;}
+    .modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px;}
+    .modal-title{font-size:22px;font-weight:700;margin-bottom:16px;}
+
+    /* Form elements */
+    .form-group{margin-bottom:14px;}
+    .form-label{font-size:15px;font-weight:600;color:var(--muted);margin-bottom:6px;display:block;}
+    .form-select,.form-input{width:100%;padding:13px 14px;border-radius:12px;border:1.5px solid var(--border);background:var(--bg);font-size:17px;color:var(--text);font-family:inherit;appearance:none;}
+    .form-select:focus,.form-input:focus{outline:none;border-color:var(--blue);}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    .form-hint{font-size:13px;color:var(--muted);margin-top:5px;}
+    .form-calc{background:var(--bg);border-radius:12px;padding:12px 14px;margin:10px 0;font-size:15px;line-height:1.7;}
+    .form-warn{background:rgba(255,149,0,.1);border:1px solid rgba(255,149,0,.3);border-radius:10px;padding:10px 12px;font-size:14px;color:var(--orange);margin:8px 0;}
+    .btn-confirm{width:100%;padding:15px;border-radius:14px;border:none;background:var(--deepgreen);color:white;font-size:18px;font-weight:700;cursor:pointer;margin-top:8px;}
+    .btn-cancel{width:100%;padding:13px;border-radius:14px;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-size:17px;font-weight:600;cursor:pointer;margin-top:8px;}
+
+    /* Empty state */
+    .empty-state{text-align:center;padding:40px 20px;color:var(--muted);}
+    .empty-icon{font-size:52px;margin-bottom:12px;}
+    .empty-text{font-size:17px;font-weight:600;margin-bottom:6px;color:var(--text2);}
+    .empty-sub{font-size:15px;line-height:1.6;}
+
+    /* Rate row */
+    .rate-row{display:flex;align-items:center;gap:8px;padding:10px 16px;background:rgba(0,122,255,.05);border-radius:12px;margin:0 16px 0;}
+    .rate-lbl{font-size:14px;color:var(--muted);flex:1;}
+    .rate-input{width:80px;padding:6px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--card);font-size:15px;font-weight:600;text-align:right;}
+    .disclaimer{margin:8px 16px 20px;font-size:14px;color:var(--muted);line-height:1.6;text-align:center;}
+  </style>
+</head>
+<body>
+
+<div class="nav-top">
+  <div style="display:flex;align-items:center;justify-content:space-between;">
+    <div>
+      <div class="nav-title">💼 デモトレード</div>
+      <div class="nav-sub"><span class="live-dot"></span>仮想ポートフォリオ追跡</div>
+    </div>
+    <button onclick="refreshPrices()" id="refreshBtn" style="background:var(--deepgreen);border:none;color:white;padding:7px 16px;border-radius:20px;font-size:16px;font-weight:600;cursor:pointer;">更新</button>
+  </div>
+</div>
+
+<div style="padding:0 16px;margin-top:12px;">
+  <div class="page-tabs">
+    <a href="index.html"  class="page-tab">₿ BTC</a>
+    <a href="sp500.html"  class="page-tab">📈 S&P</a>
+    <a href="india.html"  class="page-tab">🇮🇳 India</a>
+    <a href="value.html"  class="page-tab">💎 割安</a>
+    <a href="trade.html"  class="page-tab active">💼 Trade</a>
+  </div>
+</div>
+
+<!-- Exchange rate -->
+<div class="rate-row" style="margin-top:12px;">
+  <span class="rate-lbl">💱 USD/JPY レート（手動設定）</span>
+  <input class="rate-input" id="rateInput" type="number" value="150" min="100" max="200" onchange="onRateChange()"/>
+  <span style="font-size:14px;font-weight:600;color:var(--muted);">円</span>
+</div>
+
+<!-- Portfolio summary -->
+<div class="pf-card" id="pfSummary">
+  <div style="text-align:center;padding:20px;color:var(--muted);">
+    <div style="font-size:40px;margin-bottom:8px;">💼</div>
+    <div style="font-size:17px;font-weight:600;color:var(--text2);">まだポジションがありません</div>
+    <div style="font-size:15px;margin-top:6px;">下のボタンからポジションを追加してください</div>
+  </div>
+</div>
+
+<!-- Chart -->
+<div class="chart-card" id="chartCard" style="display:none;">
+  <div style="font-size:16px;font-weight:700;color:var(--muted);margin-bottom:10px;">📈 ポートフォリオ推移</div>
+  <canvas id="pfChart"></canvas>
+</div>
+
+<!-- Positions -->
+<div class="section" style="margin-top:16px;">
+  <div class="section-title">📋 保有ポジション <span id="posCount" style="font-size:16px;font-weight:500;color:var(--muted);"></span></div>
+  <div id="positionsList"></div>
+</div>
+
+<div class="disclaimer">⚠️ 本ツールは仮想デモトレードです。実際の取引・投資判断には使用しないでください。価格は参考値です。</div>
+
+<!-- FAB buttons -->
+<div class="fab-wrap">
+  <button class="fab fab-auto" onclick="openAutoModal()">💎 おすすめ自動購入</button>
+  <button class="fab fab-primary" onclick="openAddModal()">＋ ポジション追加</button>
+</div>
+
+<!-- Tab bar -->
+<div class="tab-bar">
+  <a href="index.html" class="tab-item"><span class="tab-icon">₿</span><span class="tab-label">BTC</span></a>
+  <a href="sp500.html" class="tab-item"><span class="tab-icon">📈</span><span class="tab-label">S&P500</span></a>
+  <a href="india.html" class="tab-item"><span class="tab-icon">🇮🇳</span><span class="tab-label">India</span></a>
+  <a href="value.html" class="tab-item"><span class="tab-icon">💎</span><span class="tab-label">割安</span></a>
+  <a href="trade.html" class="tab-item active"><span class="tab-icon">💼</span><span class="tab-label">Trade</span></a>
+</div>
+
+<!-- Add Position Modal -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">＋ ポジション追加</div>
+
+    <div class="form-group">
+      <label class="form-label">銘柄</label>
+      <select class="form-select" id="stockSelect" onchange="onStockSelect()">
+        <option value="">選択してください</option>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">購入金額 (¥)</label>
+        <input class="form-input" id="amountInput" type="number" placeholder="200000" oninput="calcFromAmount()"/>
+        <div class="form-hint" id="lotHint"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">株数</label>
+        <input class="form-input" id="sharesInput" type="number" placeholder="0" oninput="calcFromShares()"/>
+      </div>
+    </div>
+
+    <div class="form-calc" id="calcPreview" style="display:none;"></div>
+    <div class="form-warn" id="lotWarn" style="display:none;"></div>
+
+    <button class="btn-confirm" onclick="confirmAdd()">購入する</button>
+    <button class="btn-cancel" onclick="closeModal('addModal')">キャンセル</button>
+  </div>
+</div>
+
+<!-- Auto Invest Modal -->
+<div class="modal-overlay" id="autoModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">💎 おすすめ自動購入</div>
+    <div style="font-size:15px;color:var(--muted);margin-bottom:14px;line-height:1.6;">スクリーナーのトップ5銘柄に、指定した金額を均等配分します。</div>
+
+    <div class="form-group">
+      <label class="form-label">総投資額 (¥)</label>
+      <input class="form-input" id="autoAmount" type="number" value="2000000" oninput="renderAutoPreview()"/>
+    </div>
+
+    <div id="autoPreview" style="margin:12px 0;"></div>
+
+    <button class="btn-confirm" onclick="confirmAutoInvest()">一括購入する</button>
+    <button class="btn-cancel" onclick="closeModal('autoModal')">キャンセル</button>
+  </div>
+</div>
+
+<script>
+// ─── Stock master (same as value.html, with minLot) ─────────────────────
+const STOCKS = [
+  {ticker:'PFE',   name:'Pfizer',           flag:'🇺🇸', cur:'USD', base:27,   minLot:1,   combined:68},
+  {ticker:'VZ',    name:'Verizon',           flag:'🇺🇸', cur:'USD', base:40,   minLot:1,   combined:64},
+  {ticker:'T',     name:'AT&T',              flag:'🇺🇸', cur:'USD', base:18,   minLot:1,   combined:55},
+  {ticker:'C',     name:'Citigroup',         flag:'🇺🇸', cur:'USD', base:65,   minLot:1,   combined:58},
+  {ticker:'F',     name:'Ford Motor',        flag:'🇺🇸', cur:'USD', base:11,   minLot:1,   combined:52},
+  {ticker:'GM',    name:'General Motors',    flag:'🇺🇸', cur:'USD', base:45,   minLot:1,   combined:56},
+  {ticker:'CVX',   name:'Chevron',           flag:'🇺🇸', cur:'USD', base:155,  minLot:1,   combined:61},
+  {ticker:'XOM',   name:'Exxon Mobil',       flag:'🇺🇸', cur:'USD', base:110,  minLot:1,   combined:60},
+  {ticker:'WBA',   name:'Walgreens Boots',   flag:'🇺🇸', cur:'USD', base:10,   minLot:1,   combined:42},
+  {ticker:'MO',    name:'Altria Group',      flag:'🇺🇸', cur:'USD', base:45,   minLot:1,   combined:61},
+  {ticker:'SHEL',  name:'Shell',             flag:'🇬🇧', cur:'USD', base:32,   minLot:1,   combined:62},
+  {ticker:'BP',    name:'BP',                flag:'🇬🇧', cur:'USD', base:6,    minLot:1,   combined:58},
+  {ticker:'HSBC',  name:'HSBC Holdings',     flag:'🇬🇧', cur:'USD', base:42,   minLot:1,   combined:59},
+  {ticker:'BCS',   name:'Barclays',          flag:'🇬🇧', cur:'USD', base:12,   minLot:1,   combined:57},
+  {ticker:'EQNR',  name:'Equinor',           flag:'🇳🇴', cur:'USD', base:25,   minLot:1,   combined:64},
+  {ticker:'VALE',  name:'Vale SA',           flag:'🇧🇷', cur:'USD', base:10,   minLot:1,   combined:60},
+  {ticker:'PBR',   name:'Petrobras',         flag:'🇧🇷', cur:'USD', base:14,   minLot:1,   combined:45},
+  {ticker:'ITUB',  name:'Itaú Unibanco',     flag:'🇧🇷', cur:'USD', base:9,    minLot:1,   combined:58},
+  {ticker:'TM',    name:'Toyota Motor (ADR)',flag:'🇯🇵', cur:'USD', base:180,  minLot:1,   combined:65},
+  {ticker:'HMC',   name:'Honda Motor (ADR)', flag:'🇯🇵', cur:'USD', base:28,   minLot:1,   combined:66},
+  {ticker:'MUFG',  name:'Mitsubishi UFJ (ADR)',flag:'🇯🇵',cur:'USD',base:12,  minLot:1,   combined:61},
+  {ticker:'2433.T',name:'博報堂DYホールディングス',flag:'🇯🇵',cur:'JPY',base:2100,minLot:100,combined:58},
+  {ticker:'4324.T',name:'電通グループ',      flag:'🇯🇵', cur:'JPY', base:4200, minLot:100, combined:52},
+  {ticker:'WPP',   name:'WPP plc',           flag:'🇬🇧', cur:'USD', base:9,    minLot:1,   combined:53},
+  {ticker:'OMC',   name:'Omnicom Group',     flag:'🇺🇸', cur:'USD', base:90,   minLot:1,   combined:60},
+  {ticker:'IPG',   name:'Interpublic Group', flag:'🇺🇸', cur:'USD', base:28,   minLot:1,   combined:57},
+];
+
+// ─── Portfolio state ─────────────────────────────────────────────────────
+const STORAGE_KEY = 'demoPortfolio_v2';
+let portfolio = { positions:[], snapshots:[], createdAt: null };
+let usdJpy = 150;
+let pfChart = null;
+
+function loadPortfolio() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(raw) {
+    try { portfolio = JSON.parse(raw); } catch(e) {}
+  }
+  const ri = document.getElementById('rateInput');
+  const savedRate = localStorage.getItem('usdJpyRate');
+  if(savedRate) { usdJpy = +savedRate; ri.value = savedRate; }
+}
+function savePortfolio() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(portfolio));
+  localStorage.setItem('usdJpyRate', usdJpy);
+}
+
+// ─── P&L calculation ─────────────────────────────────────────────────────
+function toJPY(amount, cur) {
+  if(cur === 'JPY') return amount;
+  return amount * usdJpy;
+}
+function posCurrentValue(pos) {
+  const cp = pos.currentPrice || pos.entryPrice;
+  return toJPY(cp * pos.shares, pos.cur);
+}
+function posPnL(pos) {
+  const cur = posCurrentValue(pos);
+  const pnl = cur - pos.entryValueJPY;
+  const pct = pnl / pos.entryValueJPY * 100;
+  return { cur, pnl, pct };
+}
+function totalStats() {
+  if(!portfolio.positions.length) return null;
+  const invested = portfolio.positions.reduce((a,p) => a + p.entryValueJPY, 0);
+  const current  = portfolio.positions.reduce((a,p) => a + posCurrentValue(p), 0);
+  const pnl = current - invested;
+  const pct = pnl / invested * 100;
+  return { invested, current, pnl, pct };
+}
+
+// ─── Price fetching ───────────────────────────────────────────────────────
+async function refreshPrices() {
+  const btn = document.getElementById('refreshBtn');
+  btn.textContent = '⏳'; btn.disabled = true;
+  const tickers = portfolio.positions.map(p => p.ticker);
+  if(!tickers.length) { btn.textContent = '更新'; btn.disabled = false; return; }
+  try {
+    const url = `https://query2.finance.yahoo.com/v7/finance/quote?symbols=${tickers.join(',')}&fields=regularMarketPrice,regularMarketChangePercent`;
+    const res = await fetch(url, {cache:'no-store', signal:AbortSignal.timeout(6000)});
+    const data = await res.json();
+    const quotes = data?.quoteResponse?.result || [];
+    quotes.forEach(q => {
+      const pos = portfolio.positions.find(p => p.ticker === q.symbol);
+      if(pos && q.regularMarketPrice > 0) {
+        pos.currentPrice = +q.regularMarketPrice.toFixed(pos.cur==='JPY'?0:2);
+        pos.change = q.regularMarketChangePercent;
+      }
+    });
+    saveSnap();
+  } catch(e) {
+    // Demo: small random drift
+    portfolio.positions.forEach(p => {
+      if(!p.currentPrice) p.currentPrice = p.entryPrice;
+      p.currentPrice = +(p.currentPrice * (0.997 + Math.random()*0.006)).toFixed(p.cur==='JPY'?0:2);
+      p.change = (Math.random()-0.48)*2;
+    });
+    saveSnap();
+  }
+  savePortfolio();
+  render();
+  btn.textContent = '更新'; btn.disabled = false;
+}
+
+function saveSnap() {
+  const stats = totalStats();
+  if(!stats) return;
+  const today = new Date().toISOString().slice(0,10);
+  const last = portfolio.snapshots.at(-1);
+  if(last && last.date === today) {
+    last.value = Math.round(stats.current);
+  } else {
+    portfolio.snapshots.push({date:today, value:Math.round(stats.current)});
+  }
+  if(portfolio.snapshots.length > 90) portfolio.snapshots.shift();
+}
+
+// ─── Render ───────────────────────────────────────────────────────────────
+function fmt(v, cur='JPY') {
+  if(cur==='JPY') return '¥' + Math.round(v).toLocaleString('ja-JP');
+  return '$' + v.toFixed(2);
+}
+function fmtJPY(v) { return '¥' + Math.round(v).toLocaleString('ja-JP'); }
+
+function render() {
+  renderSummary();
+  renderChart();
+  renderPositions();
+}
+
+function renderSummary() {
+  const stats = totalStats();
+  const el = document.getElementById('pfSummary');
+  if(!stats) {
+    el.innerHTML = `<div style="text-align:center;padding:24px;color:var(--muted);">
+      <div style="font-size:44px;margin-bottom:8px;">💼</div>
+      <div style="font-size:17px;font-weight:600;color:var(--text2);">まだポジションがありません</div>
+      <div style="font-size:15px;margin-top:6px;">下のボタンからポジションを追加してください</div>
+    </div>`;
+    return;
+  }
+
+  const pnlColor = stats.pnl >= 0 ? 'var(--deepgreen)' : 'var(--red)';
+  const pnlSign  = stats.pnl >= 0 ? '▲ +' : '▼ ';
+  const pct = stats.pct;
+
+  // Meter: -20% to +20% range → clamp pct to [-20, 20], map to [0%,100%]
+  const meterPct = Math.min(100, Math.max(0, (pct + 20) / 40 * 100));
+
+  const days = portfolio.createdAt
+    ? Math.max(1, Math.ceil((Date.now() - new Date(portfolio.createdAt)) / 86400000))
+    : 1;
+
+  el.innerHTML = `
+    <div style="margin-bottom:14px;">
+      <div style="font-size:14px;color:var(--muted);font-weight:500;margin-bottom:4px;">総損益</div>
+      <div style="font-size:42px;font-weight:700;color:${pnlColor};line-height:1;">${pnlSign}${fmtJPY(Math.abs(stats.pnl))}</div>
+      <div style="font-size:22px;font-weight:600;color:${pnlColor};margin-top:2px;">${pnlSign}${Math.abs(pct).toFixed(2)}%</div>
+    </div>
+
+    <div class="pnl-meter-wrap">
+      <div class="pnl-meter-track">
+        <div class="pnl-meter-center"></div>
+        <div class="pnl-meter-dot" style="left:${meterPct}%"></div>
+      </div>
+      <div class="pnl-meter-labels"><span>−20%</span><span>0%</span><span>+20%</span></div>
+    </div>
+
+    <div class="pf-grid" style="margin-top:14px;">
+      <div class="pf-cell">
+        <div class="pf-cell-lbl">投資総額</div>
+        <div class="pf-cell-val">${fmtJPY(stats.invested)}</div>
+      </div>
+      <div class="pf-cell">
+        <div class="pf-cell-lbl">現在評価額</div>
+        <div class="pf-cell-val">${fmtJPY(stats.current)}</div>
+      </div>
+      <div class="pf-cell">
+        <div class="pf-cell-lbl">運用日数</div>
+        <div class="pf-cell-val">${days}日目</div>
+      </div>
+    </div>`;
+}
+
+function renderChart() {
+  const card = document.getElementById('chartCard');
+  const snaps = portfolio.snapshots;
+  if(snaps.length < 2) { card.style.display='none'; return; }
+  card.style.display='block';
+
+  const labels = snaps.map(s => s.date.slice(5));
+  const values = snaps.map(s => s.value);
+  const color  = values.at(-1) >= values[0] ? '#34C759' : '#FF3B30';
+
+  if(pfChart) pfChart.destroy();
+  pfChart = new Chart(document.getElementById('pfChart'), {
+    type:'line',
+    data:{
+      labels,
+      datasets:[{
+        data:values, borderColor:color, borderWidth:2.5,
+        pointRadius:0, fill:true,
+        backgroundColor: color==='#34C759' ? 'rgba(52,199,89,.1)' : 'rgba(255,59,48,.1)',
+        tension:0.35,
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:true,
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:v=>'¥'+Math.round(v.raw).toLocaleString('ja-JP')}}},
+      scales:{
+        x:{grid:{display:false}, ticks:{font:{size:11}, color:'#8E8E93'}},
+        y:{grid:{color:'rgba(0,0,0,.05)'}, ticks:{font:{size:11}, color:'#8E8E93', callback:v=>'¥'+Math.round(v/10000)*10000 .toLocaleString('ja-JP')}}
+      }
+    }
+  });
+}
+
+function renderPositions() {
+  const el = document.getElementById('positionsList');
+  const cnt = document.getElementById('posCount');
+  const positions = portfolio.positions;
+  cnt.textContent = positions.length ? `(${positions.length}件)` : '';
+
+  if(!positions.length) {
+    el.innerHTML = '';
+    return;
+  }
+
+  el.innerHTML = positions.map((pos, i) => {
+    const {pnl, pct} = posPnL(pos);
+    const pnlColor = pnl >= 0 ? 'var(--deepgreen)' : 'var(--red)';
+    const sign = pnl >= 0 ? '▲ +' : '▼ ';
+    const cp = pos.currentPrice || pos.entryPrice;
+    const chg = pos.change;
+    const chgTxt = chg !== undefined ? (chg>=0?'+':'')+chg.toFixed(2)+'%' : '--';
+    const chgColor = (chg||0)>=0 ? 'var(--green)' : 'var(--red)';
+
+    return `<div class="pos-card">
+      <div class="pos-header">
+        <div class="pos-flag">${pos.flag}</div>
+        <div class="pos-info">
+          <div class="pos-ticker">${pos.ticker.replace('.T','').replace('.NS','')}</div>
+          <div class="pos-name">${pos.name}</div>
+        </div>
+        <div class="pos-pnl">
+          <div class="pos-pnl-num" style="color:${pnlColor};">${sign}${fmtJPY(Math.abs(pnl))}</div>
+          <div class="pos-pnl-pct" style="color:${pnlColor};">${sign}${Math.abs(pct).toFixed(2)}%</div>
+        </div>
+      </div>
+      <div class="pos-body">
+        <div class="pos-cell">
+          <div class="pos-cell-lbl">株数</div>
+          <div class="pos-cell-val">${pos.shares.toLocaleString()}株</div>
+        </div>
+        <div class="pos-cell">
+          <div class="pos-cell-lbl">取得単価</div>
+          <div class="pos-cell-val">${fmt(pos.entryPrice, pos.cur)}</div>
+        </div>
+        <div class="pos-cell">
+          <div class="pos-cell-lbl">現在値 <span style="color:${chgColor};font-size:11px;">${chgTxt}</span></div>
+          <div class="pos-cell-val">${fmt(cp, pos.cur)}</div>
+        </div>
+        <div class="pos-cell">
+          <div class="pos-cell-lbl">取得総額</div>
+          <div class="pos-cell-val">${fmtJPY(pos.entryValueJPY)}</div>
+        </div>
+        <div class="pos-cell">
+          <div class="pos-cell-lbl">現在評価額</div>
+          <div class="pos-cell-val">${fmtJPY(posCurrentValue(pos))}</div>
+        </div>
+        <div class="pos-cell">
+          <div class="pos-cell-lbl">取得日</div>
+          <div class="pos-cell-val" style="font-size:13px;">${pos.entryDate}</div>
+        </div>
+      </div>
+      <div class="pos-footer">
+        <a href="https://finance.yahoo.com/chart/${pos.ticker}" target="_blank" rel="noopener" class="pos-btn pos-btn-chart">📈 チャート</a>
+        <button class="pos-btn pos-btn-close" onclick="closePosition(${i})">✕ 決済</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── Add Position Modal ───────────────────────────────────────────────────
+function openAddModal() {
+  // Populate select
+  const sel = document.getElementById('stockSelect');
+  sel.innerHTML = '<option value="">選択してください</option>' +
+    STOCKS.map(s => `<option value="${s.ticker}">${s.flag} ${s.ticker.replace('.T','').replace('.NS','')} — ${s.name} (${s.cur})</option>`).join('');
+  document.getElementById('amountInput').value = '';
+  document.getElementById('sharesInput').value = '';
+  document.getElementById('calcPreview').style.display = 'none';
+  document.getElementById('lotWarn').style.display = 'none';
+  document.getElementById('lotHint').textContent = '';
+  document.getElementById('addModal').classList.add('open');
+}
+
+function onStockSelect() {
+  const ticker = document.getElementById('stockSelect').value;
+  const s = STOCKS.find(x => x.ticker === ticker);
+  if(!s) return;
+  const hint = document.getElementById('lotHint');
+  if(s.minLot > 1) {
+    hint.textContent = `※ 最低購入単元: ${s.minLot}株`;
+    hint.style.color = 'var(--orange)';
+  } else {
+    hint.textContent = '1株から購入可能';
+    hint.style.color = 'var(--muted)';
+  }
+  document.getElementById('amountInput').value = '';
+  document.getElementById('sharesInput').value = '';
+  document.getElementById('calcPreview').style.display = 'none';
+}
+
+function getSelectedStock() {
+  return STOCKS.find(x => x.ticker === document.getElementById('stockSelect').value);
+}
+function stockPriceJPY(s) {
+  return s.cur === 'JPY' ? s.base : s.base * usdJpy;
+}
+
+function calcFromAmount() {
+  const s = getSelectedStock(); if(!s) return;
+  const amount = +document.getElementById('amountInput').value;
+  if(!amount) return;
+  const priceJPY = stockPriceJPY(s);
+  let shares = Math.floor(amount / priceJPY);
+  // Apply min lot
+  shares = Math.floor(shares / s.minLot) * s.minLot;
+  document.getElementById('sharesInput').value = shares;
+  updateCalcPreview(s, shares);
+}
+
+function calcFromShares() {
+  const s = getSelectedStock(); if(!s) return;
+  let shares = +document.getElementById('sharesInput').value;
+  if(!shares) return;
+  // Round to min lot
+  shares = Math.floor(shares / s.minLot) * s.minLot;
+  document.getElementById('sharesInput').value = shares;
+  const priceJPY = stockPriceJPY(s);
+  document.getElementById('amountInput').value = Math.round(shares * priceJPY);
+  updateCalcPreview(s, shares);
+}
+
+function updateCalcPreview(s, shares) {
+  const warn = document.getElementById('lotWarn');
+  const preview = document.getElementById('calcPreview');
+  if(shares < s.minLot) {
+    warn.textContent = `⚠ 最低購入単元は${s.minLot}株です（${fmtJPY(s.minLot * stockPriceJPY(s))}〜）`;
+    warn.style.display = 'block';
+    preview.style.display = 'none';
+    return;
+  }
+  warn.style.display = 'none';
+  const totalJPY = Math.round(shares * stockPriceJPY(s));
+  const priceDisp = s.cur === 'JPY' ? fmtJPY(s.base) : `$${s.base} (≈${fmtJPY(s.base*usdJpy)}/株)`;
+  preview.style.display = 'block';
+  preview.innerHTML = `
+    <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">取得単価</span><strong>${priceDisp}</strong></div>
+    <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">購入株数</span><strong>${shares.toLocaleString()}株</strong></div>
+    <div style="display:flex;justify-content:space-between;border-top:.5px solid var(--border);margin-top:6px;padding-top:6px;"><span style="color:var(--muted);">合計（円換算）</span><strong style="color:var(--deepgreen);">${fmtJPY(totalJPY)}</strong></div>`;
+}
+
+function confirmAdd() {
+  const s = getSelectedStock();
+  const shares = +document.getElementById('sharesInput').value;
+  if(!s || shares < s.minLot) {
+    alert(`最低${s?.minLot||1}株必要です`);
+    return;
+  }
+  const today = new Date().toISOString().slice(0,10);
+  const pos = {
+    ticker: s.ticker, name: s.name, flag: s.flag, cur: s.cur,
+    shares, minLot: s.minLot,
+    entryPrice: s.base, entryRate: usdJpy,
+    entryValueJPY: Math.round(shares * stockPriceJPY(s)),
+    entryDate: today,
+    currentPrice: s.base, change: 0,
+  };
+  if(!portfolio.createdAt) portfolio.createdAt = new Date().toISOString();
+  portfolio.positions.push(pos);
+
+  // Initial snapshot
+  if(!portfolio.snapshots.length) {
+    const invested = portfolio.positions.reduce((a,p)=>a+p.entryValueJPY,0);
+    portfolio.snapshots.push({date:today, value:invested});
+  }
+
+  savePortfolio();
+  closeModal('addModal');
+  render();
+}
+
+function closePosition(idx) {
+  const pos = portfolio.positions[idx];
+  const {pnl, pct} = posPnL(pos);
+  const sign = pnl>=0?'+':'';
+  if(!confirm(`${pos.ticker} を決済しますか？\n損益: ${sign}${fmtJPY(pnl)} (${sign}${pct.toFixed(2)}%)`)) return;
+  portfolio.positions.splice(idx, 1);
+  savePortfolio();
+  render();
+}
+
+// ─── Auto Invest ─────────────────────────────────────────────────────────
+const TOP_PICKS = ['PFE','HMC','VZ','EQNR','CVX'];
+
+function openAutoModal() {
+  renderAutoPreview();
+  document.getElementById('autoModal').classList.add('open');
+}
+
+function renderAutoPreview() {
+  const total = +document.getElementById('autoAmount').value || 2000000;
+  const perStock = Math.floor(total / TOP_PICKS.length);
+  const today = new Date().toISOString().slice(0,10);
+
+  const rows = TOP_PICKS.map(ticker => {
+    const s = STOCKS.find(x=>x.ticker===ticker);
+    const priceJPY = stockPriceJPY(s);
+    const shares = Math.floor(perStock / priceJPY / s.minLot) * s.minLot;
+    const cost = Math.round(shares * priceJPY);
+    return {s, shares, cost};
+  });
+
+  const totalCost = rows.reduce((a,r)=>a+r.cost,0);
+
+  document.getElementById('autoPreview').innerHTML = `
+    <div style="border-radius:12px;overflow:hidden;border:1px solid var(--border);">
+      ${rows.map(({s,shares,cost})=>`
+        <div style="display:flex;align-items:center;gap:10px;padding:11px 12px;border-bottom:.5px solid var(--border);background:var(--card);">
+          <div style="font-size:20px;">${s.flag}</div>
+          <div style="flex:1;">
+            <div style="font-size:15px;font-weight:700;">${s.ticker.replace('.T','')}</div>
+            <div style="font-size:12px;color:var(--muted);">${s.name}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:15px;font-weight:700;color:var(--deepgreen);">${shares}株</div>
+            <div style="font-size:12px;color:var(--muted);">${fmtJPY(cost)}</div>
+          </div>
+        </div>`).join('')}
+      <div style="padding:11px 12px;background:rgba(0,165,80,.06);display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:14px;font-weight:600;color:var(--muted);">合計購入額</span>
+        <span style="font-size:18px;font-weight:700;color:var(--deepgreen);">${fmtJPY(totalCost)}</span>
+      </div>
+    </div>
+    <div style="font-size:13px;color:var(--muted);margin-top:8px;text-align:center;">割安スクリーナー総合スコアTOP5銘柄へ均等配分</div>`;
+}
+
+function confirmAutoInvest() {
+  const total = +document.getElementById('autoAmount').value || 2000000;
+  const perStock = Math.floor(total / TOP_PICKS.length);
+  const today = new Date().toISOString().slice(0,10);
+  if(!portfolio.createdAt) portfolio.createdAt = new Date().toISOString();
+
+  TOP_PICKS.forEach(ticker => {
+    if(portfolio.positions.find(p=>p.ticker===ticker)) return; // skip if already held
+    const s = STOCKS.find(x=>x.ticker===ticker);
+    const priceJPY = stockPriceJPY(s);
+    const shares = Math.floor(perStock / priceJPY / s.minLot) * s.minLot;
+    if(shares < s.minLot) return;
+    portfolio.positions.push({
+      ticker:s.ticker, name:s.name, flag:s.flag, cur:s.cur,
+      shares, minLot:s.minLot,
+      entryPrice:s.base, entryRate:usdJpy,
+      entryValueJPY:Math.round(shares*priceJPY),
+      entryDate:today, currentPrice:s.base, change:0,
+    });
+  });
+
+  const invested = portfolio.positions.reduce((a,p)=>a+p.entryValueJPY,0);
+  if(!portfolio.snapshots.length)
+    portfolio.snapshots.push({date:today, value:invested});
+
+  savePortfolio();
+  closeModal('autoModal');
+  render();
+  setTimeout(refreshPrices, 300);
+}
+
+// ─── Util ─────────────────────────────────────────────────────────────────
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function onRateChange() {
+  usdJpy = +document.getElementById('rateInput').value || 150;
+  savePortfolio();
+  render();
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────
+loadPortfolio();
+render();
+if(portfolio.positions.length) refreshPrices();
+</script>
+</body>
+</html>
