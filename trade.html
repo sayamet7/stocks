@@ -682,14 +682,12 @@ function renderAutoPreview() {
     <div style="font-size:13px;color:var(--muted);margin-top:8px;text-align:center;">割安スクリーナー総合スコアTOP5銘柄へ均等配分</div>`;
 }
 
-function confirmAutoInvest() {
-  const total = +document.getElementById('autoAmount').value || 2000000;
+function autoInvestWith(total) {
   const perStock = Math.floor(total / TOP_PICKS.length);
   const today = new Date().toISOString().slice(0,10);
   if(!portfolio.createdAt) portfolio.createdAt = new Date().toISOString();
-
   TOP_PICKS.forEach(ticker => {
-    if(portfolio.positions.find(p=>p.ticker===ticker)) return; // skip if already held
+    if(portfolio.positions.find(p=>p.ticker===ticker)) return;
     const s = STOCKS.find(x=>x.ticker===ticker);
     const priceJPY = stockPriceJPY(s);
     const shares = Math.floor(perStock / priceJPY / s.minLot) * s.minLot;
@@ -702,12 +700,15 @@ function confirmAutoInvest() {
       entryDate:today, currentPrice:s.base, change:0,
     });
   });
-
   const invested = portfolio.positions.reduce((a,p)=>a+p.entryValueJPY,0);
   if(!portfolio.snapshots.length)
     portfolio.snapshots.push({date:today, value:invested});
-
   savePortfolio();
+}
+
+function confirmAutoInvest() {
+  const total = +document.getElementById('autoAmount').value || 2000000;
+  autoInvestWith(total);
   closeModal('autoModal');
   render();
   setTimeout(refreshPrices, 300);
@@ -723,8 +724,9 @@ function onRateChange() {
 
 // ─── Init ─────────────────────────────────────────────────────────────────
 loadPortfolio();
+if(!portfolio.positions.length) autoInvestWith(2000000);
 render();
-if(portfolio.positions.length) refreshPrices();
+refreshPrices();
 </script>
 </body>
 </html>
