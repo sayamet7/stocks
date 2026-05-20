@@ -398,6 +398,10 @@ const SECTOR_TECH_REASON = {
   '広告・PR':   'AI活用でクリエイティブ効率化・データ分析の高度化は可能。ただし生成AIで広告主の内製化が進み、代理店の中間機能が縮小するリスクも大きい。',
 };
 
+function chartUrl(ticker) {
+  return 'https://finance.yahoo.com/chart/' + ticker;
+}
+
 // Combined verdict text
 function verdictText(combined) {
   if(combined >= 80) return '強く推奨。割安かつ成長期待も高い。迷わず買いを検討すべき水準。';
@@ -574,7 +578,10 @@ function renderTopPicks(stocks) {
           配当 ${s.div}%
         </div>
       </div>
-      <div style="font-size:13px;font-weight:700;color:${lbl.color};margin-top:6px;padding:3px 8px;border-radius:5px;display:inline-block;background:${lbl.color}22;">${lbl.text}</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-top:6px;">
+        <div style="font-size:13px;font-weight:700;color:${lbl.color};padding:3px 8px;border-radius:5px;background:${lbl.color}22;">${lbl.text}</div>
+        <a href="${chartUrl(s.ticker)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="font-size:13px;font-weight:600;color:var(--blue);text-decoration:none;background:rgba(0,122,255,.12);padding:3px 8px;border-radius:5px;">📈</a>
+      </div>
     </div>`;
   }).join('');
 }
@@ -600,7 +607,10 @@ function renderList(stocks) {
       <div class="sr-rank">${i+1}</div>
       <div class="sr-flag">${s.flag}</div>
       <div class="sr-info">
-        <div class="sr-ticker">${s.ticker.replace('.NS','').replace('.T','')}</div>
+        <div class="sr-ticker">
+          ${s.ticker.replace('.NS','').replace('.T','')}
+          <a href="${chartUrl(s.ticker)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="font-size:11px;font-weight:600;color:var(--blue);text-decoration:none;background:rgba(0,122,255,.12);padding:1px 5px;border-radius:4px;margin-left:4px;">📈</a>
+        </div>
         <div class="sr-name">${s.name}</div>
         <div class="sr-sector">${s.sector}</div>
       </div>
@@ -781,6 +791,7 @@ function openModal(ticker) {
       <div style="text-align:right;">
         <div style="font-size:26px;font-weight:700;">${pTxt}</div>
         <div style="font-size:16px;font-weight:600;" class="${chCls}">${chTxt}</div>
+        <a href="${chartUrl(s.ticker)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="display:inline-block;margin-top:6px;font-size:13px;font-weight:600;color:var(--blue);text-decoration:none;background:rgba(0,122,255,.12);padding:4px 10px;border-radius:8px;">📈 チャート</a>
       </div>
     </div>
 
