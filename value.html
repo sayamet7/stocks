@@ -411,6 +411,76 @@ function verdictText(combined) {
   return '見送り推奨。割高かつ成長期待も低い。他の候補を優先すべき。';
 }
 
+// ─── Trading Advice per Sector ───────────────────────────────────────────
+const SECTOR_TRADE_ADVICE = {
+  '製薬': {
+    entry: 'FDA承認却下・決算ミスによる急落翌日が最大のエントリー機会。悲観が最高潮に達した瞬間が唯一の買い場だ。',
+    exit: '配当利回りが3%台に低下（＝株価上昇）したら1/3利確。業績ガイダンスの下方修正と配当カット発表は問答無用で即損切り。',
+    sizing: 'DCAで3回に分けて分割',
+    master: '製薬株は市場が「死んだ」と叫んだ時が最も生きている。特許崖への過剰恐怖で売られた高配当銘柄を拾い、配当を再投資し続けた者が10年後に笑う。感情を捨て、利回りだけを見ろ。',
+  },
+  '銀行': {
+    entry: '金融危機・景気後退懸念が最大化した局面が最高の買い場。PBR0.5倍割れは「銀行が倒産する」という市場の過剰反応だ。歴史的にその読みは外れ続けている。',
+    exit: 'PBRが1.0〜1.2倍に回復した時点で段階的利確。利下げサイクル開始で純金利収入（NII）が圧迫され始めたら利確を加速せよ。',
+    sizing: '景気敏感。3〜5回に分割してエントリー',
+    master: '銀行株は「恐怖で買い、強欲で売る」ゲームの最も純粋な形だ。誰もが「銀行は危ない」と叫ぶ時にPBR0.5倍で仕込んだ者だけが、正常化局面の3倍リターンを手にする。',
+  },
+  '通信': {
+    entry: '配当利回りが7%超に達したら分割買い開始。金利上昇局面での下落は「債券に負けた」だけで、事業の本質は何も変わっていない。',
+    exit: '配当利回りが5%台まで低下したら1/2利確。5G設備投資が一巡してFCFが急改善したタイミングで残りを売却。',
+    sizing: 'ディフェンシブ枠として長期安定保有',
+    master: '通信株の「退屈さ」こそが武器だ。誰も話題にしない時に7%超の配当を積み上げ、複利で増やし、回復時にキャピタルゲインも取る。スリルを求めるなら他へ行け。通信株はマネーマシンとして扱え。',
+  },
+  '自動車': {
+    entry: 'EV不安・リコール・景気後退懸念で株価が叩き売られ、PER5〜7倍になった局面で本格買い。自動車は「絶対になくならない産業」だ。',
+    exit: 'PERが10〜12倍に回復した時点で段階的利確。自動運転・EV収益が本格化し、アナリストがソフトウェア収益を評価し始めた時が最高の出口だ。',
+    sizing: '景気循環に注意。2〜3段階で分割買い',
+    master: '自動車会社がPER5倍で売られている時、市場は「このメーカーは消える」と言っている。だが世界の自動車需要は増え続ける。強気相場でPER12倍に戻る。その差がお前のリターンだ。',
+  },
+  'エネルギー': {
+    entry: 'ESGブームによる機関投資家の強制売却で利回りが8%超になった局面。または原油急落で悲観報道が最大化した翌日にエントリー。',
+    exit: '原油が長期平均（WTI $70〜80）を大幅超過し推移し始めたら段階的利確。配当性向が80%超になったら売り準備。',
+    sizing: '原油価格リスクあり。必ず分散して保有',
+    master: 'エネルギー株はESGで「悪者」にされた瞬間、最高の買い場が生まれた。バフェットはそこを買った。世界が石油ゼロになるまで数十年かかる。その間の配当と自社株買いがお前の武器だ。',
+  },
+  '小売': {
+    entry: 'Amazon競争激化・消費低迷ニュースで大幅下落し、配当利回りが8〜10%に達した局面。財務が健全であれば、その利回りは10年分の給料だ。',
+    exit: '消費回復・キャッシュフロー改善が2四半期連続で確認できたら段階的利確。配当が維持される間は保有を優先。',
+    sizing: 'EC競争リスクを踏まえて小さく。5%以内',
+    master: '実店舗小売は死んでいない、変わっているだけだ。8〜10%の配当が出た時、市場は「倒産する」と思っている。バランスシートで倒産しないことを確認したら、あとはその利回りを刈り取るだけだ。',
+  },
+  'タバコ': {
+    entry: 'ESG制裁・喫煙規制強化で株価急落し利回りが10%超になった時が唯一の本格買い場。値上がり期待はゼロ。配当だけが全てだ。',
+    exit: '配当カットが発表された瞬間に即座に全売却。タバコ株の唯一の投資理由が消えたら1秒も保有する理由はない。',
+    sizing: '配当専用枠。最大でも3〜5%に限定',
+    master: 'タバコ株への投資は道徳の話ではなく、数学の話だ。10%配当を10年間再投資すれば元本は2.6倍になる。株価が一切上がらなくても。これをポートフォリオのディフェンシブ・エンジンとして扱え。感情は不要だ。',
+  },
+  '鉱業': {
+    entry: '資源価格暴落・中国経済不安で配当利回りが12〜15%に達した局面。AIデータセンター向け銅・コバルト需要を見越して長期目線で仕込め。',
+    exit: '資源価格が長期平均の1.5倍超に上昇し、配当利回りが5%台まで低下したら大幅利確。中国経済が本格失速したら早めに縮小。',
+    sizing: 'ボラティリティ最大級。5%以内かつ必ず分割',
+    master: '資源株は世界一ボラティリティが高く、世界一利回りも高い。天才は「誰も見ていない時」に鉱業株を買い、「誰もが欲しがる時」に売る。AIが銅を貪り食う前に仕込んだ者が笑う。',
+  },
+  '電力': {
+    entry: 'AIデータセンター電力需要が市場に認識される前、まだ「退屈なユーティリティ」扱いされている今が最大のチャンス。配当利回り4〜5%で買える間に買え。',
+    exit: 'AI需要増加が完全に株価に織り込まれPERが歴史的高値（20倍超）に達したら利確開始。過熱感が出たら素早く動け。',
+    sizing: 'ディフェンシブかつAI成長の二刀流。8〜12%',
+    master: '電力株は2024年最大のサプライズだった。AIの消費電力が爆発し、誰も注目していなかった電力会社が一気に主役になった。その流れはまだ終わっていない。退屈と思われている今が仕込み時だ。',
+  },
+  '広告・PR': {
+    entry: 'AI脅威論で売られ配当利回りが5〜6%になった局面、かつ景気後退の最終局面でのエントリーが最適。業績底打ちを確認してから買え。',
+    exit: '経済回復・企業広告予算拡大が2四半期連続確認できたら段階的利確。AIが中核業務を本格代替し始めた兆候が出たら素早く撤退。',
+    sizing: '景気敏感性に注意。3〜5%で保有',
+    master: '広告代理店は「AIに全て奪われる」と言われる。だが大企業がAI内製化を本格移行するまでに10年はかかる。その10年分の配当と回復益を頂いてから、次のことを考えればいい。今は焦る必要はない。',
+  },
+  'default': {
+    entry: '株価が直近高値から10〜15%以上調整し、出来高が急増した底打ちサインが出た局面でエントリー開始。一度で全額投入するな。必ず分割せよ。',
+    exit: '適正PERまで株価が回復した時点で1/3ずつ段階的に利益確定。業績下方修正が2四半期連続したら判断を見直せ。',
+    sizing: '分散ポートフォリオの中で適切なウェイトで',
+    master: 'リスクとリターンは常に表裏一体だ。誰もが恐れている時に買い、誰もが欲しがっている時に売る。感情ではなく、数字と論理だけで判断せよ。市場は短期的には投票機であり、長期的には体重計だ。',
+  },
+};
+
 // ─── Master Stock Data ────────────────────────────────────────────────────
 // pe/pb/div: approximate trailing values; fairPe: sector historical average
 const STOCKS = [
@@ -766,6 +836,111 @@ function renderHakuhodo(stocks) {
   }).join('');
 }
 
+// ─── Trading Section Builder ──────────────────────────────────────────────
+function buildTradingSection(s) {
+  const p = s.price || s.basePrice;
+  const isJpy = s.currency === '¥';
+  const isInr = s.currency === '₹';
+  function fmt(v) {
+    if(isJpy) return '¥' + Math.round(v).toLocaleString('ja-JP');
+    if(isInr) return '₹' + Math.round(v).toLocaleString('en-IN');
+    return '$' + v.toFixed(2);
+  }
+  function pct(v) { return (v >= p ? '+' : '') + Math.round((v/p - 1)*100) + '%'; }
+
+  const deep = s.pe && s.pe < s.fairPe * 0.7;
+  const inVal = s.pe && s.pe < s.fairPe;
+
+  // Buy zones
+  const b1h = deep ? p * 1.01 : inVal ? p * 0.97 : p * 0.90;
+  const b1l = deep ? p * 0.96 : inVal ? p * 0.93 : p * 0.85;
+  const b2h = deep ? p * 0.93 : inVal ? p * 0.88 : p * 0.80;
+  const b2l = deep ? p * 0.87 : inVal ? p * 0.83 : p * 0.75;
+
+  // Targets
+  const t1 = p * 1.15;
+  const t2 = s.pe && s.fairPe ? p * (s.fairPe / s.pe) * 0.80 : p * 1.30;
+  const t3 = s.pe && s.fairPe ? p * (s.fairPe / s.pe) : p * 1.45;
+
+  // Stop loss
+  const stop = deep ? p * 0.82 : inVal ? p * 0.85 : p * 0.88;
+
+  // Position size
+  const sizePct = s.combined >= 70 ? 'ポートフォリオの8〜12%' : s.combined >= 55 ? '5〜8%' : '2〜5%';
+
+  const adv = SECTOR_TRADE_ADVICE[s.sector] || SECTOR_TRADE_ADVICE['default'];
+
+  return `
+  <div style="margin-top:10px;border-radius:14px;overflow:hidden;border:1.5px solid rgba(255,149,0,.35);">
+    <div style="background:linear-gradient(135deg,#1a1a2e 0%,#2d1b4e 100%);padding:13px 14px;display:flex;align-items:center;gap:10px;">
+      <div style="font-size:22px;">🎯</div>
+      <div>
+        <div style="font-size:16px;font-weight:700;color:white;letter-spacing:.5px;">売買戦略</div>
+        <div style="font-size:12px;color:#bbb;">世界最高のトレーダーによる分析</div>
+      </div>
+    </div>
+
+    <div style="background:rgba(52,199,89,.07);padding:12px 14px;border-bottom:1px solid var(--border);">
+      <div style="font-size:13px;font-weight:700;color:var(--green);margin-bottom:8px;">🟢 買いゾーン</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+        <div style="background:rgba(52,199,89,.13);border-radius:10px;padding:10px;">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:3px;">第1買い場（打診買い）</div>
+          <div style="font-size:14px;font-weight:700;color:var(--green);">${fmt(b1l)} 〜 ${fmt(b1h)}</div>
+          <div style="font-size:11px;color:var(--muted);">分割で少量エントリー</div>
+        </div>
+        <div style="background:rgba(0,165,80,.18);border-radius:10px;padding:10px;">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:3px;">第2買い場（本格買い）</div>
+          <div style="font-size:14px;font-weight:700;color:#00A550;">${fmt(b2l)} 〜 ${fmt(b2h)}</div>
+          <div style="font-size:11px;color:var(--muted);">本格的に積み上げる水準</div>
+        </div>
+      </div>
+      <div style="font-size:14px;color:var(--text2);line-height:1.6;">${adv.entry}</div>
+    </div>
+
+    <div style="background:rgba(0,122,255,.05);padding:12px 14px;border-bottom:1px solid var(--border);">
+      <div style="font-size:13px;font-weight:700;color:var(--blue);margin-bottom:8px;">🎯 利確ターゲット</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px;">
+        <div style="text-align:center;background:rgba(0,122,255,.10);border-radius:8px;padding:8px;">
+          <div style="font-size:10px;color:var(--muted);">短期目標</div>
+          <div style="font-size:13px;font-weight:700;color:var(--blue);">${fmt(t1)}</div>
+          <div style="font-size:11px;color:var(--blue);">${pct(t1)}</div>
+        </div>
+        <div style="text-align:center;background:rgba(0,122,255,.15);border-radius:8px;padding:8px;">
+          <div style="font-size:10px;color:var(--muted);">中期目標</div>
+          <div style="font-size:13px;font-weight:700;color:var(--blue);">${fmt(t2)}</div>
+          <div style="font-size:11px;color:var(--blue);">${pct(t2)}</div>
+        </div>
+        <div style="text-align:center;background:rgba(0,122,255,.20);border-radius:8px;padding:8px;">
+          <div style="font-size:10px;color:var(--muted);">適正価値</div>
+          <div style="font-size:13px;font-weight:700;color:var(--blue);">${fmt(t3)}</div>
+          <div style="font-size:11px;color:var(--blue);">${pct(t3)}</div>
+        </div>
+      </div>
+      <div style="font-size:14px;color:var(--text2);line-height:1.6;">${adv.exit}</div>
+    </div>
+
+    <div style="background:rgba(255,59,48,.05);padding:12px 14px;border-bottom:1px solid var(--border);">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:700;color:var(--red);margin-bottom:4px;">🛑 損切りライン</div>
+          <div style="font-size:22px;font-weight:700;color:var(--red);">${fmt(stop)}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;">週足終値でここを割ったら即撤退</div>
+        </div>
+        <div style="flex:1;text-align:right;">
+          <div style="font-size:13px;font-weight:700;color:var(--orange);margin-bottom:4px;">📦 推奨ポジション</div>
+          <div style="font-size:15px;font-weight:700;color:var(--orange);">${sizePct}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;">${adv.sizing}</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:linear-gradient(135deg,#1c1c1e,#2c2c2e);padding:14px 14px 18px;">
+      <div style="font-size:11px;font-weight:600;color:#FF9500;letter-spacing:1px;text-transform:uppercase;margin-bottom:7px;">💬 世界最高のトレーダーより</div>
+      <div style="font-size:14px;color:#e8e8e8;font-style:italic;line-height:1.75;border-left:3px solid #FF9500;padding-left:10px;">${adv.master}</div>
+    </div>
+  </div>`;
+}
+
 // ─── Modal ────────────────────────────────────────────────────────────────
 function openModal(ticker) {
   const s = allStocks.find(x => x.ticker === ticker);
@@ -843,7 +1018,9 @@ function openModal(ticker) {
     <div style="margin-top:8px;padding:12px 14px;background:rgba(0,122,255,.06);border-radius:10px;border-left:3px solid var(--blue);">
       <div style="font-size:15px;font-weight:700;color:var(--blue);margin-bottom:7px;">🤖 AI・技術進化による値上がり期待</div>
       <div style="font-size:15px;color:var(--text2);line-height:1.6;">${techDesc}</div>
-    </div>`;
+    </div>
+
+    ${buildTradingSection(s)}`;
 
   document.getElementById('modalOverlay').classList.add('open');
 }
