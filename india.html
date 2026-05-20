@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>インド株 ダッシュボード</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+  <style>
+    :root{--bg:#F2F2F7;--card:#FFFFFF;--green:#34C759;--red:#FF3B30;--blue:#007AFF;--orange:#FF9500;--purple:#AF52DE;--saffron:#FF6B35;--india:#138808;--text:#1C1C1E;--text2:#3C3C43;--muted:#8E8E93;--border:#E5E5EA;--sep:#C6C6C8;}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    html{scroll-behavior:smooth;}
+    body{font-family:-apple-system,"SF Pro Display","Helvetica Neue",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:84px;}
+
+    .nav-top{background:rgba(242,242,247,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);padding:14px 16px 10px;position:sticky;top:0;z-index:100;border-bottom:.5px solid var(--sep);}
+    .nav-title{font-size:35px;font-weight:700;}
+    .nav-sub{font-size:18px;color:var(--muted);margin-top:2px;}
+    .live-dot{display:inline-block;width:7px;height:7px;background:var(--green);border-radius:50%;margin-right:4px;animation:blink 1.4s infinite;}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+    .page-tabs{display:flex;margin:12px 16px 0;background:#E5E5EA;border-radius:10px;padding:2px;}
+    .page-tab{flex:1;text-align:center;padding:7px 0;font-size:16px;font-weight:600;color:var(--muted);cursor:pointer;border-radius:8px;transition:all .2s;text-decoration:none;display:block;}
+    .page-tab.active{background:white;color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.1);}
+
+    .section{padding:0 16px;margin-top:20px;}
+    .section-title{font-size:25px;font-weight:700;margin-bottom:12px;}
+
+    .card{background:var(--card);border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:12px;}
+    .card-inner{padding:16px;}
+
+    .verdict-banner{border-radius:16px;padding:16px;margin:12px 16px 0;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+    .verdict-banner.bull{background:rgba(52,199,89,.08);border:1.5px solid var(--green);}
+    .verdict-banner.neutral{background:rgba(255,149,0,.08);border:1.5px solid var(--orange);}
+    .verdict-banner.bear{background:rgba(255,59,48,.08);border:1.5px solid var(--red);}
+    .vb-grid{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;}
+    .vb-lbl{font-size:16px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;}
+    .vb-val{font-size:25px;font-weight:700;}
+    .verdict-banner.bull .vb-val{color:var(--green);}
+    .verdict-banner.neutral .vb-val{color:var(--orange);}
+    .verdict-banner.bear .vb-val{color:var(--red);}
+    .vb-psych{font-size:17px;color:var(--text2);line-height:1.6;margin-bottom:4px;}
+    .vb-quote{font-size:16px;color:var(--muted);font-style:italic;}
+    .vb-score-lbl{font-size:16px;color:var(--muted);text-align:center;margin-bottom:2px;}
+    .vb-score{font-size:36px;font-weight:700;text-align:center;line-height:1;}
+    .verdict-banner.bull .vb-score{color:var(--green);}
+    .verdict-banner.neutral .vb-score{color:var(--orange);}
+    .verdict-banner.bear .vb-score{color:var(--red);}
+    .vb-score-sub{font-size:17px;color:var(--muted);text-align:center;}
+
+    .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border-radius:16px;overflow:hidden;}
+    .stat-cell{background:var(--card);padding:14px 16px;}
+    .stat-label{font-size:17px;color:var(--muted);margin-bottom:4px;}
+    .stat-value{font-size:22px;font-weight:600;}
+    .stat-sub{font-size:17px;margin-top:2px;}
+    .up{color:var(--green);}.down{color:var(--red);}.neu{color:var(--orange);}
+
+    .index-tabs{display:flex;gap:8px;padding:12px 16px 4px;flex-wrap:wrap;}
+    .index-btn{background:var(--bg);border:1.5px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:20px;font-size:17px;font-weight:600;cursor:pointer;transition:all .2s;}
+    .index-btn.active{background:var(--saffron);border-color:var(--saffron);color:white;}
+
+    .tf-row{display:flex;gap:4px;padding:12px 16px;justify-content:flex-start;}
+    .tf-btn{padding:6px 14px;font-size:18px;font-weight:600;color:var(--muted);background:transparent;border:none;cursor:pointer;border-radius:8px;transition:all .2s;}
+    .tf-btn.active{background:var(--saffron);color:white;}
+
+    .ch{position:relative;padding:0 12px 12px;}
+    .ch-280{height:280px;}
+    .ch-130{height:130px;}
+
+    .ind-list{}
+    .ind-row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:.5px solid var(--border);}
+    .ind-row:last-child{border-bottom:none;}
+    .ind-name{font-size:20px;font-weight:500;}
+    .ind-desc{font-size:17px;color:var(--muted);margin-top:1px;}
+    .ind-badge{display:flex;align-items:center;gap:8px;}
+    .ind-num{font-size:20px;font-weight:600;}
+    .ind-sig-pill{font-size:16px;font-weight:700;padding:3px 8px;border-radius:6px;}
+    .bull-c{color:var(--green);}.bear-c{color:var(--red);}.neu-c{color:var(--orange);}
+    .pill-bull{background:rgba(52,199,89,.12);color:var(--green);}
+    .pill-bear{background:rgba(255,59,48,.12);color:var(--red);}
+    .pill-neutral{background:rgba(255,149,0,.12);color:var(--orange);}
+
+    .level-row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:.5px solid var(--border);}
+    .level-row:last-child{border-bottom:none;}
+    .level-tag{font-size:16px;font-weight:700;padding:3px 8px;border-radius:6px;min-width:36px;text-align:center;}
+    .tag-r{background:rgba(255,59,48,.12);color:var(--red);}
+    .tag-s{background:rgba(52,199,89,.12);color:var(--green);}
+    .tag-c{background:rgba(0,122,255,.12);color:var(--blue);}
+
+    .stock-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--border);}
+    @media(max-width:480px){.stock-grid{grid-template-columns:repeat(2,1fr);}}
+    .stock-cell{background:var(--card);padding:12px 14px;}
+    .stock-ticker{font-size:18px;font-weight:700;color:var(--saffron);}
+    .stock-name{font-size:15px;color:var(--muted);margin-bottom:4px;}
+    .stock-price{font-size:20px;font-weight:600;}
+    .stock-ch{font-size:17px;font-weight:600;margin-top:2px;}
+    .stock-weight{font-size:14px;color:var(--muted);margin-top:3px;}
+
+    .sector-row{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:.5px solid var(--border);}
+    .sector-row:last-child{border-bottom:none;}
+    .sector-name{font-size:18px;font-weight:500;min-width:90px;}
+    .sector-bar-wrap{flex:1;height:8px;background:var(--bg);border-radius:4px;overflow:hidden;}
+    .sector-bar{height:100%;border-radius:4px;transition:width .8s ease;}
+    .sector-val{font-size:18px;font-weight:700;min-width:60px;text-align:right;}
+
+    .fii-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);}
+    .fii-cell{background:var(--card);padding:14px 16px;}
+    .fii-title{font-size:17px;color:var(--muted);margin-bottom:4px;}
+    .fii-val{font-size:22px;font-weight:700;}
+    .fii-sub{font-size:16px;margin-top:3px;}
+    .fii-bar{height:6px;background:var(--bg);border-radius:3px;overflow:hidden;margin:8px 0 3px;}
+    .fii-fill{height:100%;border-radius:3px;transition:width .8s ease;}
+
+    .signal-pill{text-align:center;padding:20px 16px;border-radius:16px;margin-bottom:12px;}
+    .signal-pill.buy{background:rgba(52,199,89,.1);border:1.5px solid var(--green);}
+    .signal-pill.sell{background:rgba(255,59,48,.1);border:1.5px solid var(--red);}
+    .signal-pill.hold{background:rgba(255,149,0,.1);border:1.5px solid var(--orange);}
+    .signal-label{font-size:16px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
+    .signal-value{font-size:35px;font-weight:700;}
+    .signal-pill.buy .signal-value{color:var(--green);}
+    .signal-pill.sell .signal-value{color:var(--red);}
+    .signal-pill.hold .signal-value{color:var(--orange);}
+    .signal-sub{font-size:18px;color:var(--muted);margin-top:4px;}
+
+    .conf-track{height:6px;background:var(--bg);border-radius:3px;overflow:hidden;margin:8px 0 4px;}
+    .conf-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--saffron),var(--india));transition:width 1s ease;}
+
+    .pred-legend{display:flex;gap:12px;flex-wrap:wrap;padding:8px 16px 4px;}
+    .pred-leg-item{display:flex;align-items:center;gap:5px;font-size:16px;color:var(--muted);}
+    .leg-dot{width:8px;height:8px;border-radius:50%;}
+
+    .analysis-card{padding:16px;font-size:19px;line-height:1.8;color:var(--text2);}
+    .analyst-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+    .analyst-avatar{width:44px;height:44px;border-radius:22px;background:linear-gradient(135deg,#FF6B35,#138808);display:flex;align-items:center;justify-content:center;font-size:25px;flex-shrink:0;}
+    .analyst-name{font-size:20px;font-weight:600;}
+    .analyst-title{font-size:17px;color:var(--muted);margin-top:2px;}
+
+    .mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);}
+    .mini-cell{background:var(--card);padding:14px 16px;}
+    .mc-lbl{font-size:17px;color:var(--muted);margin-bottom:4px;}
+    .mc-val{font-size:25px;font-weight:700;}
+
+    .update-bar{padding:8px 16px;font-size:17px;color:var(--muted);display:flex;justify-content:space-between;}
+    .demo-badge{display:none;background:rgba(255,59,48,.1);border:1px solid rgba(255,59,48,.3);color:var(--red);font-size:16px;font-weight:700;padding:4px 12px;border-radius:20px;}
+    .disclaimer{margin:8px 16px 20px;padding:14px;background:white;border-radius:12px;font-size:17px;color:var(--muted);line-height:1.7;}
+
+    .tab-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(248,248,248,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:.5px solid var(--sep);display:flex;padding:8px 0 20px;z-index:100;}
+    .tab-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;text-decoration:none;color:var(--muted);}
+    .tab-item.active{color:var(--saffron);}
+    .tab-icon{font-size:27px;}
+    .tab-label{font-size:15px;font-weight:500;}
+    ::-webkit-scrollbar{width:4px;}
+    ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+  </style>
+</head>
+<body>
+
+<div class="nav-top">
+  <div style="display:flex;align-items:center;justify-content:space-between;">
+    <div>
+      <div class="nav-title">🇮🇳 India Markets</div>
+      <div class="nav-sub"><span class="live-dot"></span>LIVE · NIFTY / SENSEX 分析</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span class="demo-badge" id="demoBadge">⚠ デモ</span>
+      <button onclick="loadAll()" id="refreshBtn" style="background:var(--saffron);border:none;color:white;padding:7px 16px;border-radius:20px;font-size:18px;font-weight:600;cursor:pointer;">更新</button>
+    </div>
+  </div>
+</div>
+
+<div style="padding:0 16px;margin-top:12px;">
+  <div class="page-tabs">
+    <a href="index.html" class="page-tab">₿ BTC予測</a>
+    <a href="sp500.html" class="page-tab">📈 S&amp;P500</a>
+    <a href="india.html" class="page-tab active">🇮🇳 インド株</a>
+  </div>
+</div>
+
+<!-- Verdict Banner -->
+<div class="verdict-banner neutral" id="verdictBanner">
+  <div class="vb-grid">
+    <div>
+      <div class="vb-lbl">AI 総合判断</div>
+      <div class="vb-val" id="vbVal">解析中</div>
+      <div style="font-size:17px;color:var(--muted);margin-top:3px;" id="vbSub">--</div>
+    </div>
+    <div style="padding:0 8px;">
+      <div class="vb-psych" id="vbPsych">インド市場を解析中...</div>
+      <div class="vb-quote" id="vbQuote">—</div>
+    </div>
+    <div>
+      <div class="vb-score-lbl">総合スコア</div>
+      <div class="vb-score" id="vbScore">--</div>
+      <div class="vb-score-sub">/ 10</div>
+    </div>
+  </div>
+</div>
+
+<!-- Index Stats Strip -->
+<div class="section" style="margin-top:12px;">
+  <div class="stats-grid">
+    <div class="stat-cell">
+      <div class="stat-label">NIFTY 50</div>
+      <div class="stat-value" id="nifty-price">--</div>
+      <div class="stat-sub" id="nifty-ch">--</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-label">SENSEX</div>
+      <div class="stat-value" id="sensex-price">--</div>
+      <div class="stat-sub" id="sensex-ch">--</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-label">NIFTY Bank</div>
+      <div class="stat-value" id="nbank-price">--</div>
+      <div class="stat-sub" id="nbank-ch">--</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-label">India VIX</div>
+      <div class="stat-value" id="vix-price">--</div>
+      <div class="stat-sub" id="vix-sub">--</div>
+    </div>
+  </div>
+</div>
+
+<!-- Index Chart -->
+<div class="section">
+  <div class="card">
+    <div class="index-tabs">
+      <button class="index-btn active" onclick="setIndex('^NSEI','NIFTY 50',this)">NIFTY 50</button>
+      <button class="index-btn" onclick="setIndex('^BSESN','SENSEX',this)">SENSEX</button>
+      <button class="index-btn" onclick="setIndex('^NSEBANK','NIFTY Bank',this)">Bank</button>
+      <button class="index-btn" onclick="setIndex('^CNXIT','NIFTY IT',this)">NIFTY IT</button>
+    </div>
+    <div class="tf-row">
+      <button class="tf-btn active" onclick="setTF('5m','5d',this)">5日</button>
+      <button class="tf-btn" onclick="setTF('1d','1mo',this)">1ヶ月</button>
+      <button class="tf-btn" onclick="setTF('1d','3mo',this)">3ヶ月</button>
+      <button class="tf-btn" onclick="setTF('1wk','1y',this)">1年</button>
+      <button class="tf-btn" onclick="setTF('1mo','5y',this)">5年</button>
+    </div>
+    <div class="ch ch-280"><canvas id="mainChart"></canvas></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;padding:6px 16px 10px;font-size:16px;color:var(--muted);">
+      <span>🟢 買いゾーン(S2〜S1)</span><span>🔴 利確ゾーン(R1〜R2)</span><span style="color:var(--saffron);">— 現在値</span>
+    </div>
+  </div>
+</div>
+
+<!-- RSI + MACD -->
+<div class="section">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <div class="card">
+      <div style="padding:12px 16px 4px;font-size:18px;font-weight:600;color:var(--muted);">RSI (14)</div>
+      <div class="ch ch-130" style="padding:0 8px 8px;"><canvas id="rsiChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div style="padding:12px 16px 4px;font-size:18px;font-weight:600;color:var(--muted);">MACD</div>
+      <div class="ch ch-130" style="padding:0 8px 8px;"><canvas id="macdChart"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- Technical Indicators -->
+<div class="section">
+  <div class="section-title">テクニカル指標</div>
+  <div class="card">
+    <div class="ind-list">
+      <div class="ind-row">
+        <div><div class="ind-name">RSI (14)</div><div class="ind-desc">過売:30 / 過買:70</div></div>
+        <div class="ind-badge"><div class="ind-num bull-c" id="i-rsi">--</div><div class="ind-sig-pill pill-bull" id="s-rsi">--</div></div>
+      </div>
+      <div class="ind-row">
+        <div><div class="ind-name">MACD</div><div class="ind-desc">ヒストグラム</div></div>
+        <div class="ind-badge"><div class="ind-num bull-c" id="i-macd">--</div><div class="ind-sig-pill pill-bull" id="s-macd">--</div></div>
+      </div>
+      <div class="ind-row">
+        <div><div class="ind-name">EMA 20</div><div class="ind-desc">短期移動平均</div></div>
+        <div class="ind-badge"><div class="ind-num bull-c" id="i-ema20">--</div><div class="ind-sig-pill pill-bull" id="s-ema20">--</div></div>
+      </div>
+      <div class="ind-row">
+        <div><div class="ind-name">Bollinger %B</div><div class="ind-desc">バンド位置</div></div>
+        <div class="ind-badge"><div class="ind-num bull-c" id="i-bb">--</div><div class="ind-sig-pill pill-bull" id="s-bb">--</div></div>
+      </div>
+      <div class="ind-row">
+        <div><div class="ind-name">EMA 50</div><div class="ind-desc">中期移動平均</div></div>
+        <div class="ind-badge"><div class="ind-num bull-c" id="i-ema50">--</div><div class="ind-sig-pill pill-bull" id="s-ema50">--</div></div>
+      </div>
+      <div class="ind-row">
+        <div><div class="ind-name">トレンド強度</div><div class="ind-desc">ADX</div></div>
+        <div class="ind-badge"><div class="ind-num bull-c" id="i-trend">--</div><div class="ind-sig-pill pill-bull" id="s-trend">--</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Support / Resistance -->
+<div class="section">
+  <div class="section-title">サポート・レジスタンス</div>
+  <div class="card">
+    <div class="level-row"><span class="level-tag tag-r">R2</span><strong id="lv-r2">--</strong><span style="font-size:17px;color:var(--muted);">強抵抗</span></div>
+    <div class="level-row"><span class="level-tag tag-r">R1</span><strong id="lv-r1">--</strong><span style="font-size:17px;color:var(--muted);">抵抗</span></div>
+    <div class="level-row" style="background:rgba(255,107,53,.04);"><span class="level-tag tag-c">現在</span><strong id="lv-cur" style="color:var(--saffron);">--</strong><span style="font-size:17px;color:var(--muted);">現値</span></div>
+    <div class="level-row"><span class="level-tag tag-s">S1</span><strong id="lv-s1">--</strong><span style="font-size:17px;color:var(--muted);">サポート</span></div>
+    <div class="level-row"><span class="level-tag tag-s">S2</span><strong id="lv-s2">--</strong><span style="font-size:17px;color:var(--muted);">強サポート</span></div>
+    <div class="update-bar"><span id="updateTime">最終更新: --</span><span id="dataSource" style="color:var(--saffron);">Yahoo Finance</span></div>
+  </div>
+</div>
+
+<!-- Top Stocks -->
+<div class="section">
+  <div class="section-title">📊 主要銘柄 (NIFTY50構成)</div>
+  <div class="card" style="overflow:hidden;">
+    <div class="stock-grid">
+      <div class="stock-cell"><div class="stock-ticker">RELIANCE</div><div class="stock-name">Reliance Industries</div><div class="stock-price" id="rel-p">--</div><div class="stock-ch" id="rel-c">--</div><div class="stock-weight">構成比 9.8%</div></div>
+      <div class="stock-cell"><div class="stock-ticker">TCS</div><div class="stock-name">Tata Consultancy Svc</div><div class="stock-price" id="tcs-p">--</div><div class="stock-ch" id="tcs-c">--</div><div class="stock-weight">構成比 4.6%</div></div>
+      <div class="stock-cell"><div class="stock-ticker">HDFCBANK</div><div class="stock-name">HDFC Bank</div><div class="stock-price" id="hdfc-p">--</div><div class="stock-ch" id="hdfc-c">--</div><div class="stock-weight">構成比 13.1%</div></div>
+      <div class="stock-cell"><div class="stock-ticker">INFY</div><div class="stock-name">Infosys</div><div class="stock-price" id="infy-p">--</div><div class="stock-ch" id="infy-c">--</div><div class="stock-weight">構成比 5.4%</div></div>
+      <div class="stock-cell"><div class="stock-ticker">ICICIBANK</div><div class="stock-name">ICICI Bank</div><div class="stock-price" id="icici-p">--</div><div class="stock-ch" id="icici-c">--</div><div class="stock-weight">構成比 8.2%</div></div>
+      <div class="stock-cell"><div class="stock-ticker">BAJFINANCE</div><div class="stock-name">Bajaj Finance</div><div class="stock-price" id="bajaj-p">--</div><div class="stock-ch" id="bajaj-c">--</div><div class="stock-weight">構成比 2.3%</div></div>
+      <div class="stock-cell"><div class="stock-ticker">HCLTECH</div><div class="stock-name">HCL Technologies</div><div class="stock-price" id="hcl-p">--</div><div class="stock-ch" id="hcl-c">--</div><div class="stock-weight">構成比 2.8%</div></div>
+      <div class="stock-cell"><div class="stock-ticker">BHARTIARTL</div><div class="stock-name">Bharti Airtel</div><div class="stock-price" id="airtel-p">--</div><div class="stock-ch" id="airtel-c">--</div><div class="stock-weight">構成比 3.1%</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Sector Performance -->
+<div class="section">
+  <div class="section-title">🏭 セクター別パフォーマンス</div>
+  <div class="card">
+    <div id="sectorList"></div>
+  </div>
+</div>
+
+<!-- FII / DII Flow -->
+<div class="section">
+  <div class="section-title">💰 FII / DII 資金フロー</div>
+  <div class="card" style="overflow:hidden;">
+    <div class="fii-grid">
+      <div class="fii-cell">
+        <div class="fii-title">🌏 FII (外国機関) 当日</div>
+        <div class="fii-val" id="fii-val">--</div>
+        <div class="fii-sub" id="fii-sub">--</div>
+        <div class="fii-bar"><div class="fii-fill" id="fii-fill" style="width:0%"></div></div>
+      </div>
+      <div class="fii-cell">
+        <div class="fii-title">🏦 DII (国内機関) 当日</div>
+        <div class="fii-val" id="dii-val">--</div>
+        <div class="fii-sub" id="dii-sub">--</div>
+        <div class="fii-bar"><div class="fii-fill" id="dii-fill" style="width:0%"></div></div>
+      </div>
+      <div class="fii-cell">
+        <div class="fii-title">📅 FII 月次累計</div>
+        <div class="fii-val" id="fii-month">--</div>
+        <div class="fii-sub" id="fii-month-sub">--</div>
+      </div>
+      <div class="fii-cell">
+        <div class="fii-title">📅 DII 月次累計</div>
+        <div class="fii-val" id="dii-month">--</div>
+        <div class="fii-sub" id="dii-month-sub">--</div>
+      </div>
+    </div>
+    <div style="padding:14px 16px;border-top:.5px solid var(--border);">
+      <div style="font-size:18px;font-weight:600;color:var(--saffron);margin-bottom:10px;">📡 マクロ背景</div>
+      <div style="font-size:17px;color:var(--text2);line-height:1.7;" id="macroText">解析中...</div>
+    </div>
+  </div>
+</div>
+
+<!-- Rupee / Dollar -->
+<div class="section">
+  <div class="section-title">💱 USD/INR 為替 & 市場環境</div>
+  <div class="card" style="overflow:hidden;">
+    <div class="stats-grid">
+      <div class="stat-cell">
+        <div class="stat-label">USD/INR</div>
+        <div class="stat-value" id="usdinr">--</div>
+        <div class="stat-sub" id="usdinr-sub">--</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-label">RBI 政策金利</div>
+        <div class="stat-value" id="rbi-rate">6.50%</div>
+        <div class="stat-sub neu">現状維持</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-label">インフレ率 (CPI)</div>
+        <div class="stat-value" id="inflation">--</div>
+        <div class="stat-sub" id="inflation-sub">--</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-label">GDP成長率 (予測)</div>
+        <div class="stat-value up">6.8%</div>
+        <div class="stat-sub up">世界最速水準</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AI Signal -->
+<div class="section">
+  <div class="signal-pill hold" id="sigBox">
+    <div class="signal-label">🤖 AI 総合シグナル</div>
+    <div class="signal-value" id="sigVal">解析中</div>
+    <div class="signal-sub" id="sigSub">--</div>
+  </div>
+  <div class="card card-inner">
+    <div style="display:flex;justify-content:space-between;font-size:18px;color:var(--muted);margin-bottom:6px;">
+      <span>信頼度スコア</span>
+      <span id="confTxt" style="font-weight:600;color:var(--text);">0%</span>
+    </div>
+    <div class="conf-track"><div class="conf-fill" id="confFill" style="width:0%"></div></div>
+  </div>
+</div>
+
+<!-- Monte Carlo Prediction -->
+<div class="section">
+  <div class="card">
+    <div style="padding:16px 16px 4px;">
+      <div style="font-size:22px;font-weight:600;">🔮 7日間 価格予測レンジ</div>
+      <div style="font-size:18px;color:var(--muted);margin-top:2px;">NIFTY 50 · モンテカルロ法</div>
+    </div>
+    <div class="pred-legend">
+      <div class="pred-leg-item"><div class="leg-dot" style="background:var(--saffron)"></div>実績</div>
+      <div class="pred-leg-item"><div class="leg-dot" style="background:var(--blue)"></div>予測中央値</div>
+      <div class="pred-leg-item"><div class="leg-dot" style="background:rgba(52,199,89,.8)"></div>楽観</div>
+      <div class="pred-leg-item"><div class="leg-dot" style="background:rgba(255,59,48,.8)"></div>悲観</div>
+    </div>
+    <div class="ch ch-280"><canvas id="predChart"></canvas></div>
+  </div>
+</div>
+
+<!-- Entry / Exit -->
+<div class="section">
+  <div class="section-title">📍 エントリー・決済</div>
+  <div class="card card-inner" style="margin-bottom:12px;">
+    <div style="font-size:18px;color:var(--muted);margin-bottom:6px;">推奨エントリーゾーン</div>
+    <div id="entryPanel" style="font-size:19px;color:var(--muted);">解析中...</div>
+  </div>
+  <div class="card" style="overflow:hidden;margin-bottom:12px;">
+    <div style="padding:14px 16px 8px;font-size:20px;font-weight:600;">🎯 ストップ & 利確</div>
+    <div class="mini-grid">
+      <div class="mini-cell"><div class="mc-lbl" style="color:var(--red);">ストップロス</div><div class="mc-val down" id="slVal">--</div></div>
+      <div class="mini-cell"><div class="mc-lbl" style="color:var(--green);">目標①</div><div class="mc-val up" id="tp1Val">--</div></div>
+      <div class="mini-cell"><div class="mc-lbl" style="color:var(--blue);">目標②</div><div class="mc-val" style="color:var(--blue);" id="tp2Val">--</div></div>
+      <div class="mini-cell"><div class="mc-lbl" style="color:var(--orange);">RRR</div><div class="mc-val neu" id="rrrVal">--</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- AI Analysis -->
+<div class="section">
+  <div class="section-title">🎓 AI 市場分析</div>
+  <div class="card">
+    <div class="analysis-card">
+      <div class="analyst-row">
+        <div class="analyst-avatar">🇮🇳</div>
+        <div>
+          <div class="analyst-name">Dr. Priya Sharma</div>
+          <div class="analyst-title">Chief India Strategist · AI Global Markets Research</div>
+        </div>
+      </div>
+      <div id="analysisText" style="font-style:italic;color:var(--muted);">インド市場データを解析中です...</div>
+    </div>
+  </div>
+</div>
+
+<!-- Bull/Bear Factors -->
+<div class="section">
+  <div class="section-title">⚖️ ブル vs ベア 要因</div>
+  <div class="card card-inner">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div>
+        <div style="font-size:19px;font-weight:600;color:var(--green);margin-bottom:10px;">🐂 ブル要因</div>
+        <div id="bullFactors"></div>
+      </div>
+      <div>
+        <div style="font-size:19px;font-weight:600;color:var(--red);margin-bottom:10px;">🐻 ベア要因</div>
+        <div id="bearFactors"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="disclaimer">⚠️ 本ツールはAIによる教育・参考目的の分析システムです。投資判断は必ずご自身の責任で行ってください。インド株式市場は通貨リスク・地政学リスクを含み、元本割れのリスクがあります。NSE/BSEの公式情報を必ずご確認ください。</div>
+
+<div class="tab-bar">
+  <a href="index.html" class="tab-item"><span class="tab-icon">📊</span><span class="tab-label">BTC</span></a>
+  <a href="sp500.html" class="tab-item"><span class="tab-icon">📈</span><span class="tab-label">S&P500</span></a>
+  <a href="india.html" class="tab-item active"><span class="tab-icon">🇮🇳</span><span class="tab-label">India</span></a>
+</div>
+
+<script>
+// ─── State ───────────────────────────────────────────────────────────────
+let currentSymbol = '^NSEI';
+let currentName = 'NIFTY 50';
+let currentInterval = '5m';
+let currentRange = '5d';
+let isDemoMode = false;
+let mainChart, rsiChart, macdChart, predChart;
+let niftyPrice = 24500;
+
+// ─── Formatting ──────────────────────────────────────────────────────────
+const fmtINR = (n, d=0) => '₹' + (+n).toLocaleString('en-IN', {minimumFractionDigits:d, maximumFractionDigits:d});
+const fmtCr = n => {
+  const abs = Math.abs(n);
+  const sign = n < 0 ? '-' : '+';
+  if(abs >= 1e7) return sign + '₹' + (abs/1e7).toFixed(2) + '兆';
+  if(abs >= 1e5) return sign + '₹' + (abs/1e5).toFixed(2) + '億';
+  return sign + '₹' + abs.toLocaleString('en-IN');
+};
+
+// ─── Technical Analysis ───────────────────────────────────────────────────
+function ema(arr, n) {
+  const k = 2/(n+1); const out = [arr[0]];
+  for(let i=1;i<arr.length;i++) out.push(arr[i]*k+out[i-1]*(1-k));
+  return out;
+}
+function rsiCalc(arr, n=14) {
+  const ch = arr.slice(1).map((v,i) => v-arr[i]);
+  const res = new Array(n).fill(null);
+  let ag = ch.slice(0,n).filter(c=>c>0).reduce((a,b)=>a+b,0)/n;
+  let al = Math.abs(ch.slice(0,n).filter(c=>c<0).reduce((a,b)=>a+b,0))/n;
+  for(let i=n;i<ch.length;i++) {
+    ag = (ag*(n-1)+Math.max(ch[i],0))/n;
+    al = (al*(n-1)+Math.abs(Math.min(ch[i],0)))/n;
+    res.push(al===0?100:100-100/(1+ag/al));
+  }
+  return res;
+}
+function macdCalc(arr) {
+  const e12=ema(arr,12), e26=ema(arr,26);
+  const line=e12.map((v,i)=>v-e26[i]);
+  const sig=ema(line,9);
+  return {line, sig, hist:line.map((v,i)=>v-sig[i])};
+}
+function bollinger(arr, n=20) {
+  const up=[],lo=[],mid=[],pctB=[];
+  for(let i=0;i<arr.length;i++) {
+    if(i<n-1){up.push(null);lo.push(null);mid.push(null);pctB.push(null);continue;}
+    const sl=arr.slice(i-n+1,i+1);
+    const mn=sl.reduce((a,b)=>a+b,0)/n;
+    const std=Math.sqrt(sl.reduce((a,b)=>a+(b-mn)**2,0)/n);
+    up.push(mn+2*std);lo.push(mn-2*std);mid.push(mn);
+    pctB.push(std===0?.5:Math.min(Math.max((arr[i]-(mn-2*std))/(4*std),0),1));
+  }
+  return {up,lo,mid,pctB};
+}
+function adxCalc(arr, n=14) {
+  if(arr.length<n+2) return 25;
+  let dm=0;
+  for(let i=1;i<arr.length;i++) dm+=Math.abs(arr[i]-arr[i-1]);
+  return Math.min(Math.round((dm/arr.length/arr[arr.length-1])*1e5),99);
+}
+function monteCarlo(prices, futureDays=7, sims=500) {
+  const returns=prices.slice(1).map((v,i)=>Math.log(v/prices[i]));
+  const mu=returns.reduce((a,b)=>a+b,0)/returns.length;
+  const sigma=Math.sqrt(returns.reduce((a,b)=>a+(b-mu)**2,0)/returns.length);
+  const last=prices[prices.length-1];
+  const paths=[];
+  for(let s=0;s<sims;s++){
+    let p=last; const path=[p];
+    for(let d=0;d<futureDays;d++){
+      const z=(Math.random()+Math.random()+Math.random()+Math.random()-2)*Math.sqrt(2/3);
+      p*=Math.exp((mu-sigma**2/2)+sigma*z);
+      path.push(p);
+    }
+    paths.push(path);
+  }
+  const out={p25:[],p50:[],p75:[]};
+  for(let d=0;d<=futureDays;d++){
+    const vals=paths.map(p=>p[d]).sort((a,b)=>a-b);
+    out.p25.push(vals[Math.floor(sims*.25)]);
+    out.p50.push(vals[Math.floor(sims*.50)]);
+    out.p75.push(vals[Math.floor(sims*.75)]);
+  }
+  return out;
+}
+
+function computeSignal(rsiV, macdH, pctBV, price, e20, e50) {
+  let sc=0;
+  if(rsiV<25)sc+=3;else if(rsiV<35)sc+=2;else if(rsiV<45)sc+=1;else if(rsiV>75)sc-=3;else if(rsiV>65)sc-=2;else if(rsiV>55)sc-=1;
+  if(macdH>0)sc+=1;else sc-=1;
+  if(pctBV<0.15)sc+=3;else if(pctBV<0.25)sc+=2;else if(pctBV>0.85)sc-=3;else if(pctBV>0.75)sc-=2;
+  if(price>e20&&e20>e50)sc+=2;else if(price<e20&&e20<e50)sc-=2;else if(price>e20)sc+=1;else sc-=1;
+  const maxSc=9;
+  const conf=Math.min(Math.max(Math.round(((sc+maxSc)/(maxSc*2))*100),5),95);
+  let signal,label;
+  if(sc>=5){signal='BUY';label='🟢 強い買いシグナル';}
+  else if(sc>=2){signal='BUY';label='🟡 買いシグナル';}
+  else if(sc<=-5){signal='SELL';label='🔴 売り・待機シグナル';}
+  else if(sc<=-2){signal='SELL';label='🟠 弱気シグナル';}
+  else{signal='HOLD';label='⚪ 中立・様子見';}
+  return {signal, label, conf, sc};
+}
+
+// ─── Chart Options ─────────────────────────────────────────────────────────
+const CHART_OPTS = (yFmt) => ({
+  responsive:true, maintainAspectRatio:false,
+  interaction:{mode:'index',intersect:false},
+  plugins:{legend:{display:false},tooltip:{backgroundColor:'#FFFFFF',borderColor:'#E5E5EA',borderWidth:1,titleColor:'#1C1C1E',bodyColor:'#3C3C43',callbacks:{label:c=>c.dataset.label+': '+(yFmt?yFmt(c.parsed.y):c.parsed.y.toFixed(2))}}},
+  scales:{x:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#8E8E93',maxTicksLimit:8,font:{size:9}}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#8E8E93',font:{size:9},callback:yFmt}}}
+});
+
+// ─── Chart Builders ───────────────────────────────────────────────────────
+function buildMainChart(labels, prices, boll, zones) {
+  if(mainChart) mainChart.destroy();
+  const ctx = document.getElementById('mainChart').getContext('2d');
+  const g = ctx.createLinearGradient(0,0,0,280);
+  g.addColorStop(0,'rgba(255,107,53,.15)');
+  g.addColorStop(1,'rgba(255,107,53,0)');
+  const annotations = {};
+  if(zones) {
+    annotations.buyZone = {type:'box',yMin:zones.s2,yMax:zones.s1,backgroundColor:'rgba(52,199,89,.08)',borderColor:'rgba(52,199,89,.4)',borderWidth:1,label:{display:true,content:'🟢 買いゾーン',color:'#34C759',font:{size:10,weight:'bold'},position:{x:'start',y:'center'}}};
+    annotations.sellZone = {type:'box',yMin:zones.r1,yMax:zones.r2,backgroundColor:'rgba(255,59,48,.08)',borderColor:'rgba(255,59,48,.4)',borderWidth:1,label:{display:true,content:'🔴 利確ゾーン',color:'#FF3B30',font:{size:10,weight:'bold'},position:{x:'start',y:'center'}}};
+    annotations.currentLine = {type:'line',yMin:zones.cp,yMax:zones.cp,borderColor:'rgba(255,107,53,.9)',borderWidth:2,borderDash:[6,3],label:{display:true,content:'現在 ₹'+(zones.cp/1000).toFixed(1)+'K',color:'#FF6B35',font:{size:10,weight:'bold'},backgroundColor:'rgba(255,107,53,.1)',padding:4,position:'end'}};
+  }
+  mainChart = new Chart(ctx, {
+    type:'line',
+    data:{labels,datasets:[
+      {label:'価格',data:prices,borderColor:'#FF6B35',backgroundColor:g,borderWidth:2,pointRadius:0,fill:true,tension:.3,order:1},
+      {label:'BB上限',data:boll.up,borderColor:'rgba(255,59,48,.4)',borderWidth:1,borderDash:[3,3],pointRadius:0,fill:false,order:2},
+      {label:'BB中心',data:boll.mid,borderColor:'rgba(0,0,0,.1)',borderWidth:1,borderDash:[3,3],pointRadius:0,fill:false,order:2},
+      {label:'BB下限',data:boll.lo,borderColor:'rgba(52,199,89,.4)',borderWidth:1,borderDash:[3,3],pointRadius:0,fill:false,order:2}
+    ]},
+    options:{...CHART_OPTS(v=>'₹'+(v/1000).toFixed(1)+'K'),maintainAspectRatio:false,plugins:{...CHART_OPTS().plugins,annotation:{annotations}}}
+  });
+}
+
+function buildRSIChart(labels, rsiData) {
+  if(rsiChart) rsiChart.destroy();
+  const ctx = document.getElementById('rsiChart').getContext('2d');
+  rsiChart = new Chart(ctx, {
+    type:'line',
+    data:{labels,datasets:[{data:rsiData,borderColor:'#AF52DE',borderWidth:1.5,pointRadius:0,fill:false,tension:.3,label:'RSI'}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:false},annotation:{annotations:{ob:{type:'line',yMin:70,yMax:70,borderColor:'rgba(255,59,48,.5)',borderWidth:1},os:{type:'line',yMin:30,yMax:30,borderColor:'rgba(52,199,89,.5)',borderWidth:1}}}},scales:{x:{display:false},y:{min:0,max:100,grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#8E8E93',font:{size:9},stepSize:25}}}}
+  });
+}
+
+function buildMACDChart(labels, hist) {
+  if(macdChart) macdChart.destroy();
+  const ctx = document.getElementById('macdChart').getContext('2d');
+  macdChart = new Chart(ctx, {
+    type:'bar',
+    data:{labels,datasets:[{data:hist,backgroundColor:hist.map(v=>v>=0?'rgba(52,199,89,.65)':'rgba(255,59,48,.65)'),borderWidth:0,label:'MACD'}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{display:false},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#8E8E93',font:{size:9},maxTicksLimit:4}}}}
+  });
+}
+
+function buildPredChart(histLabels, histPrices, mc) {
+  if(predChart) predChart.destroy();
+  const ctx = document.getElementById('predChart').getContext('2d');
+  const today = new Date();
+  const futureLabels = Array.from({length:8},(_,i)=>{const d=new Date(today);d.setDate(d.getDate()+i);return d.toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'});});
+  const histSlice = histPrices.slice(-14);
+  const histLabs = histLabels.slice(-14);
+  const allLabels = [...histLabs, ...futureLabels.slice(1)];
+  const paddedHist = [...histSlice, ...new Array(7).fill(null)];
+  const paddedP50 = [...new Array(histSlice.length-1).fill(null), histSlice[histSlice.length-1], ...mc.p50.slice(1)];
+  const paddedP75 = [...new Array(histSlice.length-1).fill(null), histSlice[histSlice.length-1], ...mc.p75.slice(1)];
+  const paddedP25 = [...new Array(histSlice.length-1).fill(null), histSlice[histSlice.length-1], ...mc.p25.slice(1)];
+  predChart = new Chart(ctx, {
+    type:'line',
+    data:{labels:allLabels,datasets:[
+      {label:'実績',data:paddedHist,borderColor:'#FF6B35',borderWidth:2,pointRadius:0,fill:false,tension:.3},
+      {label:'予測75%',data:paddedP75,borderColor:'rgba(52,199,89,.6)',borderWidth:1.5,borderDash:[4,4],pointRadius:0,fill:false,tension:.3},
+      {label:'予測中央値',data:paddedP50,borderColor:'#007AFF',borderWidth:2,borderDash:[4,4],pointRadius:0,fill:false,tension:.3},
+      {label:'予測25%',data:paddedP25,borderColor:'rgba(255,59,48,.6)',borderWidth:1.5,borderDash:[4,4],pointRadius:0,fill:false,tension:.3}
+    ]},
+    options:{...CHART_OPTS(v=>'₹'+(v/1000).toFixed(0)+'K'),maintainAspectRatio:false}
+  });
+}
+
+// ─── Indicator Helper ──────────────────────────────────────────────────────
+function setInd(id, val, sig, cls) {
+  const numEl = document.getElementById('i-'+id);
+  const sigEl = document.getElementById('s-'+id);
+  numEl.textContent = val;
+  numEl.className = 'ind-num '+(cls==='bull'?'bull-c':cls==='bear'?'bear-c':'neu-c');
+  sigEl.textContent = sig;
+  sigEl.className = 'ind-sig-pill '+(cls==='bull'?'pill-bull':cls==='bear'?'pill-bear':'pill-neutral');
+}
+
+// ─── Main UI Update ────────────────────────────────────────────────────────
+function updateUI(prices, timestamps) {
+  const labels = timestamps.map(t => {
+    const d = new Date(t);
+    return currentRange==='5d'
+      ? d.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})
+      : d.toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'});
+  });
+  const rsiArr = rsiCalc(prices);
+  const {hist} = macdCalc(prices);
+  const boll = bollinger(prices);
+  const e20 = ema(prices,20), e50 = ema(prices,50);
+  const n = prices.length-1;
+  const rsiV = rsiArr[n]??50, macdH = hist[n]??0, pctBV = boll.pctB[n]??0.5;
+  const e20v = e20[n], e50v = e50[n], cp = prices[n];
+  const adxV = adxCalc(prices);
+
+  const hi30 = Math.max(...prices.slice(-Math.min(30,prices.length)));
+  const lo30 = Math.min(...prices.slice(-Math.min(30,prices.length)));
+  const pivot = (hi30+lo30+cp)/3;
+  const r1=2*pivot-lo30, r2=pivot+(hi30-lo30);
+  const s1=2*pivot-hi30, s2=pivot-(hi30-lo30);
+
+  buildMainChart(labels, prices, boll, {cp,s1,s2,r1,r2});
+  buildRSIChart(labels, rsiArr);
+  buildMACDChart(labels, hist);
+
+  // Monte Carlo only on nifty for prediction
+  if(currentSymbol==='^NSEI') {
+    const mc = monteCarlo(prices.slice(-30));
+    buildPredChart(labels, prices, mc);
+    const mc50chg = ((mc.p50[7]-cp)/cp*100).toFixed(1);
+    // Entry/Exit
+    const entLo=Math.min(s1,cp*0.995), entHi=cp*1.005;
+    document.getElementById('entryPanel').innerHTML = `<div style="margin-bottom:8px;"><div style="font-size:16px;color:var(--muted);margin-bottom:2px;">NIFTY 50 推奨エントリーゾーン</div><div style="font-size:25px;font-weight:700;color:var(--green);">${fmtINR(entLo)} 〜 ${fmtINR(entHi)}</div></div><div style="line-height:2;font-size:18px;">🟢 第1エントリー: <strong>${fmtINR(Math.round(entLo))}</strong> (50%)<br>🟡 第2エントリー: <strong>${fmtINR(Math.round(s2*1.01))}</strong> (30%)<br>🔵 押し目: <strong>${fmtINR(Math.round(s2))}</strong> (20%)</div>`;
+    const sl=s1*0.97, tp1=r1, tp2=r2;
+    const rrr=cp>sl?((tp1-cp)/(cp-sl)).toFixed(1):'--';
+    document.getElementById('slVal').textContent = fmtINR(Math.round(sl));
+    document.getElementById('tp1Val').textContent = fmtINR(Math.round(tp1));
+    document.getElementById('tp2Val').textContent = fmtINR(Math.round(tp2));
+    document.getElementById('rrrVal').textContent = '1 : '+rrr;
+  }
+
+  // Support / Resistance
+  document.getElementById('lv-r2').textContent = fmtINR(Math.round(r2));
+  document.getElementById('lv-r1').textContent = fmtINR(Math.round(r1));
+  document.getElementById('lv-cur').textContent = fmtINR(Math.round(cp));
+  document.getElementById('lv-s1').textContent = fmtINR(Math.round(s1));
+  document.getElementById('lv-s2').textContent = fmtINR(Math.round(s2));
+  document.getElementById('updateTime').textContent = '最終更新: '+new Date().toLocaleTimeString('ja-JP');
+  document.getElementById('dataSource').textContent = isDemoMode ? '⚠ デモデータ' : '✓ Yahoo Finance';
+
+  // Technical Indicators
+  const rsiCls = rsiV<30?'bull':rsiV>70?'bear':'neutral';
+  setInd('rsi', rsiV.toFixed(1), rsiV<30?'⬆ 強買い':rsiV>70?'⬇ 買われ過ぎ':'= 中立', rsiCls);
+  const macdCls = macdH>0?'bull':'bear';
+  setInd('macd', macdH.toFixed(1), macdH>0?'⬆ 上昇':'⬇ 下降', macdCls);
+  const e20Cls = cp>e20v?'bull':'bear';
+  setInd('ema20', fmtINR(Math.round(e20v)), cp>e20v?'⬆ 上方':'⬇ 下方', e20Cls);
+  const bbCls = pctBV<0.2?'bull':pctBV>0.8?'bear':'neutral';
+  setInd('bb', (pctBV*100).toFixed(0)+'%', pctBV<0.2?'⬆ 過売り':pctBV>0.8?'⬇ 過買い':'= 中立', bbCls);
+  const e50Cls = cp>e50v?'bull':'bear';
+  setInd('ema50', fmtINR(Math.round(e50v)), cp>e50v?'⬆ 上方':'⬇ 下方', e50Cls);
+  const trendCls = adxV>40?'bull':adxV<20?'bear':'neutral';
+  setInd('trend', adxV, adxV>40?'⬆ 強トレンド':adxV<20?'⬇ 弱トレンド':'= 中程度', trendCls);
+
+  // AI Signal
+  const {signal, label, conf, sc} = computeSignal(rsiV, macdH, pctBV, cp, e20v, e50v);
+  const sigBox = document.getElementById('sigBox');
+  sigBox.className = 'signal-pill '+signal.toLowerCase();
+  document.getElementById('sigVal').textContent = signal==='BUY'?'買い推奨':signal==='SELL'?'待機・売り':'中立様子見';
+  document.getElementById('sigSub').textContent = label;
+  document.getElementById('confTxt').textContent = conf+'%';
+  document.getElementById('confFill').style.width = conf+'%';
+
+  // Verdict
+  const score = Math.min(Math.max(Math.round((sc+9)/1.8),1),10);
+  const vbEl = document.getElementById('verdictBanner');
+  vbEl.className = 'verdict-banner '+(signal==='BUY'?'bull':signal==='SELL'?'bear':'neutral');
+  document.getElementById('vbVal').textContent = signal==='BUY'?'強気':signal==='SELL'?'弱気':'中立';
+  document.getElementById('vbSub').textContent = label;
+  document.getElementById('vbScore').textContent = score;
+  document.getElementById('vbPsych').textContent = signal==='BUY'
+    ? 'インド市場は底堅い需要とGDP成長に支えられている。国内消費の拡大とIT輸出の回復がNIFTYを押し上げる構図。'
+    : signal==='SELL'
+    ? 'FII売り越しと高バリュエーションに注意。グローバルリスクオフ局面ではインドも無縁でない。'
+    : '方向感を探る展開。RBIの政策発表と海外マクロ動向を注視せよ。';
+  document.getElementById('vbQuote').textContent = '— "インドへの投資は経済成長への投資だ" · Warren Buffett';
+
+  // Analysis Text
+  const rsiDesc = rsiV<30?'深刻な売られ過ぎ（反発確率高）':rsiV<40?'売られ過ぎ圏':rsiV>70?'買われ過ぎ（調整リスク）':rsiV>60?'強気圏':'中立ゾーン';
+  const trendDesc = cp>e20v&&e20v>e50v?'EMA20/50が上向きアライメント（強気トレンド）':cp<e20v&&e20v<e50v?'EMA20/50が下向き（弱気トレンド）':'移動平均が混在（方向感なし）';
+  document.getElementById('analysisText').innerHTML = `NIFTY 50の現在の市場構造をテクニカル・マクロ両面から解析した結果を報告する。<br><br>RSIは${rsiV.toFixed(1)}を記録し、${rsiDesc}にある。${trendDesc}。MACDヒストグラムは${macdH>0?'プラス圏で推移し買い圧力が優勢':'マイナス圏で推移し売り圧力が継続'}。<br><br>インド固有の要因として、FII（外国機関投資家）の資金フローと USD/INR の動向が短期的な鍵を握る。RBIの政策金利は6.50%で現状維持となっており、インフレが落ち着けば利下げ余地が生まれ、バリュエーション面でのサポートとなる。<br><br><strong>推奨：</strong>${fmtINR(Math.round(s1))}〜${fmtINR(Math.round(cp*0.998))}で分割エントリー。目標${fmtINR(Math.round(r1))}、ストップロス${fmtINR(Math.round(s1*0.97))}。`;
+
+  niftyPrice = cp;
+}
+
+// ─── Demo Data Generator ──────────────────────────────────────────────────
+function genDemoData(symbol) {
+  const base = {'^NSEI':24500,'^BSESN':80500,'^NSEBANK':52800,'^CNXIT':38200}[symbol]??24500;
+  const steps = currentRange==='5d'?390:currentRange==='1mo'?30:currentRange==='3mo'?90:currentRange==='1y'?252:252*5;
+  const prices=[], timestamps=[];
+  let p = base*(0.96+Math.random()*0.08);
+  const now = Date.now();
+  const step = currentRange==='5d'?300000:86400000;
+  for(let i=steps;i>=0;i--) {
+    timestamps.push(now-i*step);
+    p *= 1+(Math.random()-.48)*0.008;
+    prices.push(p);
+  }
+  return {prices, timestamps};
+}
+
+// ─── Demo Stats ─────────────────────────────────────────────────────────────
+function populateDemoStats() {
+  const nifty = 24500+(Math.random()-.5)*300;
+  const sensex = 80500+(Math.random()-.5)*1000;
+  const nbank = 52800+(Math.random()-.5)*800;
+  const vix = 13.5+(Math.random()-.5)*3;
+  const nch = ((Math.random()-.4)*.8).toFixed(2);
+  const sch = ((Math.random()-.4)*.8).toFixed(2);
+  const bch = ((Math.random()-.4)*1).toFixed(2);
+  document.getElementById('nifty-price').textContent = fmtINR(Math.round(nifty));
+  document.getElementById('nifty-ch').innerHTML = `<span class="${+nch>=0?'up':'down'}">${+nch>=0?'+':''}${nch}%</span>`;
+  document.getElementById('sensex-price').textContent = fmtINR(Math.round(sensex));
+  document.getElementById('sensex-ch').innerHTML = `<span class="${+sch>=0?'up':'down'}">${+sch>=0?'+':''}${sch}%</span>`;
+  document.getElementById('nbank-price').textContent = fmtINR(Math.round(nbank));
+  document.getElementById('nbank-ch').innerHTML = `<span class="${+bch>=0?'up':'down'}">${+bch>=0?'+':''}${bch}%</span>`;
+  document.getElementById('vix-price').textContent = vix.toFixed(2);
+  const vixCls = vix<14?'up':vix>18?'down':'neu';
+  document.getElementById('vix-sub').innerHTML = `<span class="${vixCls}">${vix<14?'低ボラ':vix>18?'高ボラ':'中程度'}</span>`;
+
+  // Stocks
+  const stocks = [
+    {id:'rel',  base:1380, name:'RELIANCE'},
+    {id:'tcs',  base:3720, name:'TCS'},
+    {id:'hdfc', base:1870, name:'HDFCBANK'},
+    {id:'infy', base:1650, name:'INFY'},
+    {id:'icici',base:1280, name:'ICICIBANK'},
+    {id:'bajaj',base:8900, name:'BAJFINANCE'},
+    {id:'hcl',  base:1780, name:'HCLTECH'},
+    {id:'airtel',base:1620,name:'BHARTIARTL'}
+  ];
+  stocks.forEach(s => {
+    const price = s.base*(0.97+Math.random()*.06);
+    const ch = ((Math.random()-.45)*2.5).toFixed(2);
+    document.getElementById(s.id+'-p').textContent = fmtINR(price.toFixed(2), 2);
+    document.getElementById(s.id+'-c').innerHTML = `<span class="${+ch>=0?'up':'down'}">${+ch>=0?'+':''}${ch}%</span>`;
+  });
+
+  // Sectors
+  const sectors = [
+    {name:'🖥 IT', ch: (Math.random()-.4)*3},
+    {name:'🏦 銀行', ch: (Math.random()-.45)*2.5},
+    {name:'⚡ エネルギー', ch: (Math.random()-.5)*2},
+    {name:'🚗 自動車', ch: (Math.random()-.48)*2.8},
+    {name:'💊 製薬', ch: (Math.random()-.42)*2},
+    {name:'🛒 FMCG', ch: (Math.random()-.5)*1.5},
+    {name:'🔩 金属', ch: (Math.random()-.5)*3},
+    {name:'🏠 不動産', ch: (Math.random()-.47)*3},
+  ];
+  document.getElementById('sectorList').innerHTML = sectors.map(s => {
+    const pct = s.ch.toFixed(2);
+    const isUp = s.ch >= 0;
+    const barPct = Math.min(Math.abs(s.ch)/4*100, 100);
+    return `<div class="sector-row">
+      <div class="sector-name">${s.name}</div>
+      <div class="sector-bar-wrap"><div class="sector-bar" style="width:${barPct}%;background:${isUp?'var(--green)':'var(--red)'}"></div></div>
+      <div class="sector-val ${isUp?'up':'down'}">${isUp?'+':''}${pct}%</div>
+    </div>`;
+  }).join('');
+
+  // FII/DII
+  const fiiNet = (Math.random()-.4)*3000;
+  const diiNet = Math.abs(fiiNet)*(0.5+Math.random()*.7)*(fiiNet<0?1:-0.6);
+  const fiiMonth = (Math.random()-.4)*15000;
+  const diiMonth = Math.abs(fiiMonth)*(0.6+Math.random());
+  const fiiColor = fiiNet>=0?'var(--green)':'var(--red)';
+  const diiColor = diiNet>=0?'var(--green)':'var(--red)';
+  document.getElementById('fii-val').innerHTML = `<span style="color:${fiiColor};">${fmtCr(Math.round(fiiNet))} 億円</span>`;
+  document.getElementById('fii-sub').textContent = fiiNet>=0?'純買い越し ▲':'純売り越し ▼';
+  document.getElementById('fii-fill').style.cssText = `width:${Math.min(Math.abs(fiiNet)/3000*100,100)}%;background:${fiiColor}`;
+  document.getElementById('dii-val').innerHTML = `<span style="color:${diiColor};">${fmtCr(Math.round(diiNet))} 億円</span>`;
+  document.getElementById('dii-sub').textContent = diiNet>=0?'純買い越し ▲ (FIIを吸収)':'純売り越し ▼';
+  document.getElementById('dii-fill').style.cssText = `width:${Math.min(Math.abs(diiNet)/3000*100,100)}%;background:${diiColor}`;
+  document.getElementById('fii-month').innerHTML = `<span style="color:${fiiMonth>=0?'var(--green)':'var(--red)'};">${fmtCr(Math.round(fiiMonth))} 億円</span>`;
+  document.getElementById('fii-month-sub').textContent = fiiMonth>=0?'月次買い越し':'月次売り越し';
+  document.getElementById('dii-month').innerHTML = `<span style="color:${diiMonth>=0?'var(--green)':'var(--red)'};">${fmtCr(Math.round(diiMonth))} 億円</span>`;
+  document.getElementById('dii-month-sub').textContent = '月次買い越し';
+
+  document.getElementById('macroText').textContent = fiiNet>=0
+    ? 'FIIは買い越しに転じており、インドへのリスクマネー流入が継続。ドル安・新興国株買いのトレンドが後押し。DII（国内機関）もSIPを通じた安定買いが継続しており、需給面は底堅い。'
+    : 'FIIが売り越し継続。米国利回り上昇と地政学リスクが新興国から資金を引き揚げる動きを誘発。一方でDIIが下落局面では買い向かっており、大幅な下落は限定的。';
+
+  // USD/INR (demo)
+  const usdinr = 83.5+(Math.random()-.5)*1.5;
+  const usdinrCh = ((Math.random()-.5)*.5).toFixed(2);
+  document.getElementById('usdinr').textContent = usdinr.toFixed(2);
+  document.getElementById('usdinr-sub').innerHTML = `<span class="${+usdinrCh<=0?'up':'down'}">${+usdinrCh>=0?'+':''}${usdinrCh} (${+usdinrCh<=0?'ルピー高':'ルピー安'})</span>`;
+
+  // Inflation
+  const infl = (4.5+Math.random()).toFixed(1);
+  document.getElementById('inflation').textContent = infl+'%';
+  document.getElementById('inflation-sub').innerHTML = `<span class="${+infl<6?'up':'down'}">${+infl<6?'目標内':'目標超過'} (目標:4%)</span>`;
+
+  // Bull/Bear Factors
+  document.getElementById('bullFactors').innerHTML = [
+    '🇮🇳 GDP成長率 6.8% — 世界最速水準',
+    '📱 デジタル化・製造業誘致 (PLI政策)',
+    '🏗 インフラ投資 拡大継続',
+    '👥 若い人口構成・中産階級の台頭',
+    '💸 SIP経由のDII買いが下値を支持',
+  ].map(f=>`<div style="display:flex;gap:6px;margin-bottom:8px;align-items:flex-start;"><span style="color:var(--green);font-size:8px;margin-top:5px;">●</span><span style="font-size:17px;color:var(--text2);line-height:1.5;">${f}</span></div>`).join('');
+  document.getElementById('bearFactors').innerHTML = [
+    '📉 FIIの売り越し継続リスク',
+    '💵 USD高・ルピー安によるコスト増',
+    '🛢 原油高はインドに打撃 (輸入国)',
+    '🏦 バリュエーション割高感 (CAPE比)',
+    '🌏 中国景気減速の間接影響',
+  ].map(f=>`<div style="display:flex;gap:6px;margin-bottom:8px;align-items:flex-start;"><span style="color:var(--red);font-size:8px;margin-top:5px;">●</span><span style="font-size:17px;color:var(--text2);line-height:1.5;">${f}</span></div>`).join('');
+}
+
+// ─── Yahoo Finance Fetch ─────────────────────────────────────────────────
+async function fetchYahooChart(symbol, interval, range) {
+  const enc = encodeURIComponent(symbol);
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${enc}?interval=${interval}&range=${range}&includePrePost=false`;
+  const resp = await fetch(url, {cache:'no-store', signal: AbortSignal.timeout(6000)});
+  if(!resp.ok) throw new Error('HTTP '+resp.status);
+  const json = await resp.json();
+  const result = json.chart.result[0];
+  const timestamps = result.timestamp.map(t => t*1000);
+  const closes = result.indicators.quote[0].close;
+  const prices = closes.map((v,i) => v ?? closes[i-1] ?? closes[i+1]);
+  const meta = result.meta;
+  return {timestamps, prices, meta};
+}
+
+async function fetchYahooQuotes(symbols) {
+  const url = `https://query2.finance.yahoo.com/v7/finance/quote?symbols=${symbols.join(',')}&fields=regularMarketPrice,regularMarketChangePercent`;
+  const resp = await fetch(url, {cache:'no-store', signal: AbortSignal.timeout(6000)});
+  if(!resp.ok) throw new Error('HTTP '+resp.status);
+  const json = await resp.json();
+  return json.quoteResponse.result;
+}
+
+// ─── Load All ─────────────────────────────────────────────────────────────
+async function loadAll() {
+  const btn = document.getElementById('refreshBtn');
+  btn.disabled = true; btn.textContent = '⏳ 取得中...';
+  try {
+    const [chartRes, quotesRes] = await Promise.allSettled([
+      fetchYahooChart(currentSymbol, currentInterval, currentRange),
+      fetchYahooQuotes(['^NSEI','^BSESN','^NSEBANK','^VIX','RELIANCE.NS','TCS.NS','HDFCBANK.NS','INFY.NS','ICICIBANK.NS','BAJFINANCE.NS','HCLTECH.NS','BHARTIARTL.NS','INR=X'])
+    ]);
+    let prices, timestamps;
+    if(chartRes.status==='fulfilled') {
+      ({prices, timestamps} = chartRes.value);
+      isDemoMode = false;
+      document.getElementById('demoBadge').style.display = 'none';
+    } else {
+      throw new Error('chart fail');
+    }
+    updateUI(prices, timestamps);
+    // Update index stats from quotes if available
+    if(quotesRes.status==='fulfilled') {
+      const quotes = quotesRes.value;
+      const find = sym => quotes.find(q => q.symbol===sym);
+      const nsei = find('^NSEI'), bsesn = find('^BSESN'), nbank = find('^NSEBANK');
+      if(nsei) {
+        document.getElementById('nifty-price').textContent = fmtINR(Math.round(nsei.regularMarketPrice));
+        const nc = nsei.regularMarketChangePercent.toFixed(2);
+        document.getElementById('nifty-ch').innerHTML = `<span class="${+nc>=0?'up':'down'}">${+nc>=0?'+':''}${nc}%</span>`;
+      }
+      if(bsesn) {
+        document.getElementById('sensex-price').textContent = fmtINR(Math.round(bsesn.regularMarketPrice));
+        const sc2 = bsesn.regularMarketChangePercent.toFixed(2);
+        document.getElementById('sensex-ch').innerHTML = `<span class="${+sc2>=0?'up':'down'}">${+sc2>=0?'+':''}${sc2}%</span>`;
+      }
+      if(nbank) {
+        document.getElementById('nbank-price').textContent = fmtINR(Math.round(nbank.regularMarketPrice));
+        const bc = nbank.regularMarketChangePercent.toFixed(2);
+        document.getElementById('nbank-ch').innerHTML = `<span class="${+bc>=0?'up':'down'}">${+bc>=0?'+':''}${bc}%</span>`;
+      }
+      // Individual stocks
+      const stockMap = {
+        'RELIANCE.NS':'rel','TCS.NS':'tcs','HDFCBANK.NS':'hdfc','INFY.NS':'infy',
+        'ICICIBANK.NS':'icici','BAJFINANCE.NS':'bajaj','HCLTECH.NS':'hcl','BHARTIARTL.NS':'airtel'
+      };
+      Object.entries(stockMap).forEach(([sym,id]) => {
+        const q = find(sym);
+        if(!q) return;
+        document.getElementById(id+'-p').textContent = fmtINR(q.regularMarketPrice.toFixed(2),2);
+        const ch = q.regularMarketChangePercent.toFixed(2);
+        document.getElementById(id+'-c').innerHTML = `<span class="${+ch>=0?'up':'down'}">${+ch>=0?'+':''}${ch}%</span>`;
+      });
+      const inr = find('INR=X');
+      if(inr) {
+        document.getElementById('usdinr').textContent = inr.regularMarketPrice.toFixed(2);
+        const uc = inr.regularMarketChangePercent.toFixed(2);
+        document.getElementById('usdinr-sub').innerHTML = `<span class="${+uc<=0?'up':'down'}">${+uc>=0?'+':''}${uc}%</span>`;
+      }
+    }
+    populateDemoStats(); // fill FII/DII and sectors (always demo)
+  } catch(e) {
+    isDemoMode = true;
+    document.getElementById('demoBadge').style.display = 'inline-block';
+    const demo = genDemoData(currentSymbol);
+    updateUI(demo.prices, demo.timestamps);
+    populateDemoStats();
+  } finally {
+    btn.disabled = false; btn.textContent = '更新';
+  }
+}
+
+// ─── Event Handlers ────────────────────────────────────────────────────────
+function setIndex(sym, name, el) {
+  currentSymbol = sym; currentName = name;
+  document.querySelectorAll('.index-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  loadAll();
+}
+function setTF(interval, range, el) {
+  currentInterval = interval; currentRange = range;
+  document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  loadAll();
+}
+
+// VIX special (India VIX on NSE — no Yahoo Finance symbol, use demo always)
+function setVIXDemo() {
+  const vix = 14.2+(Math.random()-.5)*4;
+  document.getElementById('vix-price').textContent = vix.toFixed(2);
+  const vixCls = vix<14?'up':vix>18?'down':'neu';
+  const vixLabel = vix<14?'低ボラ (安定)':vix>18?'高ボラ (注意)':'中程度';
+  document.getElementById('vix-sub').innerHTML = `<span class="${vixCls}">${vixLabel}</span>`;
+}
+
+// ─── Init ──────────────────────────────────────────────────────────────────
+loadAll();
+setVIXDemo();
+</script>
+</body>
+</html>
