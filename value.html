@@ -363,20 +363,24 @@
 </div>
 
 <script>
-// ─── Sector: AI/Tech Growth Score & Reasons ──────────────────────────────
-const SECTOR_TECH = {
-  '半導体':     88,
-  '製薬':       63,
-  '銀行':       52,
-  '通信':       42,
-  '自動車':     65,
-  'エネルギー': 38,
-  '小売':       33,
-  'タバコ':     16,
-  '鉱業':       40,
-  '電力':       58,
-  '広告・PR':   46,
+// ─── Sector: AI/Tech Growth Score ────────────────────────────────────────
+// opportunity: AI・技術進化による恩恵スコア (0-100)
+// disruption:  他社参入・技術破壊による市場侵食リスク (0-100, 高いほど危険)
+// net:         opportunity×0.60 + (100-disruption)×0.40 で算出したネットスコア
+const SECTOR_TECH_DATA = {
+  '半導体':     { opportunity:95, disruption:30, net:85 },
+  '製薬':       { opportunity:70, disruption:65, net:56 },
+  '銀行':       { opportunity:55, disruption:70, net:45 },
+  '通信':       { opportunity:42, disruption:55, net:43 },
+  '自動車':     { opportunity:72, disruption:72, net:54 },
+  'エネルギー': { opportunity:45, disruption:48, net:48 },
+  '小売':       { opportunity:38, disruption:78, net:32 },
+  'タバコ':     { opportunity:12, disruption:42, net:30 },
+  '鉱業':       { opportunity:52, disruption:38, net:56 },
+  '電力':       { opportunity:68, disruption:30, net:69 },
+  '広告・PR':   { opportunity:42, disruption:78, net:34 },
 };
+function sectorTechNet(sector) { return (SECTOR_TECH_DATA[sector] || {net:50}).net; }
 
 const SECTOR_VALUE_REASON = {
   '半導体':     ['半導体サイクル低迷期の売られ過ぎ', 'AI需要爆発に対して株価が先行的に織り込めていない', '在庫調整完了で業績回復局面へ'],
@@ -392,18 +396,32 @@ const SECTOR_VALUE_REASON = {
   '広告・PR':   ['AI・プラットフォームへの懸念で過度に売られている', '実際のクライアント基盤と長期契約は非常に堅固', 'デジタルシフト対応が進んでおり付加価値は上昇中'],
 };
 
-const SECTOR_TECH_REASON = {
-  '半導体':     'AIチップ需要が指数関数的に拡大。生成AI・データセンター・自動運転すべてに半導体が必須。最も直接的なAI恩恵セクター。',
-  '製薬':       'AI創薬で研究開発期間を10年→3年に短縮できる可能性。新薬開発コスト削減と成功率向上で収益構造が劇的に改善しうる。',
-  '銀行':       'AIによる審査・リスク管理・コスト削減は大きい。ただしフィンテックとの競争激化もあり、恩恵は限定的・中程度。',
-  '通信':       '5G・AIエッジ基盤としての役割は安定。直接のAI収益化は限定的だが、インフラとしての需要は揺るがない。',
-  '自動車':     '自動運転・EV・ソフトウェア定義車両（SDV）の主役。AIソフトウェアからの収益化が実現すれば株価は大幅に再評価される。',
-  'エネルギー': 'AIデータセンターの電力消費が2030年までに3倍になるという予測。意外なAI恩恵セクター。再エネ転換も長期収益機会。',
-  '小売':       'AI在庫管理・需要予測・個人化推薦で利益率改善の余地あり。ただしAmazon・EC競争の激化リスクが打ち消す部分も大きい。',
-  'タバコ':     'AIの恩恵は最小限。製品自体がAIと無縁で、規制強化・喫煙人口減少というトレンドは変わらない。配当のみが投資理由。',
-  '鉱業':       'AI・データセンター増設に不可欠な銅・コバルト・リチウム需要が急増。採掘効率もAIで向上。資源需要の長期上昇が追い風。',
-  '電力':       'AI普及で電力需要は2030年までに爆発的に増大する見通し。電力会社にとってAIは最大の需要創出ドライバー。',
-  '広告・PR':   'AI活用でクリエイティブ効率化・データ分析の高度化は可能。ただし生成AIで広告主の内製化が進み、代理店の中間機能が縮小するリスクも大きい。',
+const SECTOR_OPPORTUNITY_REASON = {
+  '半導体':     'AIチップ・データセンター・自動運転・エッジAIすべてに半導体が必須。NVIDIAが証明したように、需要は指数関数的に拡大中。最も直接的なAI恩恵セクター。',
+  '製薬':       'AI創薬で研究開発期間を10年→3年に短縮できる可能性がある。臨床試験の成功率向上・コスト削減により、既存大手の新薬製造能力が劇的に向上しうる。',
+  '銀行':       'AI審査・不正検知・コスト削減・パーソナライズ提案で業務効率が大幅改善。既存の顧客基盤と規制のモートはAI活用で競争優位に転換できる。',
+  '通信':       '5G・AIエッジコンピューティングの基盤インフラとして需要は安定。データ通信量増加は通信会社の基本料金を支える。',
+  '自動車':     '自動運転・ソフトウェア定義車両（SDV）が実現すれば、1台あたりの収益がハードからソフトへ転換。繰り返し課金モデルで株価は大幅再評価される可能性。',
+  'エネルギー': 'AIデータセンターの電力消費は2030年までに現在の3倍以上になるとの予測。化石燃料・天然ガス需要が意外な形で延命。効率化AIで採掘コストも低下。',
+  '小売':       'AI需要予測・在庫最適化・個人化推薦エンジンで利益率改善の余地は大きい。オムニチャネル戦略とAIを組み合わせた企業は生き残れる。',
+  'タバコ':     'AI活用の余地は最小限。マーケティング最適化程度にとどまり、製品イノベーションや新規需要創出にはほぼ貢献しない。',
+  '鉱業':       'AIデータセンター・EV普及に不可欠な銅・コバルト・リチウム・レアアース需要が急増中。AI採掘ロボット・探索効率化で生産コストも低下。',
+  '電力':       'AI・データセンターの電力消費爆増で2030年までに需要が大幅拡大する見通し。電力会社にとってAIは最大かつ最も確実な需要創出ドライバー。',
+  '広告・PR':   'AI活用でクリエイティブ制作効率が向上し、データドリブンな広告最適化が可能に。高度な分析力を持つ大手代理店は中小の競合より有利な立場を維持できる。',
+};
+
+const SECTOR_DISRUPTION_REASON = {
+  '半導体':     'IntelやAMDの競争、中国の国産化推進（ファーウェイ・SMIC）、ARM/RISC-Vベースの新興設計企業が台頭中。ただし製造（ファブ）の参入障壁は依然として世界最高水準。',
+  '製薬':       '【高リスク】AIを武器にしたバイオテクスタートアップが低コストで新薬開発に参入。ジェネリック薬の加速普及、後発医薬品メーカーの台頭で既存大手の特許収益が急速に侵食される。',
+  '銀行':       '【高リスク】PayPal・Stripe・Revolut・Nubank等のフィンテック、BNPLサービス、暗号通貨が決済・融資・送金市場を侵食。ネオバンクが若年層の口座を獲得しつつある。',
+  '通信':       'StarLink衛星ブロードバンドが地方・新興国市場を侵食。WhatsApp・LINE・Zoomが音声・SMS収益をゼロに。OTT（動画配信）がケーブルTV収益を壊滅。',
+  '自動車':     '【高リスク】テスラ・BYD・中国EV勢（CATL等）が猛攻。Apple・Googleの自動運転参入。ウーバー・Waymoのロボタクシーが個人所有を代替する可能性。新参者は既存工場の固定費を持たず機動的。',
+  'エネルギー': '太陽光・風力の発電コストが10年で90%低下し、化石燃料と競合する水準に。家庭用蓄電池+ソーラーの普及で電力の分散化が加速。EV普及でガソリン需要が長期的に減少。',
+  '小売':       '【最高リスク】Amazon・Temu・SHEIN・TikTok Shopが価格競争で猛攻。DTC（直販）ブランドがSNS広告で中間業者を排除。AIを持つプラットフォームが在庫・物流で圧倒的優位。',
+  'タバコ':     '加熱式たばこ（IQOS系）・電子タバコの新興ブランドが若年層を獲得。規制強化で出店規制・広告禁止が拡大。',
+  '鉱業':       '次世代バッテリー（LFP・全固体電池）が特定金属（コバルト・ニッケル）の需要を代替しうる。リサイクル技術の進化で新規採掘需要が長期的に低下する可能性。',
+  '電力':       '屋根上ソーラー+蓄電池（テスラPowerwall等）の普及で一部の電力需要が自給自足化。ただし送電網への依存は維持され、規制モートが守る部分は大きい。',
+  '広告・PR':   '【最高リスク】生成AIで広告主が内製化を加速。MetaのAI広告自動生成・Googleのパフォーマンスマックスが人間クリエイターを代替。代理店の「制作・買い付け」という中核機能が急速に消滅しつつある。',
 };
 
 function chartUrl(ticker) {
@@ -1021,8 +1039,10 @@ function openModal(ticker) {
   const pTxt  = s.price ? cur + (+s.price.toFixed(s.currency==='¥'?0:2)).toLocaleString() : 'N/A';
   const chTxt = s.ch !== undefined ? (s.ch >= 0 ? '+' : '') + s.ch.toFixed(2) + '%' : 'N/A';
   const chCls = (s.ch || 0) >= 0 ? 'up' : 'down';
-  const reasons  = SECTOR_VALUE_REASON[s.sector]  || ['業界平均より割安な水準'];
-  const techDesc = SECTOR_TECH_REASON[s.techScore ? s.sector : s.sector] || 'AI・技術進化の影響は中程度。';
+  const reasons      = SECTOR_VALUE_REASON[s.sector]       || ['業界平均より割安な水準'];
+  const oppDesc      = SECTOR_OPPORTUNITY_REASON[s.sector] || 'AI・技術進化の恩恵は中程度。';
+  const disruptDesc  = SECTOR_DISRUPTION_REASON[s.sector]  || '競合参入リスクは中程度。';
+  const td           = SECTOR_TECH_DATA[s.sector]          || {opportunity:50, disruption:50, net:50};
 
   document.getElementById('modalContent').innerHTML = `
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
@@ -1112,10 +1132,37 @@ function openModal(ticker) {
       ${reasons.map(r=>`<div style="display:flex;gap:6px;font-size:15px;color:var(--text2);margin-bottom:5px;line-height:1.5;"><span style="color:var(--green);flex-shrink:0;">✓</span><span>${r}</span></div>`).join('')}
     </div>
 
-    <!-- Tech opportunity -->
-    <div style="margin-top:8px;padding:12px 14px;background:rgba(0,122,255,.06);border-radius:10px;border-left:3px solid var(--blue);">
-      <div style="font-size:15px;font-weight:700;color:var(--blue);margin-bottom:7px;">🤖 AI・技術進化による値上がり期待</div>
-      <div style="font-size:15px;color:var(--text2);line-height:1.6;">${techDesc}</div>
+    <!-- Tech opportunity + disruption two-sided -->
+    <div style="margin-top:8px;border-radius:12px;overflow:hidden;border:1px solid var(--border);">
+      <div style="background:rgba(0,122,255,.08);padding:10px 14px;border-bottom:1px solid var(--border);">
+        <div style="font-size:15px;font-weight:700;color:var(--blue);">🤖 AI・技術革新：機会 vs 競合参入リスク</div>
+      </div>
+
+      <!-- Two meters side by side -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;background:var(--card);">
+        <div style="padding:12px 12px 10px;border-right:1px solid var(--border);">
+          <div style="font-size:12px;font-weight:700;color:#34C759;margin-bottom:6px;">📈 AI・技術機会</div>
+          <div style="font-size:28px;font-weight:700;color:#34C759;line-height:1;">${td.opportunity}</div>
+          <div style="height:6px;border-radius:3px;background:var(--bg);margin:6px 0;">
+            <div style="height:100%;width:${td.opportunity}%;background:linear-gradient(90deg,#34C759,#00A550);border-radius:3px;"></div>
+          </div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.55;">${oppDesc}</div>
+        </div>
+        <div style="padding:12px 12px 10px;">
+          <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:6px;">⚔️ 競合参入リスク</div>
+          <div style="font-size:28px;font-weight:700;color:${td.disruption>=70?'var(--red)':td.disruption>=50?'var(--orange)':'#997700'};line-height:1;">${td.disruption}</div>
+          <div style="height:6px;border-radius:3px;background:var(--bg);margin:6px 0;">
+            <div style="height:100%;width:${td.disruption}%;background:linear-gradient(90deg,#FFDD00,#FF9500,#FF3B30);border-radius:3px;"></div>
+          </div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.55;">${disruptDesc}</div>
+        </div>
+      </div>
+
+      <!-- Net score -->
+      <div style="padding:10px 14px;background:rgba(0,122,255,.05);border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;">
+        <div style="font-size:13px;color:var(--muted);">ネット成長期待スコア（両方を加味）</div>
+        <div style="font-size:20px;font-weight:700;color:${scoreLabel(s.techScore).color};margin-left:auto;">${s.techScore} / 100</div>
+      </div>
     </div>
 
     ${buildTradingSection(s)}`;
@@ -1199,7 +1246,7 @@ async function loadAll() {
   // Re-score after any updates, compute tech + quality + combined
   allStocks = allStocks.map(s => {
     const score     = calcScore(s);
-    const techScore = SECTOR_TECH[s.sector] ?? 50;
+    const techScore = sectorTechNet(s.sector);
     const qd        = STOCK_QUALITY[s.ticker] || {quality:50, political:65};
     const qualScore = Math.round(qd.quality * 0.70 + qd.political * 0.30);
     const combined  = Math.round(score * 0.40 + techScore * 0.25 + qualScore * 0.35);
