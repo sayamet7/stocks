@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>割安株スクリーナー</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root{--bg:#F2F2F7;--card:#FFFFFF;--green:#34C759;--red:#FF3B30;--blue:#007AFF;--orange:#FF9500;--purple:#AF52DE;--deepgreen:#00A550;--text:#1C1C1E;--text2:#3C3C43;--muted:#8E8E93;--border:#E5E5EA;--sep:#C6C6C8;}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    html{scroll-behavior:smooth;}
+    body{font-family:-apple-system,"SF Pro Display","Helvetica Neue",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:84px;}
+
+    .nav-top{background:rgba(242,242,247,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);padding:14px 16px 10px;position:sticky;top:0;z-index:100;border-bottom:.5px solid var(--sep);}
+    .nav-title{font-size:35px;font-weight:700;}
+    .nav-sub{font-size:18px;color:var(--muted);margin-top:2px;}
+    .live-dot{display:inline-block;width:7px;height:7px;background:var(--green);border-radius:50%;margin-right:4px;animation:blink 1.4s infinite;}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+    .page-tabs{display:flex;margin:12px 16px 0;background:#E5E5EA;border-radius:10px;padding:2px;}
+    .page-tab{flex:1;text-align:center;padding:7px 4px;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;border-radius:8px;transition:all .2s;text-decoration:none;display:block;}
+    .page-tab.active{background:white;color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.1);}
+
+    .section{padding:0 16px;margin-top:20px;}
+    .section-title{font-size:25px;font-weight:700;margin-bottom:12px;}
+    .card{background:var(--card);border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:12px;}
+    .card-inner{padding:16px;}
+
+    /* Gauge */
+    .gauge-card{background:var(--card);border-radius:20px;margin:12px 16px 0;box-shadow:0 2px 12px rgba(0,0,0,.08);padding:20px 16px 16px;text-align:center;}
+    .gauge-title{font-size:20px;font-weight:700;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;}
+    .gauge-canvas-wrap{position:relative;margin:0 auto;}
+    canvas#gaugeCanvas{display:block;margin:0 auto;}
+    .gauge-score-big{font-size:52px;font-weight:700;line-height:1;margin-top:-8px;}
+    .gauge-label{font-size:22px;font-weight:600;margin-top:4px;}
+    .gauge-zone-labels{display:flex;justify-content:space-between;padding:4px 8px 0;font-size:13px;color:var(--muted);font-weight:500;}
+    .gauge-sub{font-size:17px;color:var(--muted);margin-top:10px;line-height:1.6;}
+
+    /* Filter bar */
+    .filter-row{display:flex;gap:6px;padding:0 16px;flex-wrap:wrap;margin-top:14px;}
+    .filter-btn{padding:6px 14px;border-radius:20px;font-size:16px;font-weight:600;border:1.5px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;transition:all .2s;}
+    .filter-btn.active{background:var(--deepgreen);border-color:var(--deepgreen);color:white;}
+
+    /* Sort row */
+    .sort-row{display:flex;gap:4px;padding:8px 16px;align-items:center;}
+    .sort-lbl{font-size:16px;color:var(--muted);margin-right:4px;}
+    .sort-btn{padding:4px 10px;border-radius:8px;font-size:15px;font-weight:600;border:none;background:transparent;color:var(--muted);cursor:pointer;transition:all .2s;}
+    .sort-btn.active{background:var(--blue);color:white;}
+
+    /* Stock row */
+    .stock-row{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:.5px solid var(--border);cursor:pointer;transition:background .15s;}
+    .stock-row:last-child{border-bottom:none;}
+    .stock-row:active{background:var(--bg);}
+    .sr-rank{font-size:18px;font-weight:700;color:var(--muted);min-width:24px;text-align:center;}
+    .sr-flag{font-size:22px;min-width:28px;}
+    .sr-info{flex:1;min-width:0;}
+    .sr-ticker{font-size:18px;font-weight:700;color:var(--text);}
+    .sr-name{font-size:15px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .sr-sector{font-size:13px;color:var(--blue);font-weight:600;margin-top:2px;}
+    .sr-metrics{display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:60px;}
+    .sr-price{font-size:18px;font-weight:600;}
+    .sr-ch{font-size:15px;font-weight:600;}
+    .sr-score-wrap{min-width:72px;}
+    .sr-score-num{font-size:20px;font-weight:700;text-align:right;}
+    .sr-score-bar{height:5px;border-radius:3px;background:var(--bg);overflow:hidden;margin-top:3px;}
+    .sr-score-fill{height:100%;border-radius:3px;transition:width .8s ease;}
+    .sr-badge{font-size:13px;font-weight:700;padding:2px 7px;border-radius:5px;margin-top:3px;text-align:center;}
+
+    /* Top picks */
+    .top-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    .top-card{background:var(--card);border-radius:14px;padding:14px;box-shadow:0 2px 8px rgba(0,0,0,.06);position:relative;overflow:hidden;}
+    .top-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+    .top-card.dv::before{background:var(--deepgreen);}
+    .top-card.v::before{background:var(--green);}
+    .top-flag{font-size:20px;}
+    .top-ticker{font-size:20px;font-weight:700;margin-top:2px;}
+    .top-name{font-size:14px;color:var(--muted);margin-bottom:8px;}
+    .top-score-row{display:flex;justify-content:space-between;align-items:flex-end;}
+    .top-score-big{font-size:30px;font-weight:700;color:var(--deepgreen);}
+    .top-metrics{font-size:13px;color:var(--muted);text-align:right;line-height:1.7;}
+
+    /* Sector map */
+    .sector-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);}
+    .sector-cell{background:var(--card);padding:12px 10px;text-align:center;}
+    .sc-name{font-size:14px;font-weight:600;color:var(--text2);margin-bottom:4px;}
+    .sc-pe{font-size:20px;font-weight:700;}
+    .sc-label{font-size:12px;font-weight:600;margin-top:2px;}
+
+    /* Detail modal overlay */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;display:none;align-items:flex-end;}
+    .modal-overlay.open{display:flex;}
+    .modal-sheet{background:var(--card);border-radius:20px 20px 0 0;padding:20px 16px 40px;width:100%;max-height:85vh;overflow-y:auto;}
+    .modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px;}
+    .modal-close{position:absolute;top:16px;right:16px;font-size:22px;cursor:pointer;color:var(--muted);}
+    .detail-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--border);border-radius:12px;overflow:hidden;margin:12px 0;}
+    .dg-cell{background:var(--card);padding:12px;text-align:center;}
+    .dg-lbl{font-size:13px;color:var(--muted);margin-bottom:3px;}
+    .dg-val{font-size:20px;font-weight:700;}
+    .meter-track{height:8px;background:linear-gradient(90deg,var(--deepgreen),var(--green),#FFDD00,var(--orange),var(--red));border-radius:4px;position:relative;margin:8px 0 4px;}
+    .meter-dot{position:absolute;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;background:white;border-radius:7px;box-shadow:0 1px 4px rgba(0,0,0,.3);transition:left 1s ease;}
+
+    /* Misc */
+    .up{color:var(--green);}.down{color:var(--red);}.neu{color:var(--orange);}
+    .demo-badge{display:none;background:rgba(255,59,48,.1);border:1px solid rgba(255,59,48,.3);color:var(--red);font-size:16px;font-weight:700;padding:4px 12px;border-radius:20px;}
+    .disclaimer{margin:8px 16px 20px;padding:14px;background:white;border-radius:12px;font-size:17px;color:var(--muted);line-height:1.7;}
+    .tab-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(248,248,248,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:.5px solid var(--sep);display:flex;padding:8px 0 20px;z-index:100;}
+    .tab-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;text-decoration:none;color:var(--muted);}
+    .tab-item.active{color:var(--deepgreen);}
+    .tab-icon{font-size:24px;}
+    .tab-label{font-size:13px;font-weight:500;}
+    ::-webkit-scrollbar{width:4px;}
+    ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+  </style>
+</head>
+<body>
+
+<div class="nav-top">
+  <div style="display:flex;align-items:center;justify-content:space-between;">
+    <div>
+      <div class="nav-title">💎 Value Screener</div>
+      <div class="nav-sub"><span class="live-dot"></span>グローバル割安株スクリーナー</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span class="demo-badge" id="demoBadge">⚠ デモ</span>
+      <button onclick="loadAll()" id="refreshBtn" style="background:var(--deepgreen);border:none;color:white;padding:7px 16px;border-radius:20px;font-size:18px;font-weight:600;cursor:pointer;">更新</button>
+    </div>
+  </div>
+</div>
+
+<div style="padding:0 16px;margin-top:12px;">
+  <div class="page-tabs">
+    <a href="index.html" class="page-tab">₿ BTC</a>
+    <a href="sp500.html" class="page-tab">📈 S&P</a>
+    <a href="india.html" class="page-tab">🇮🇳 India</a>
+    <a href="value.html" class="page-tab active">💎 割安</a>
+  </div>
+</div>
+
+<!-- Gauge -->
+<div class="gauge-card">
+  <div class="gauge-title">グローバル 割安指数</div>
+  <canvas id="gaugeCanvas" width="320" height="175"></canvas>
+  <div class="gauge-zone-labels">
+    <span style="color:#FF3B30;">超割高</span>
+    <span style="color:#FF9500;">割高</span>
+    <span style="color:#FFDD00;">適正</span>
+    <span style="color:#34C759;">割安</span>
+    <span style="color:#00A550;">超割安</span>
+  </div>
+  <div class="gauge-score-big" id="gaugeScore" style="color:var(--orange);">--</div>
+  <div class="gauge-label" id="gaugeLabel" style="color:var(--orange);">解析中...</div>
+  <div class="gauge-sub" id="gaugeSub">世界主要株式市場の総合バリュエーションを解析中です</div>
+</div>
+
+<!-- Explanation strip -->
+<div class="section" style="margin-top:14px;">
+  <div class="card card-inner">
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;text-align:center;">
+      <div><div style="width:18px;height:18px;border-radius:50%;background:#FF3B30;margin:0 auto 4px;"></div><div style="font-size:12px;font-weight:700;color:#FF3B30;">超割高</div><div style="font-size:11px;color:var(--muted);">0-20</div></div>
+      <div><div style="width:18px;height:18px;border-radius:50%;background:#FF9500;margin:0 auto 4px;"></div><div style="font-size:12px;font-weight:700;color:#FF9500;">割高</div><div style="font-size:11px;color:var(--muted);">20-40</div></div>
+      <div><div style="width:18px;height:18px;border-radius:50%;background:#FFDD00;margin:0 auto 4px;"></div><div style="font-size:12px;font-weight:700;color:#997700;">適正</div><div style="font-size:11px;color:var(--muted);">40-60</div></div>
+      <div><div style="width:18px;height:18px;border-radius:50%;background:#34C759;margin:0 auto 4px;"></div><div style="font-size:12px;font-weight:700;color:var(--green);">割安</div><div style="font-size:11px;color:var(--muted);">60-80</div></div>
+      <div><div style="width:18px;height:18px;border-radius:50%;background:#00A550;margin:0 auto 4px;"></div><div style="font-size:12px;font-weight:700;color:#00A550;">超割安</div><div style="font-size:11px;color:var(--muted);">80-100</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Top Picks -->
+<div class="section">
+  <div class="section-title">🏆 バリュートップ5</div>
+  <div class="top-grid" id="topPicksGrid"></div>
+</div>
+
+<!-- Filter -->
+<div class="section">
+  <div class="section-title">📊 全銘柄スクリーナー</div>
+  <div class="filter-row">
+    <button class="filter-btn active" onclick="setFilter('all',this)">🌏 全て</button>
+    <button class="filter-btn" onclick="setFilter('us',this)">🇺🇸 米国</button>
+    <button class="filter-btn" onclick="setFilter('india',this)">🇮🇳 インド</button>
+    <button class="filter-btn" onclick="setFilter('europe',this)">🇪🇺 欧州</button>
+    <button class="filter-btn" onclick="setFilter('em',this)">🌍 新興国</button>
+    <button class="filter-btn" onclick="setFilter('japan',this)">🇯🇵 日本</button>
+  </div>
+  <div class="sort-row">
+    <span class="sort-lbl">並び順:</span>
+    <button class="sort-btn active" onclick="setSort('score',this)">スコア</button>
+    <button class="sort-btn" onclick="setSort('pe',this)">PER</button>
+    <button class="sort-btn" onclick="setSort('pb',this)">PBR</button>
+    <button class="sort-btn" onclick="setSort('div',this)">配当</button>
+  </div>
+</div>
+<div style="margin:0 16px;" class="card"><div id="stockList"></div></div>
+
+<!-- Sector Map -->
+<div class="section">
+  <div class="section-title">🏭 セクター別バリュエーション</div>
+  <div class="card" style="overflow:hidden;">
+    <div class="sector-grid" id="sectorGrid"></div>
+    <div style="padding:12px 16px;font-size:16px;color:var(--muted);">※ 各セクターの株価収益率（PER）の平均値。歴史的平均より低いほど割安。</div>
+  </div>
+</div>
+
+<!-- Value Investing 101 -->
+<div class="section">
+  <div class="section-title">💡 割安株の見つけ方</div>
+  <div class="card card-inner">
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div style="background:var(--bg);border-radius:10px;padding:12px;">
+        <div style="font-size:18px;font-weight:700;margin-bottom:4px;">📉 PER（株価収益率）</div>
+        <div style="font-size:16px;color:var(--muted);line-height:1.6;">株価 ÷ 1株当たり利益。業種平均より低ければ割安のサイン。一般的に<strong style="color:var(--green);">15倍以下</strong>が目安。</div>
+      </div>
+      <div style="background:var(--bg);border-radius:10px;padding:12px;">
+        <div style="font-size:18px;font-weight:700;margin-bottom:4px;">📚 PBR（株価純資産倍率）</div>
+        <div style="font-size:16px;color:var(--muted);line-height:1.6;">株価 ÷ 1株当たり純資産。<strong style="color:var(--green);">1倍以下</strong>は解散価値より安い超割安水準。</div>
+      </div>
+      <div style="background:var(--bg);border-radius:10px;padding:12px;">
+        <div style="font-size:18px;font-weight:700;margin-bottom:4px;">💰 配当利回り</div>
+        <div style="font-size:16px;color:var(--muted);line-height:1.6;">年間配当 ÷ 株価。<strong style="color:var(--green);">4%以上</strong>は高配当。株価が下がるほど利回りは上昇し、割安シグナルになる。</div>
+      </div>
+      <div style="background:rgba(0,165,80,.06);border:1px solid rgba(0,165,80,.3);border-radius:10px;padding:12px;">
+        <div style="font-size:18px;font-weight:700;margin-bottom:4px;color:var(--deepgreen);">🧠 ウォーレン・バフェットの考え方</div>
+        <div style="font-size:16px;color:var(--text2);line-height:1.6;">「他人が強欲な時に恐れよ、他人が恐れている時に強欲であれ」— <em>恐怖で売られた優良株が最高の買い場。</em></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="disclaimer">⚠️ 本ツールはAIによる教育・参考目的の分析システムです。投資判断は必ずご自身の責任で行ってください。ファンダメンタル指標は参考値であり、実際の企業業績・財務状況を必ずご確認ください。</div>
+
+<div class="tab-bar">
+  <a href="index.html" class="tab-item"><span class="tab-icon">📊</span><span class="tab-label">BTC</span></a>
+  <a href="sp500.html" class="tab-item"><span class="tab-icon">📈</span><span class="tab-label">S&P500</span></a>
+  <a href="india.html" class="tab-item"><span class="tab-icon">🇮🇳</span><span class="tab-label">India</span></a>
+  <a href="value.html" class="tab-item active"><span class="tab-icon">💎</span><span class="tab-label">割安</span></a>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal-sheet" id="modalSheet">
+    <div class="modal-handle"></div>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<script>
+// ─── Master Stock Data ────────────────────────────────────────────────────
+// pe/pb/div: approximate trailing values; fairPe: sector historical average
+const STOCKS = [
+  // 🇺🇸 US
+  {ticker:'PFE',   name:'Pfizer',          flag:'🇺🇸', region:'us',     sector:'製薬',       pe:12,  pb:1.5,  div:6.5,  evEb:9,   fairPe:18, basePrice:27},
+  {ticker:'VZ',    name:'Verizon',         flag:'🇺🇸', region:'us',     sector:'通信',       pe:9,   pb:1.7,  div:7.0,  evEb:7,   fairPe:14, basePrice:40},
+  {ticker:'T',     name:'AT&T',            flag:'🇺🇸', region:'us',     sector:'通信',       pe:11,  pb:1.0,  div:5.8,  evEb:7.5, fairPe:14, basePrice:18},
+  {ticker:'C',     name:'Citigroup',       flag:'🇺🇸', region:'us',     sector:'銀行',       pe:10,  pb:0.65, div:3.5,  evEb:null,fairPe:12, basePrice:65},
+  {ticker:'F',     name:'Ford Motor',      flag:'🇺🇸', region:'us',     sector:'自動車',     pe:6,   pb:0.9,  div:5.5,  evEb:10,  fairPe:12, basePrice:11},
+  {ticker:'GM',    name:'General Motors',  flag:'🇺🇸', region:'us',     sector:'自動車',     pe:5,   pb:0.85, div:1.0,  evEb:8,   fairPe:12, basePrice:45},
+  {ticker:'CVX',   name:'Chevron',         flag:'🇺🇸', region:'us',     sector:'エネルギー', pe:14,  pb:1.6,  div:4.8,  evEb:5,   fairPe:15, basePrice:155},
+  {ticker:'XOM',   name:'Exxon Mobil',     flag:'🇺🇸', region:'us',     sector:'エネルギー', pe:14,  pb:2.0,  div:3.5,  evEb:6,   fairPe:15, basePrice:110},
+  {ticker:'WBA',   name:'Walgreens Boots', flag:'🇺🇸', region:'us',     sector:'小売',       pe:null,pb:0.4,  div:9.0,  evEb:null,fairPe:18, basePrice:10},
+  {ticker:'MO',    name:'Altria Group',    flag:'🇺🇸', region:'us',     sector:'タバコ',     pe:9,   pb:null, div:9.5,  evEb:8,   fairPe:12, basePrice:45},
+  // 🇮🇳 India
+  {ticker:'COALINDIA.NS', name:'Coal India',   flag:'🇮🇳', region:'india', sector:'鉱業',       pe:7,   pb:3.8,  div:6.0,  evEb:4,   fairPe:12, basePrice:450, currency:'₹'},
+  {ticker:'ONGC.NS',      name:'ONGC',         flag:'🇮🇳', region:'india', sector:'エネルギー', pe:6,   pb:0.9,  div:5.5,  evEb:3,   fairPe:10, basePrice:280, currency:'₹'},
+  {ticker:'SBIN.NS',      name:'State Bank India',flag:'🇮🇳',region:'india',sector:'銀行',     pe:9,   pb:1.5,  div:2.5,  evEb:null,fairPe:13, basePrice:820, currency:'₹'},
+  {ticker:'VEDL.NS',      name:'Vedanta',      flag:'🇮🇳', region:'india', sector:'鉱業',       pe:7,   pb:2.5,  div:10.0, evEb:4,   fairPe:10, basePrice:450, currency:'₹'},
+  {ticker:'POWERGRID.NS', name:'Power Grid',   flag:'🇮🇳', region:'india', sector:'電力',       pe:14,  pb:3.0,  div:4.5,  evEb:9,   fairPe:16, basePrice:320, currency:'₹'},
+  // 🇬🇧 Europe
+  {ticker:'SHEL', name:'Shell',          flag:'🇬🇧', region:'europe', sector:'エネルギー', pe:10,  pb:1.1,  div:4.2,  evEb:4,   fairPe:14, basePrice:32},
+  {ticker:'BP',   name:'BP',             flag:'🇬🇧', region:'europe', sector:'エネルギー', pe:8,   pb:1.0,  div:5.8,  evEb:3.5, fairPe:12, basePrice:6},
+  {ticker:'HSBC', name:'HSBC Holdings',  flag:'🇬🇧', region:'europe', sector:'銀行',       pe:8,   pb:0.9,  div:7.0,  evEb:null,fairPe:11, basePrice:42},
+  {ticker:'BCS',  name:'Barclays',       flag:'🇬🇧', region:'europe', sector:'銀行',       pe:7,   pb:0.5,  div:5.0,  evEb:null,fairPe:10, basePrice:12},
+  {ticker:'EQNR', name:'Equinor',        flag:'🇳🇴', region:'europe', sector:'エネルギー', pe:9,   pb:1.6,  div:5.5,  evEb:3.5, fairPe:13, basePrice:25},
+  // 🇧🇷🌍 EM
+  {ticker:'VALE', name:'Vale SA',        flag:'🇧🇷', region:'em',     sector:'鉱業',       pe:5,   pb:1.3,  div:9.0,  evEb:3,   fairPe:10, basePrice:10},
+  {ticker:'PBR',  name:'Petrobras',      flag:'🇧🇷', region:'em',     sector:'エネルギー', pe:4,   pb:1.0,  div:15.0, evEb:2.5, fairPe:9,  basePrice:14},
+  {ticker:'ITUB', name:'Itaú Unibanco',  flag:'🇧🇷', region:'em',     sector:'銀行',       pe:8,   pb:1.8,  div:5.0,  evEb:null,fairPe:12, basePrice:9},
+  // 🇯🇵 Japan
+  {ticker:'TM',   name:'Toyota Motor',   flag:'🇯🇵', region:'japan',  sector:'自動車',     pe:10,  pb:1.1,  div:2.8,  evEb:6,   fairPe:14, basePrice:180},
+  {ticker:'HMC',  name:'Honda Motor',    flag:'🇯🇵', region:'japan',  sector:'自動車',     pe:8,   pb:0.7,  div:3.5,  evEb:5,   fairPe:13, basePrice:28},
+  {ticker:'MUFG', name:'Mitsubishi UFJ', flag:'🇯🇵', region:'japan',  sector:'銀行',       pe:10,  pb:0.75, div:3.5,  evEb:null,fairPe:12, basePrice:12},
+];
+
+// ─── Value Score ──────────────────────────────────────────────────────────
+function calcScore(s) {
+  let peScore = 0;
+  if(s.pe > 0 && s.pe < s.fairPe * 3) {
+    peScore = Math.max(0, Math.min(40, (1 - s.pe / s.fairPe) * 55 + 20));
+  } else if(!s.pe || s.pe <= 0) {
+    peScore = 15; // loss-making: neutral on PE
+  }
+  const pbScore = s.pb ? Math.max(0, Math.min(30, (2.5 - s.pb) * 14)) : 15;
+  const divScore = Math.min(30, (s.div || 0) * 3);
+  return Math.round(Math.max(0, Math.min(100, peScore + pbScore + divScore)));
+}
+
+function scoreLabel(n) {
+  if(n >= 80) return {text:'超割安', color:'#00A550', cls:'dv'};
+  if(n >= 62) return {text:'割安',   color:'#34C759', cls:'v'};
+  if(n >= 44) return {text:'適正',   color:'#997700', cls:'fair'};
+  if(n >= 26) return {text:'割高',   color:'var(--orange)', cls:'rich'};
+  return              {text:'超割高', color:'var(--red)',    cls:'exp'};
+}
+
+// ─── Gauge ────────────────────────────────────────────────────────────────
+function drawGauge(score) {
+  const canvas = document.getElementById('gaugeCanvas');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const W = 320, H = 175;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, W, H);
+
+  const cx = W / 2, cy = H * 0.90, r = 118;
+  const LW = 22;
+
+  // Background track
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, Math.PI, 2 * Math.PI);
+  ctx.strokeStyle = '#E5E5EA';
+  ctx.lineWidth = LW;
+  ctx.lineCap = 'butt';
+  ctx.stroke();
+
+  // Color zones (each 36° = π/5)
+  const zones = ['#FF3B30','#FF9500','#FFDD00','#34C759','#00A550'];
+  zones.forEach((color, i) => {
+    const from = Math.PI + i * (Math.PI / 5);
+    const to   = Math.PI + (i + 1) * (Math.PI / 5);
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, from, to);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = LW;
+    ctx.lineCap = 'butt';
+    ctx.stroke();
+  });
+
+  // Needle
+  const angle = Math.PI + (score / 100) * Math.PI;
+  const nLen = r - 12;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.lineTo(cx + nLen * Math.cos(angle), cy + nLen * Math.sin(angle));
+  ctx.strokeStyle = '#1C1C1E';
+  ctx.lineWidth = 3.5;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+
+  // Center dot
+  ctx.beginPath();
+  ctx.arc(cx, cy, 7, 0, 2 * Math.PI);
+  ctx.fillStyle = '#1C1C1E';
+  ctx.fill();
+}
+
+// ─── Render ───────────────────────────────────────────────────────────────
+let allStocks = [];
+let currentFilter = 'all';
+let currentSort = 'score';
+
+function renderGaugeUI(globalScore) {
+  drawGauge(globalScore);
+  const lbl = scoreLabel(globalScore);
+  const scoreEl = document.getElementById('gaugeScore');
+  const labelEl = document.getElementById('gaugeLabel');
+  scoreEl.textContent = globalScore;
+  scoreEl.style.color = lbl.color;
+  labelEl.textContent = lbl.text;
+  labelEl.style.color = lbl.color;
+  const subs = {
+    'dv': '現在の市場は歴史的な割安水準。バフェット流の「恐怖時に買え」チャンス。',
+    'v':  '選別すれば割安株を見つけやすい環境。優良銘柄を慎重に仕込む局面。',
+    'fair':'全体としては適正水準。個別銘柄の精査が重要。',
+    'rich':'バリュエーションはやや高め。選択的に、押し目を狙う戦略が有効。',
+    'exp': '市場全体が割高。キャッシュ比率を高め、下落に備える局面。',
+  };
+  document.getElementById('gaugeSub').textContent = subs[lbl.cls];
+}
+
+function renderTopPicks(stocks) {
+  const top5 = [...stocks].sort((a,b) => b.score - a.score).slice(0, 6);
+  document.getElementById('topPicksGrid').innerHTML = top5.map(s => {
+    const lbl = scoreLabel(s.score);
+    const cur = s.currency || '$';
+    return `<div class="top-card ${lbl.cls}" onclick="openModal('${s.ticker}')">
+      <div class="top-flag">${s.flag}</div>
+      <div class="top-ticker">${s.ticker.replace('.NS','')}</div>
+      <div class="top-name">${s.name}</div>
+      <div class="top-score-row">
+        <div class="top-score-big" style="color:${lbl.color};">${s.score}</div>
+        <div class="top-metrics">
+          PER ${s.pe ? s.pe+'x' : 'N/A'}<br>
+          PBR ${s.pb ? s.pb+'x' : 'N/A'}<br>
+          配当 ${s.div}%
+        </div>
+      </div>
+      <div style="font-size:13px;font-weight:700;color:${lbl.color};margin-top:6px;padding:3px 8px;border-radius:5px;display:inline-block;background:${lbl.color}22;">${lbl.text}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderList(stocks) {
+  const filtered = currentFilter === 'all' ? stocks : stocks.filter(s => s.region === currentFilter);
+  const sorted = [...filtered].sort((a, b) => {
+    if(currentSort === 'score') return b.score - a.score;
+    if(currentSort === 'pe') return (a.pe || 999) - (b.pe || 999);
+    if(currentSort === 'pb') return (a.pb || 999) - (b.pb || 999);
+    if(currentSort === 'div') return b.div - a.div;
+    return 0;
+  });
+  document.getElementById('stockList').innerHTML = sorted.map((s, i) => {
+    const lbl = scoreLabel(s.score);
+    const cur = s.currency || '$';
+    const pTxt = s.price ? cur + s.price.toLocaleString() : '--';
+    const chTxt = s.ch !== undefined ? (s.ch >= 0 ? '+' : '') + s.ch.toFixed(2) + '%' : '--';
+    const chCls = s.ch >= 0 ? 'up' : 'down';
+    const barW = s.score;
+    const barColor = lbl.color;
+    return `<div class="stock-row" onclick="openModal('${s.ticker}')">
+      <div class="sr-rank">${i+1}</div>
+      <div class="sr-flag">${s.flag}</div>
+      <div class="sr-info">
+        <div class="sr-ticker">${s.ticker.replace('.NS','')}</div>
+        <div class="sr-name">${s.name}</div>
+        <div class="sr-sector">${s.sector}</div>
+      </div>
+      <div class="sr-metrics">
+        <div class="sr-price">${pTxt}</div>
+        <div class="sr-ch ${chCls}">${chTxt}</div>
+      </div>
+      <div class="sr-score-wrap">
+        <div class="sr-score-num" style="color:${barColor};">${s.score}</div>
+        <div class="sr-score-bar"><div class="sr-score-fill" style="width:${barW}%;background:${barColor};"></div></div>
+        <div class="sr-badge" style="color:${barColor};background:${barColor}22;">${lbl.text}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderSectors(stocks) {
+  const sectors = {};
+  stocks.forEach(s => {
+    if(!sectors[s.sector]) sectors[s.sector] = {peSum:0, count:0, fairPe:s.fairPe};
+    if(s.pe > 0) { sectors[s.sector].peSum += s.pe; sectors[s.sector].count++; }
+  });
+  const sData = Object.entries(sectors).map(([name, d]) => ({
+    name, avgPe: d.count > 0 ? (d.peSum/d.count).toFixed(1) : null, fairPe: d.fairPe
+  })).sort((a,b) => (a.avgPe||99) - (b.avgPe||99));
+
+  document.getElementById('sectorGrid').innerHTML = sData.map(s => {
+    const ratio = s.avgPe && s.fairPe ? s.avgPe / s.fairPe : 1;
+    const color = ratio < 0.7 ? '#00A550' : ratio < 0.85 ? '#34C759' : ratio < 1.0 ? '#997700' : ratio < 1.2 ? '#FF9500' : '#FF3B30';
+    const label = ratio < 0.7 ? '超割安' : ratio < 0.85 ? '割安' : ratio < 1.0 ? '適正' : ratio < 1.2 ? 'やや割高' : '割高';
+    return `<div class="sector-cell">
+      <div class="sc-name">${s.name}</div>
+      <div class="sc-pe" style="color:${color};">${s.avgPe ? s.avgPe+'x' : 'N/A'}</div>
+      <div class="sc-label" style="color:${color};">${label}</div>
+    </div>`;
+  }).join('');
+}
+
+// ─── Modal ────────────────────────────────────────────────────────────────
+function openModal(ticker) {
+  const s = allStocks.find(x => x.ticker === ticker);
+  if(!s) return;
+  const lbl = scoreLabel(s.score);
+  const cur = s.currency || '$';
+  const pTxt = s.price ? cur + s.price.toLocaleString() : 'N/A';
+  const chTxt = s.ch !== undefined ? (s.ch >= 0 ? '+' : '') + s.ch.toFixed(2) + '%' : 'N/A';
+  const chCls = (s.ch || 0) >= 0 ? 'up' : 'down';
+  const meterPos = Math.max(5, Math.min(95, 100 - s.score)); // cheap=right, expensive=left
+
+  document.getElementById('modalContent').innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+      <div style="font-size:40px;">${s.flag}</div>
+      <div>
+        <div style="font-size:28px;font-weight:700;">${s.ticker.replace('.NS','')}</div>
+        <div style="font-size:18px;color:var(--muted);">${s.name}</div>
+        <div style="font-size:16px;font-weight:600;color:var(--blue);">${s.sector}</div>
+      </div>
+      <div style="margin-left:auto;text-align:right;">
+        <div style="font-size:28px;font-weight:700;">${pTxt}</div>
+        <div style="font-size:18px;font-weight:600;" class="${chCls}">${chTxt}</div>
+      </div>
+    </div>
+    <div style="text-align:center;padding:12px;background:${lbl.color}15;border-radius:12px;margin-bottom:12px;">
+      <div style="font-size:16px;color:var(--muted);">バリュースコア</div>
+      <div style="font-size:52px;font-weight:700;color:${lbl.color};">${s.score}</div>
+      <div style="font-size:20px;font-weight:600;color:${lbl.color};">${lbl.text}</div>
+    </div>
+    <div style="font-size:17px;color:var(--muted);margin-bottom:4px;">割高 ←───────────→ 割安</div>
+    <div class="meter-track" style="background:linear-gradient(90deg,#FF3B30,#FF9500,#FFDD00,#34C759,#00A550);">
+      <div class="meter-dot" style="left:${100-s.score}%;"></div>
+    </div>
+    <div class="detail-grid">
+      <div class="dg-cell"><div class="dg-lbl">PER</div><div class="dg-val" style="color:${s.pe && s.pe < s.fairPe ? 'var(--green)' : 'var(--orange)'};">${s.pe ? s.pe+'x' : 'N/A'}</div></div>
+      <div class="dg-cell"><div class="dg-lbl">PBR</div><div class="dg-val" style="color:${s.pb && s.pb < 1.5 ? 'var(--green)' : 'var(--orange)'};">${s.pb ? s.pb+'x' : 'N/A'}</div></div>
+      <div class="dg-cell"><div class="dg-lbl">配当利回り</div><div class="dg-val" style="color:${s.div >= 4 ? 'var(--green)' : 'var(--muted)'};">${s.div}%</div></div>
+      <div class="dg-cell"><div class="dg-lbl">EV/EBITDA</div><div class="dg-val">${s.evEb ? s.evEb+'x' : 'N/A'}</div></div>
+      <div class="dg-cell"><div class="dg-lbl">適正PER</div><div class="dg-val" style="color:var(--blue);">${s.fairPe}x</div></div>
+      <div class="dg-cell"><div class="dg-lbl">割安度</div><div class="dg-val" style="color:${lbl.color};">${s.pe && s.pe < s.fairPe ? Math.round((1-s.pe/s.fairPe)*100)+'%安' : s.pe ? Math.round((s.pe/s.fairPe-1)*100)+'%高' : '--'}</div></div>
+    </div>
+    <div style="background:var(--bg);border-radius:10px;padding:12px;font-size:17px;color:var(--text2);line-height:1.7;margin-top:4px;">
+      ${getStockComment(s)}
+    </div>`;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal(e) {
+  if(e.target === document.getElementById('modalOverlay')) {
+    document.getElementById('modalOverlay').classList.remove('open');
+  }
+}
+
+function getStockComment(s) {
+  const lbl = scoreLabel(s.score);
+  if(lbl.cls === 'dv') return `<strong>${s.name}</strong>は現在、歴史的基準から見て<strong style="color:#00A550;">極めて割安</strong>な水準にある。PER${s.pe ? s.pe+'x' : 'N/A'}はセクター平均${s.fairPe}xを大きく下回り、配当${s.div}%の高利回りも株価下支え要因。逆張り投資家にとって注目度が高い銘柄。`;
+  if(lbl.cls === 'v') return `<strong>${s.name}</strong>のバリュエーションは<strong style="color:var(--green);">割安圏</strong>にある。PER${s.pe ? s.pe+'x' : 'N/A'}はセクター平均より低く、中長期的な上昇ポテンシャルを内包。分割買い付けに適した水準。`;
+  if(lbl.cls === 'fair') return `<strong>${s.name}</strong>はほぼ<strong style="color:#997700;">適正価格</strong>で取引されている。大幅な上昇余地は限定的だが、配当${s.div}%の安定収入が期待できる。`;
+  return `<strong>${s.name}</strong>は現在<strong style="color:var(--orange);">やや割高</strong>な水準。業績成長が伴わない場合は調整リスクに注意。押し目待ちの姿勢が賢明。`;
+}
+
+// ─── Filter / Sort ────────────────────────────────────────────────────────
+function setFilter(f, el) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderList(allStocks);
+}
+function setSort(s, el) {
+  currentSort = s;
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderList(allStocks);
+}
+
+// ─── Yahoo Finance fetch ──────────────────────────────────────────────────
+async function fetchPrices(tickers) {
+  const url = `https://query2.finance.yahoo.com/v7/finance/quote?symbols=${tickers.join(',')}&fields=regularMarketPrice,regularMarketChangePercent,trailingPE,priceToBook,dividendYield`;
+  const resp = await fetch(url, {cache:'no-store', signal: AbortSignal.timeout(7000)});
+  if(!resp.ok) throw new Error('HTTP '+resp.status);
+  const json = await resp.json();
+  return json.quoteResponse.result;
+}
+
+// ─── Load All ─────────────────────────────────────────────────────────────
+async function loadAll() {
+  const btn = document.getElementById('refreshBtn');
+  btn.disabled = true; btn.textContent = '⏳ 取得中...';
+
+  // Initialize with pre-defined data + demo prices
+  allStocks = STOCKS.map(s => ({
+    ...s,
+    price: s.basePrice * (0.95 + Math.random() * 0.1),
+    ch: (Math.random() - 0.5) * 4,
+    score: calcScore(s),
+  }));
+
+  try {
+    const tickers = STOCKS.map(s => s.ticker);
+    const quotes = await fetchPrices(tickers);
+    if(quotes && quotes.length > 0) {
+      quotes.forEach(q => {
+        const idx = allStocks.findIndex(s => s.ticker === q.symbol);
+        if(idx < 0) return;
+        allStocks[idx].price = q.regularMarketPrice;
+        allStocks[idx].ch = q.regularMarketChangePercent;
+        // Override fundamentals only if Yahoo returns valid values
+        if(q.trailingPE > 0 && q.trailingPE < 200) allStocks[idx].pe = +q.trailingPE.toFixed(1);
+        if(q.priceToBook > 0) allStocks[idx].pb = +q.priceToBook.toFixed(2);
+        if(q.dividendYield > 0) allStocks[idx].div = +(q.dividendYield * 100).toFixed(1);
+        allStocks[idx].score = calcScore(allStocks[idx]);
+      });
+      document.getElementById('demoBadge').style.display = 'none';
+    } else {
+      throw new Error('empty');
+    }
+  } catch(e) {
+    document.getElementById('demoBadge').style.display = 'inline-block';
+  }
+
+  // Re-score after any updates
+  allStocks = allStocks.map(s => ({...s, score: calcScore(s)}));
+
+  // Global Value Index = average score weighted by equal weight
+  const globalScore = Math.round(allStocks.reduce((a, s) => a + s.score, 0) / allStocks.length);
+
+  renderGaugeUI(globalScore);
+  renderTopPicks(allStocks);
+  renderList(allStocks);
+  renderSectors(allStocks);
+
+  btn.disabled = false; btn.textContent = '更新';
+}
+
+loadAll();
+</script>
+</body>
+</html>
