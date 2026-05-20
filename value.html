@@ -199,9 +199,9 @@
   </div>
   <div class="gauge-score-big" id="gaugeScore" style="color:var(--orange);">--</div>
   <div class="gauge-label" id="gaugeLabel" style="color:var(--orange);">解析中...</div>
-  <div class="gauge-sub" id="gaugeSub">割安度 × AI・成長期待の2軸総合スコア</div>
+  <div class="gauge-sub" id="gaugeSub">割安度 × AI成長期待 × 企業品質の3軸総合スコア</div>
 
-  <!-- 2-axis mini meters -->
+  <!-- 3-axis mini meters -->
   <div class="axis-grid">
     <div>
       <div style="display:flex;justify-content:space-between;align-items:baseline;">
@@ -219,6 +219,14 @@
       <div class="mini-meter"><div class="mini-meter-dot" id="dotTech" style="left:50%"></div></div>
       <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);"><span>期待小</span><span>期待大</span></div>
     </div>
+  </div>
+  <div style="margin-top:8px;padding:0 4px;">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;">
+      <div class="axis-label">🏅 企業品質・政治安定</div>
+      <div class="axis-score" id="dispQualScore" style="color:var(--orange);">--</div>
+    </div>
+    <div class="mini-meter"><div class="mini-meter-dot" id="dotQual" style="left:50%"></div></div>
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);"><span>低品質/高リスク</span><span>高品質/安全</span></div>
   </div>
 </div>
 
@@ -481,6 +489,59 @@ const SECTOR_TRADE_ADVICE = {
   },
 };
 
+// ─── Per-Stock Quality & Political Risk ──────────────────────────────────
+// quality 0-100: business moat, mgmt, earnings stability, balance sheet
+// political 0-100: country/regulatory safety (higher = safer)
+// qNote: business quality summary; pNote: political risk summary
+const STOCK_QUALITY = {
+  'PFE':          { quality:65, political:90, qNote:'強力なブランドとグローバル販売網。パイプライン再構築中だが実績あり。',             pNote:'米国規制環境は安定。薬価規制リスクは存在するが織り込み済み。' },
+  'VZ':           { quality:60, political:90, qNote:'安定したキャッシュフロー。競争激化で料金単価が下落中。モートは薄い。',           pNote:'米国インフラ企業として政治リスク極めて低い。' },
+  'T':            { quality:38, political:88, qNote:'過去の巨額M&Aで財務毀損。経営判断ミスが株価低迷の本因。回復中だが道は長い。',   pNote:'米国企業だが、自社の財務リスクが最大の懸念。' },
+  'C':            { quality:55, political:85, qNote:'グローバル展開の複雑さが課題。Fraser CEO主導のリストラで改善中。',               pNote:'国際展開で地政学リスク分散あり。規制強化コストに注意。' },
+  'F':            { quality:47, political:84, qNote:'EVへの移行が重荷。ブランド力は維持も、EV事業は赤字が続く。',                     pNote:'米中関税・自動車政策リスクに左右される。UAWリスクも残存。' },
+  'GM':           { quality:52, political:84, qNote:'Cruiseで自動運転先行。ただしEV収益化はまだ先。コア事業は安定。',                 pNote:'米中貿易摩擦・中国事業リスク。UAWストライキ経験。' },
+  'CVX':          { quality:73, political:88, qNote:'バフェット長期保有銘柄。財務健全・配当成長の実績が秀逸。資本配分が優秀。',       pNote:'米国主体の安定企業。資源価格リスクは共通だが自社リスクは低。' },
+  'XOM':          { quality:77, political:88, qNote:'石油メジャー最高品質。FCFの強さと資本配分の徹底が業界最上位。',                 pNote:'米国企業で政治安定。環境規制は長期リスクだが対応力も高い。' },
+  'WBA':          { quality:15, political:83, qNote:'【⚠️ 危険】経営陣の判断ミス連発。医薬品小売モデルが崩壊中。倒産懸念あり。割安に見えて価値の罠（バリュートラップ）。', pNote:'米国企業だが、倒産・上場廃止リスクが最大の懸念。' },
+  'MO':           { quality:60, political:87, qNote:'喫煙市場縮小でも驚異のFCF創出力。40年以上の連続増配実績は本物。',             pNote:'米国規制・訴訟リスクはあるが、ほぼ株価に織り込まれている。' },
+  'COALINDIA.NS': { quality:48, political:52, qNote:'国営独占で安定。ただし政府方針に事業が完全に左右される。民営化リスクあり。',   pNote:'インド政府の石炭政策次第。選挙・補助金政策でブレ幅大。' },
+  'ONGC.NS':      { quality:46, political:52, qNote:'政府系エネルギー。補助金負担と資源価格に業績が完全連動。自律性が低い。',       pNote:'エネルギー価格規制リスク。政権交代時の政策変更に注意。' },
+  'SBIN.NS':      { quality:58, political:57, qNote:'インド最大の国有銀行。不良債権改善中。デジタルバンキングへの転換を推進。',     pNote:'インド政治は比較的安定。選挙公約による経営介入リスクは残存。' },
+  'VEDL.NS':      { quality:32, political:48, qNote:'【⚠️ 要注意】Agarwal一族のガバナンス懸念。配当政策が株主本位かは疑問。環境訴訟リスク多数。', pNote:'採掘権剥奪・環境訴訟リスク。新興国政治リスクに加えファミリー支配の透明性問題。' },
+  'POWERGRID.NS': { quality:65, political:60, qNote:'送電独占企業で収益安定。再エネ拡大の恩恵を直接受ける構造。',                   pNote:'規制事業のため政府の料金設定に収益が依存。インド固有のリスクあり。' },
+  'SHEL':         { quality:73, political:80, qNote:'欧州エネルギー最上位。LNG・再エネへのトランジション戦略が明確。',               pNote:'EU規制・炭素税リスクあり。英国/欧州の政治環境は安定。' },
+  'BP':           { quality:53, political:78, qNote:'エネルギー転換戦略がブレた。Shellより財務・実行力で劣後。信頼性に課題。',      pNote:'EUの脱炭素規制圧力。英国政治は安定だが増税リスクも。' },
+  'HSBC':         { quality:65, political:58, qNote:'アジア・中東での強い存在感。香港依存が構造的リスク。分割論が持続。',           pNote:'【⚠️ 要注意】香港・中国の地政学リスク。米中対立で板挟みの構造的問題が継続。' },
+  'BCS':          { quality:55, political:76, qNote:'英国銀行として安定。投資銀行部門が収益のブレ要因。資本比率は改善中。',         pNote:'英国政治は安定。ブレグジット後遺症は軽微。金融規制強化リスクあり。' },
+  'EQNR':         { quality:70, political:87, qNote:'ノルウェー政府系だが経営の自律性高い。透明性・財務・ESG対応で優秀。',         pNote:'ノルウェーは世界最高水準の政治安定国。北欧法の支配・透明性は最高位。' },
+  'VALE':         { quality:53, political:44, qNote:'世界最大の鉄鉱石生産者。ただし鉱山事故・環境訴訟が繰り返しリスクになる。',     pNote:'【⚠️ リスク大】ブラジル政治リスク高。Lula政権の資源国有化傾向に継続注意。' },
+  'PBR':          { quality:33, political:28, qNote:'【❌ 要警戒】Lula政権の介入で配当・投資判断が政治化。企業自律性が著しく低下。', pNote:'【❌ 最高リスク】ブラジル最大の政治リスク銘柄。配当方針が大統領の意向次第。割安でも買いにくい。' },
+  'ITUB':         { quality:68, political:50, qNote:'ブラジル最優良民間銀行。デジタル化・効率化で競合を圧倒する経営力。',           pNote:'ブラジル政治・マクロリスクあり。ただし民間企業なので政府介入は限定的。' },
+  'TM':           { quality:88, political:90, qNote:'世界トップの製造品質とカイゼン文化。豊富なキャッシュと安定した収益力。業界最上位。', pNote:'日本は政治安定・法の支配が機能。為替リスクは有だが企業固有リスクは最低水準。' },
+  'HMC':          { quality:72, political:90, qNote:'二輪・四輪の両輪で安定的に稼ぐ。電動化対応もトヨタに近いペースで進展。',       pNote:'日本企業として政治リスク極低。米中関係次第で輸出リスクは残る。' },
+  'MUFG':         { quality:66, political:88, qNote:'Morgan Stanley株など戦略的保有資産が豊富。金利正常化で本格復活中。',           pNote:'日本の規制環境は安定。海外展開リスクは分散されている。' },
+  '2433.T':       { quality:68, political:88, qNote:'国内広告2強の一角。大手クライアントとの安定した長期契約基盤。デジタル移行も推進中。', pNote:'日本企業として政治・規制リスクは極低。安定した法規制環境。' },
+  '4324.T':       { quality:50, political:85, qNote:'電通は過去の過労死問題・オリンピック談合で信頼性に傷。改善中だが再発リスク。', pNote:'日本企業としてのリスクは低。ただしガバナンス問題の再発懸念。' },
+  'WPP':          { quality:53, political:72, qNote:'Sorrell退任後の再建中。債務削減優先で成長投資が後退。競争力の回復が課題。',   pNote:'UK上場だが全世界展開。新興国事業の政治リスクが分散される一方、地域ごとのカントリーリスクも存在。' },
+  'OMC':          { quality:72, political:87, qNote:'米大手代理店で最も一貫した収益性。資本配分・自社株買いが業界最高品質。',       pNote:'米国本拠で政治安定。多国籍展開だがコア収益は先進国中心。' },
+  'IPG':          { quality:62, political:85, qNote:'中堅規模だが専門性が高く顧客ロイヤルティが高い。Omnicomとの合併協議中。',     pNote:'米国本拠。先進国中心のビジネスで政治リスクは低い。' },
+};
+
+function qualityLabel(q) {
+  if(q >= 75) return {text:'優良',   color:'#00A550', bg:'rgba(0,165,80,.10)'};
+  if(q >= 60) return {text:'良好',   color:'#34C759', bg:'rgba(52,199,89,.10)'};
+  if(q >= 45) return {text:'標準',   color:'var(--blue)', bg:'rgba(0,122,255,.10)'};
+  if(q >= 30) return {text:'要注意', color:'var(--orange)', bg:'rgba(255,149,0,.10)'};
+  return             {text:'低品質', color:'var(--red)',    bg:'rgba(255,59,48,.10)'};
+}
+function politicalLabel(p) {
+  if(p >= 80) return {text:'安全',     color:'#00A550'};
+  if(p >= 65) return {text:'やや安全', color:'#34C759'};
+  if(p >= 50) return {text:'中程度',   color:'var(--orange)'};
+  if(p >= 35) return {text:'高リスク', color:'#FF6B00'};
+  return             {text:'危険',     color:'var(--red)'};
+}
+
 // ─── Master Stock Data ────────────────────────────────────────────────────
 // pe/pb/div: approximate trailing values; fairPe: sector historical average
 const STOCKS = [
@@ -602,8 +663,8 @@ let allStocks = [];
 let currentFilter = 'all';
 let currentSort = 'score';
 
-function renderGaugeUI(globalValueScore, globalTechScore) {
-  const combined = Math.round(globalValueScore * 0.55 + globalTechScore * 0.45);
+function renderGaugeUI(globalValueScore, globalTechScore, globalQualScore) {
+  const combined = Math.round(globalValueScore * 0.40 + globalTechScore * 0.25 + globalQualScore * 0.35);
   drawGauge(combined);
 
   const lbl = scoreLabel(combined);
@@ -623,12 +684,16 @@ function renderGaugeUI(globalValueScore, globalTechScore) {
   // Mini meters
   const vlbl = scoreLabel(globalValueScore);
   const tlbl = scoreLabel(globalTechScore);
+  const qlbl = qualityLabel(globalQualScore);
   document.getElementById('dispValueScore').textContent = globalValueScore;
   document.getElementById('dispValueScore').style.color = vlbl.color;
   document.getElementById('dotValue').style.left = globalValueScore + '%';
   document.getElementById('dispTechScore').textContent = globalTechScore;
   document.getElementById('dispTechScore').style.color = tlbl.color;
   document.getElementById('dotTech').style.left = globalTechScore + '%';
+  document.getElementById('dispQualScore').textContent = globalQualScore;
+  document.getElementById('dispQualScore').style.color = qlbl.color;
+  document.getElementById('dotQual').style.left = globalQualScore + '%';
 }
 
 function renderTopPicks(stocks) {
@@ -696,6 +761,10 @@ function renderList(stocks) {
         <div class="sr-axis-row">
           <div class="sr-axis-lbl" style="color:var(--blue);">T</div>
           <div class="sr-axis-bar"><div class="sr-axis-fill" style="width:${s.techScore}%;background:${tlbl.color};"></div></div>
+        </div>
+        <div class="sr-axis-row">
+          <div class="sr-axis-lbl" style="color:${qualityLabel(s.qualScore).color};">Q</div>
+          <div class="sr-axis-bar"><div class="sr-axis-fill" style="width:${s.qualScore}%;background:${qualityLabel(s.qualScore).color};"></div></div>
         </div>
         <div class="sr-combined" style="color:${lbl.color};">${s.combined}</div>
       </div>
@@ -978,7 +1047,7 @@ function openModal(ticker) {
       <div style="font-size:15px;color:var(--text2);margin-top:6px;line-height:1.5;">${verdictText(s.combined)}</div>
     </div>
 
-    <!-- 2-axis meters -->
+    <!-- 3-axis meters -->
     <div style="background:var(--bg);border-radius:12px;padding:12px 14px;margin-bottom:12px;">
       <div style="margin-bottom:10px;">
         <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:600;margin-bottom:4px;">
@@ -988,7 +1057,7 @@ function openModal(ticker) {
         <div class="mini-meter"><div class="mini-meter-dot" style="left:${s.score}%"></div></div>
         <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:1px;"><span>割高</span><span>割安</span></div>
       </div>
-      <div>
+      <div style="margin-bottom:10px;">
         <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:600;margin-bottom:4px;">
           <span>🤖 AI・技術進化 成長期待</span>
           <span style="color:${tlbl.color};">${s.techScore} / 100</span>
@@ -996,7 +1065,36 @@ function openModal(ticker) {
         <div class="mini-meter"><div class="mini-meter-dot" style="left:${s.techScore}%"></div></div>
         <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:1px;"><span>期待小</span><span>期待大</span></div>
       </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:600;margin-bottom:4px;">
+          <span>🏅 企業品質・政治安定</span>
+          <span style="color:${qualityLabel(s.qualScore).color};">${s.qualScore} / 100</span>
+        </div>
+        <div class="mini-meter"><div class="mini-meter-dot" style="left:${s.qualScore}%"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:1px;"><span>低品質/高リスク</span><span>高品質/安全</span></div>
+      </div>
     </div>
+
+    <!-- Quality & Political detail -->
+    ${(()=>{
+      const qd = STOCK_QUALITY[s.ticker] || {quality:50, political:65, qNote:'データなし', pNote:'データなし'};
+      const ql = qualityLabel(qd.quality);
+      const pl = politicalLabel(qd.political);
+      return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+        <div style="padding:12px;background:${ql.bg};border-radius:12px;border:1px solid ${ql.color}33;">
+          <div style="font-size:12px;font-weight:700;color:${ql.color};margin-bottom:6px;">🏅 企業品質</div>
+          <div style="font-size:28px;font-weight:700;color:${ql.color};line-height:1;">${qd.quality}</div>
+          <div style="font-size:13px;font-weight:600;color:${ql.color};margin-bottom:6px;">${ql.text}</div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.55;">${qd.qNote}</div>
+        </div>
+        <div style="padding:12px;background:rgba(0,0,0,.04);border-radius:12px;border:1px solid ${pl.color}33;">
+          <div style="font-size:12px;font-weight:700;color:${pl.color};margin-bottom:6px;">🌏 政治・カントリーリスク</div>
+          <div style="font-size:28px;font-weight:700;color:${pl.color};line-height:1;">${qd.political}</div>
+          <div style="font-size:13px;font-weight:600;color:${pl.color};margin-bottom:6px;">${pl.text}</div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.55;">${qd.pNote}</div>
+        </div>
+      </div>`;
+    })()}
 
     <!-- Metrics grid -->
     <div class="detail-grid">
@@ -1098,19 +1196,22 @@ async function loadAll() {
     document.getElementById('demoBadge').style.display = 'inline-block';
   }
 
-  // Re-score after any updates, compute tech + combined
+  // Re-score after any updates, compute tech + quality + combined
   allStocks = allStocks.map(s => {
-    const score = calcScore(s);
+    const score     = calcScore(s);
     const techScore = SECTOR_TECH[s.sector] ?? 50;
-    const combined = Math.round(score * 0.55 + techScore * 0.45);
-    return {...s, score, techScore, combined};
+    const qd        = STOCK_QUALITY[s.ticker] || {quality:50, political:65};
+    const qualScore = Math.round(qd.quality * 0.70 + qd.political * 0.30);
+    const combined  = Math.round(score * 0.40 + techScore * 0.25 + qualScore * 0.35);
+    return {...s, score, techScore, qualScore, quality: qd.quality, political: qd.political, combined};
   });
 
   // Global averages
   const globalScore     = Math.round(allStocks.reduce((a, s) => a + s.score,     0) / allStocks.length);
   const globalTechScore = Math.round(allStocks.reduce((a, s) => a + s.techScore, 0) / allStocks.length);
+  const globalQualScore = Math.round(allStocks.reduce((a, s) => a + s.qualScore, 0) / allStocks.length);
 
-  renderGaugeUI(globalScore, globalTechScore);
+  renderGaugeUI(globalScore, globalTechScore, globalQualScore);
   renderTopPicks(allStocks);
   renderHakuhodo(allStocks);
   renderList(allStocks);
