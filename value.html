@@ -110,6 +110,41 @@
     .tab-label{font-size:13px;font-weight:500;}
     ::-webkit-scrollbar{width:4px;}
     ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+    /* Hakuhodo Feature */
+    .hk-hero{background:var(--card);border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,.08);overflow:hidden;margin-bottom:12px;}
+    .hk-header{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 60%,#0f3460 100%);padding:20px 16px 16px;color:white;}
+    .hk-logo-row{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+    .hk-logo{width:44px;height:44px;border-radius:10px;background:white;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+    .hk-ticker{font-size:13px;font-weight:700;color:rgba(255,255,255,.6);letter-spacing:1px;}
+    .hk-name{font-size:20px;font-weight:700;color:white;line-height:1.2;}
+    .hk-price-row{display:flex;align-items:flex-end;gap:12px;margin-top:4px;}
+    .hk-price{font-size:38px;font-weight:700;color:white;}
+    .hk-ch{font-size:18px;font-weight:600;padding:3px 10px;border-radius:8px;}
+    .hk-verdict-strip{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:.5px solid var(--border);}
+    .hk-verdict-label{font-size:15px;color:var(--muted);margin-bottom:4px;}
+    .hk-verdict-val{font-size:26px;font-weight:700;}
+    .hk-stars{font-size:22px;letter-spacing:2px;}
+    .hk-score-big{font-size:44px;font-weight:700;}
+    .peer-table{width:100%;}
+    .peer-row{display:flex;align-items:center;gap:8px;padding:10px 16px;border-bottom:.5px solid var(--border);}
+    .peer-row:last-child{border-bottom:none;}
+    .peer-row.highlight{background:rgba(0,122,255,.04);}
+    .peer-flag{font-size:18px;min-width:24px;}
+    .peer-name{flex:1;font-size:16px;font-weight:500;}
+    .peer-name small{display:block;font-size:13px;color:var(--muted);font-weight:400;}
+    .peer-pe{font-size:16px;font-weight:600;min-width:40px;text-align:right;}
+    .peer-div{font-size:16px;font-weight:600;min-width:44px;text-align:right;}
+    .peer-score-col{min-width:76px;text-align:right;}
+    .peer-score-val{font-size:17px;font-weight:700;}
+    .peer-score-bar-wrap{height:4px;background:var(--bg);border-radius:2px;overflow:hidden;margin-top:3px;}
+    .peer-score-bar{height:100%;border-radius:2px;}
+    .bull-bear-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px 16px;}
+    .bb-col-title{font-size:16px;font-weight:700;margin-bottom:8px;}
+    .bb-item{display:flex;gap:6px;margin-bottom:7px;align-items:flex-start;font-size:15px;color:var(--text2);line-height:1.5;}
+    .bb-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+    .hk-analysis-text{padding:14px 16px;font-size:17px;color:var(--text2);line-height:1.8;border-top:.5px solid var(--border);}
+    .verdict-banner-hk{margin:0 16px 12px;padding:14px 16px;border-radius:14px;border:1.5px solid;}
   </style>
 </head>
 <body>
@@ -169,6 +204,47 @@
 <div class="section">
   <div class="section-title">🏆 バリュートップ5</div>
   <div class="top-grid" id="topPicksGrid"></div>
+</div>
+
+<!-- 博報堂 Analysis -->
+<div class="section" id="hakuhodo-section">
+  <div class="section-title">🏢 博報堂 割安分析</div>
+  <div id="hakuhodoCard"></div>
+
+  <div style="font-size:19px;font-weight:700;margin-bottom:10px;">📊 広告業界 ピア比較</div>
+  <div class="card" style="overflow:hidden;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px 6px;">
+      <div style="font-size:14px;color:var(--muted);font-weight:600;">銘柄</div>
+      <div style="display:flex;gap:0;">
+        <div style="font-size:14px;color:var(--muted);font-weight:600;min-width:44px;text-align:right;">PER</div>
+        <div style="font-size:14px;color:var(--muted);font-weight:600;min-width:48px;text-align:right;">配当</div>
+        <div style="font-size:14px;color:var(--muted);font-weight:600;min-width:76px;text-align:right;">スコア</div>
+      </div>
+    </div>
+    <div id="peerTable"></div>
+  </div>
+
+  <div class="card">
+    <div style="padding:14px 16px 8px;font-size:18px;font-weight:600;">⚖️ ブル vs ベア</div>
+    <div class="bull-bear-grid">
+      <div>
+        <div class="bb-col-title" style="color:var(--green);">🐂 買い材料</div>
+        <div class="bb-item"><div class="bb-dot" style="background:var(--green);"></div>国内最大級の広告主ネットワークと長期契約基盤</div>
+        <div class="bb-item"><div class="bb-dot" style="background:var(--green);"></div>電通との2強体制。参入障壁が極めて高い</div>
+        <div class="bb-item"><div class="bb-dot" style="background:var(--green);"></div>デジタル・データマーケティングへの転換加速</div>
+        <div class="bb-item"><div class="bb-dot" style="background:var(--green);"></div>PBR1倍割れ水準からの回復余地あり</div>
+        <div class="bb-item"><div class="bb-dot" style="background:var(--green);"></div>インバウンド需要増でクライアントの広告予算拡大</div>
+      </div>
+      <div>
+        <div class="bb-col-title" style="color:var(--red);">🐻 売り材料</div>
+        <div class="bb-item"><div class="bb-dot" style="background:var(--red);"></div>Google・Metaへのデジタル広告シフトで仲介余地が縮小</div>
+        <div class="bb-item"><div class="bb-dot" style="background:var(--red);"></div>国内広告市場の成熟・人口減少による構造的頭打ち</div>
+        <div class="bb-item"><div class="bb-dot" style="background:var(--red);"></div>グローバル大手(WPP等)に比べ海外収益依存度が低い</div>
+        <div class="bb-item"><div class="bb-dot" style="background:var(--red);"></div>景気後退局面では広告費が最初にカットされるリスク</div>
+        <div class="bb-item"><div class="bb-dot" style="background:var(--red);"></div>配当利回り約3%は高配当株と比較するとやや見劣り</div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Filter -->
@@ -278,6 +354,12 @@ const STOCKS = [
   {ticker:'TM',   name:'Toyota Motor',   flag:'🇯🇵', region:'japan',  sector:'自動車',     pe:10,  pb:1.1,  div:2.8,  evEb:6,   fairPe:14, basePrice:180},
   {ticker:'HMC',  name:'Honda Motor',    flag:'🇯🇵', region:'japan',  sector:'自動車',     pe:8,   pb:0.7,  div:3.5,  evEb:5,   fairPe:13, basePrice:28},
   {ticker:'MUFG', name:'Mitsubishi UFJ', flag:'🇯🇵', region:'japan',  sector:'銀行',       pe:10,  pb:0.75, div:3.5,  evEb:null,fairPe:12, basePrice:12},
+  // 🇯🇵 広告・マーケティング（博報堂比較グループ）
+  {ticker:'2433.T', name:'博報堂DYホールディングス', flag:'🇯🇵', region:'japan', sector:'広告・PR', pe:14, pb:1.3, div:2.8, evEb:8,   fairPe:16, basePrice:2100, currency:'¥', isFeature:true},
+  {ticker:'4324.T', name:'電通グループ',            flag:'🇯🇵', region:'japan', sector:'広告・PR', pe:12, pb:1.0, div:2.5, evEb:7,   fairPe:16, basePrice:4200, currency:'¥'},
+  {ticker:'WPP',    name:'WPP plc',                 flag:'🇬🇧', region:'europe',sector:'広告・PR', pe:10, pb:1.2, div:5.2, evEb:6.5, fairPe:14, basePrice:9},
+  {ticker:'OMC',    name:'Omnicom Group',            flag:'🇺🇸', region:'us',   sector:'広告・PR', pe:12, pb:null, div:3.2, evEb:9,  fairPe:14, basePrice:90},
+  {ticker:'IPG',    name:'Interpublic Group',        flag:'🇺🇸', region:'us',   sector:'広告・PR', pe:11, pb:2.5, div:4.8, evEb:8,   fairPe:13, basePrice:28},
 ];
 
 // ─── Value Score ──────────────────────────────────────────────────────────
@@ -460,6 +542,117 @@ function renderSectors(stocks) {
   }).join('');
 }
 
+// ─── Hakuhodo Analysis ───────────────────────────────────────────────────
+function renderHakuhodo(stocks) {
+  const hk = stocks.find(s => s.ticker === '2433.T');
+  if(!hk) return;
+
+  const lbl = scoreLabel(hk.score);
+  const cur = '¥';
+  const price = hk.price ? Math.round(hk.price).toLocaleString('ja-JP') : '2,100';
+  const chVal = hk.ch ?? 0;
+  const chTxt = (chVal >= 0 ? '+' : '') + chVal.toFixed(2) + '%';
+  const chBg  = chVal >= 0 ? 'rgba(52,199,89,.25)' : 'rgba(255,59,48,.25)';
+  const chColor = chVal >= 0 ? '#34C759' : '#FF3B30';
+
+  // Verdict: score-based
+  const stars = hk.score >= 70 ? '★★★★★' : hk.score >= 58 ? '★★★★☆' : hk.score >= 46 ? '★★★☆☆' : '★★☆☆☆';
+  const verdict = hk.score >= 70 ? {text:'買い推奨',  color:'var(--green)', bg:'rgba(52,199,89,.08)',  border:'var(--green)'}
+                : hk.score >= 55 ? {text:'打診買い',  color:'var(--blue)',  bg:'rgba(0,122,255,.08)',  border:'var(--blue)'}
+                : hk.score >= 44 ? {text:'様子見',    color:'var(--orange)',bg:'rgba(255,149,0,.08)',  border:'var(--orange)'}
+                :                  {text:'割高・待機', color:'var(--red)',   bg:'rgba(255,59,48,.08)',  border:'var(--red)'};
+
+  // Upside to fair value (fair PE rerating)
+  const fairPrice = hk.pe && hk.fairPe ? Math.round(hk.basePrice * (hk.fairPe / hk.pe)) : null;
+  const upside = fairPrice ? Math.round((fairPrice / hk.basePrice - 1) * 100) : null;
+
+  document.getElementById('hakuhodoCard').innerHTML = `
+    <div class="hk-hero">
+      <div class="hk-header">
+        <div class="hk-logo-row">
+          <div class="hk-logo">博</div>
+          <div>
+            <div class="hk-ticker">2433.T · TSE Prime · 広告・PR</div>
+            <div class="hk-name">博報堂DYホールディングス</div>
+          </div>
+        </div>
+        <div class="hk-price-row">
+          <div class="hk-price">${cur}${price}</div>
+          <div class="hk-ch" style="background:${chBg};color:${chColor};">${chTxt}</div>
+        </div>
+      </div>
+
+      <div class="hk-verdict-strip">
+        <div>
+          <div class="hk-verdict-label">AI 総合判断</div>
+          <div class="hk-verdict-val" style="color:${verdict.color};">${verdict.text}</div>
+          <div class="hk-stars">${stars}</div>
+        </div>
+        <div style="text-align:center;">
+          <div class="hk-verdict-label">バリュースコア</div>
+          <div class="hk-score-big" style="color:${lbl.color};">${hk.score}</div>
+          <div style="font-size:15px;font-weight:600;color:${lbl.color};">${lbl.text}</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="hk-verdict-label">適正株価目安</div>
+          <div style="font-size:22px;font-weight:700;color:var(--blue);">${fairPrice ? cur+fairPrice.toLocaleString('ja-JP') : '--'}</div>
+          <div style="font-size:15px;font-weight:600;color:var(--blue);">${upside ? '↑ 約'+upside+'% 上昇余地' : '--'}</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);">
+        <div style="background:var(--card);padding:12px;text-align:center;">
+          <div style="font-size:13px;color:var(--muted);margin-bottom:3px;">PER</div>
+          <div style="font-size:20px;font-weight:700;color:${hk.pe < hk.fairPe ? 'var(--green)' : 'var(--orange)'};">${hk.pe}x</div>
+          <div style="font-size:11px;color:var(--muted);">適正 ${hk.fairPe}x</div>
+        </div>
+        <div style="background:var(--card);padding:12px;text-align:center;">
+          <div style="font-size:13px;color:var(--muted);margin-bottom:3px;">PBR</div>
+          <div style="font-size:20px;font-weight:700;color:${hk.pb < 1.5 ? 'var(--green)' : 'var(--orange)'};">${hk.pb}x</div>
+          <div style="font-size:11px;color:var(--muted);">1倍割れ=超割安</div>
+        </div>
+        <div style="background:var(--card);padding:12px;text-align:center;">
+          <div style="font-size:13px;color:var(--muted);margin-bottom:3px;">配当利回り</div>
+          <div style="font-size:20px;font-weight:700;color:var(--blue);">${hk.div}%</div>
+          <div style="font-size:11px;color:var(--muted);">増配傾向</div>
+        </div>
+        <div style="background:var(--card);padding:12px;text-align:center;">
+          <div style="font-size:13px;color:var(--muted);margin-bottom:3px;">EV/EBITDA</div>
+          <div style="font-size:20px;font-weight:700;">${hk.evEb}x</div>
+          <div style="font-size:11px;color:var(--muted);">業界平均 8x</div>
+        </div>
+      </div>
+
+      <div class="hk-analysis-text">
+        博報堂DYHDは国内広告2強の一角として安定した収益基盤を持つ。PER ${hk.pe}x・PBR ${hk.pb}xは広告業界の歴史的平均（PER ${hk.fairPe}x）に対して<strong style="color:${hk.pe < hk.fairPe ? 'var(--green)':'var(--orange)'};">${hk.pe < hk.fairPe ? '割安' : 'やや割高'}</strong>。配当${hk.div}%は日本株の中では標準的だが、電通（約2.5%）と並び安定配当の実績がある。<br><br>
+        最大のリスクはデジタルシフトによる総合広告代理店モデルの変容。ただし博報堂は「生活者発想」ブランドとデータ・クリエイティブ融合で差別化を図っており、${verdict.text === '買い推奨' || verdict.text === '打診買い' ? '現在の株価は中長期的な成長を過小評価している可能性がある。分割買い付けで下値を拾う戦略が有効。' : '株価が調整した局面での打診買いを検討したい。'}
+      </div>
+    </div>`;
+
+  // Peer comparison table
+  const peers = ['2433.T','4324.T','WPP','OMC','IPG'].map(t => stocks.find(s => s.ticker === t)).filter(Boolean);
+  document.getElementById('peerTable').innerHTML = peers.map(s => {
+    const sl = scoreLabel(s.score);
+    const isHk = s.ticker === '2433.T';
+    const priceTxt = s.price
+      ? (s.currency || '$') + (s.currency === '¥' ? Math.round(s.price).toLocaleString('ja-JP') : s.price.toFixed(2))
+      : '--';
+    return `<div class="peer-row ${isHk ? 'highlight' : ''}">
+      <div class="peer-flag">${s.flag}</div>
+      <div class="peer-name">
+        ${s.ticker.replace('.T','').replace('.NS','')}${isHk ? ' 👈' : ''}
+        <small>${s.name}</small>
+      </div>
+      <div class="peer-pe" style="color:${s.pe && s.pe < s.fairPe ? 'var(--green)':'var(--muted)'};">${s.pe ? s.pe+'x' : 'N/A'}</div>
+      <div class="peer-div" style="color:${(s.div||0) >= 4 ? 'var(--green)':'var(--muted)'};">${s.div}%</div>
+      <div class="peer-score-col">
+        <div class="peer-score-val" style="color:${sl.color};">${s.score}</div>
+        <div class="peer-score-bar-wrap"><div class="peer-score-bar" style="width:${s.score}%;background:${sl.color};"></div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 // ─── Modal ────────────────────────────────────────────────────────────────
 function openModal(ticker) {
   const s = allStocks.find(x => x.ticker === ticker);
@@ -588,6 +781,7 @@ async function loadAll() {
 
   renderGaugeUI(globalScore);
   renderTopPicks(allStocks);
+  renderHakuhodo(allStocks);
   renderList(allStocks);
   renderSectors(allStocks);
 
