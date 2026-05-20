@@ -108,6 +108,21 @@
     .tab-item.active{color:var(--deepgreen);}
     .tab-icon{font-size:24px;}
     .tab-label{font-size:13px;font-weight:500;}
+    /* Mini meter (2-axis) */
+    .mini-meter{height:9px;border-radius:5px;background:linear-gradient(90deg,#FF3B30,#FF9500,#FFDD00,#34C759,#00A550);position:relative;margin:5px 0;}
+    .mini-meter-dot{position:absolute;top:50%;transform:translate(-50%,-50%);width:16px;height:16px;background:white;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,.28);transition:left 1.2s ease;}
+    .axis-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;text-align:left;}
+    .axis-label{font-size:14px;font-weight:600;color:var(--muted);margin-bottom:2px;}
+    .axis-score{font-size:17px;font-weight:700;}
+    /* Combined verdict strip */
+    .combined-strip{border-radius:12px;padding:12px 14px;margin:14px 0 0;display:flex;align-items:center;justify-content:space-between;}
+    /* stock row 2-axis */
+    .sr-axes{display:flex;flex-direction:column;gap:2px;min-width:78px;}
+    .sr-axis-row{display:flex;align-items:center;gap:4px;}
+    .sr-axis-lbl{font-size:11px;color:var(--muted);min-width:16px;}
+    .sr-axis-bar{flex:1;height:4px;background:var(--bg);border-radius:2px;overflow:hidden;}
+    .sr-axis-fill{height:100%;border-radius:2px;transition:width .8s ease;}
+    .sr-combined{font-size:19px;font-weight:700;text-align:right;min-width:30px;}
     ::-webkit-scrollbar{width:4px;}
     ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 
@@ -173,29 +188,49 @@
 
 <!-- Gauge -->
 <div class="gauge-card">
-  <div class="gauge-title">グローバル 割安指数</div>
+  <div class="gauge-title">グローバル 総合投資スコア</div>
   <canvas id="gaugeCanvas" width="320" height="175"></canvas>
   <div class="gauge-zone-labels">
-    <span style="color:#FF3B30;">超割高</span>
-    <span style="color:#FF9500;">割高</span>
-    <span style="color:#FFDD00;">適正</span>
-    <span style="color:#34C759;">割安</span>
-    <span style="color:#00A550;">超割安</span>
+    <span style="color:#FF3B30;">❌ 見送り</span>
+    <span style="color:#FF9500;">⚠ 慎重</span>
+    <span style="color:#997700;">→ 中立</span>
+    <span style="color:#34C759;">✓ 買い</span>
+    <span style="color:#00A550;">🚀 強買い</span>
   </div>
   <div class="gauge-score-big" id="gaugeScore" style="color:var(--orange);">--</div>
   <div class="gauge-label" id="gaugeLabel" style="color:var(--orange);">解析中...</div>
-  <div class="gauge-sub" id="gaugeSub">世界主要株式市場の総合バリュエーションを解析中です</div>
+  <div class="gauge-sub" id="gaugeSub">割安度 × AI・成長期待の2軸総合スコア</div>
+
+  <!-- 2-axis mini meters -->
+  <div class="axis-grid">
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;">
+        <div class="axis-label">💰 割安度</div>
+        <div class="axis-score" id="dispValueScore" style="color:var(--deepgreen);">--</div>
+      </div>
+      <div class="mini-meter"><div class="mini-meter-dot" id="dotValue" style="left:50%"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);"><span>割高</span><span>割安</span></div>
+    </div>
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;">
+        <div class="axis-label">🤖 AI・成長期待</div>
+        <div class="axis-score" id="dispTechScore" style="color:var(--blue);">--</div>
+      </div>
+      <div class="mini-meter"><div class="mini-meter-dot" id="dotTech" style="left:50%"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);"><span>期待小</span><span>期待大</span></div>
+    </div>
+  </div>
 </div>
 
-<!-- Explanation strip -->
+<!-- Legend strip -->
 <div class="section" style="margin-top:14px;">
   <div class="card card-inner">
     <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;text-align:center;">
-      <div><div style="width:18px;height:18px;border-radius:50%;background:#FF3B30;margin:0 auto 4px;"></div><div style="font-size:12px;font-weight:700;color:#FF3B30;">超割高</div><div style="font-size:11px;color:var(--muted);">0-20</div></div>
-      <div><div style="width:18px;height:18px;border-radius:50%;background:#FF9500;margin:0 auto 4px;"></div><div style="font-size:12px;font-weight:700;color:#FF9500;">割高</div><div style="font-size:11px;color:var(--muted);">20-40</div></div>
-      <div><div style="width:18px;height:18px;border-radius:50%;background:#FFDD00;margin:0 auto 4px;"></div><div style="font-size:12px;font-weight:700;color:#997700;">適正</div><div style="font-size:11px;color:var(--muted);">40-60</div></div>
-      <div><div style="width:18px;height:18px;border-radius:50%;background:#34C759;margin:0 auto 4px;"></div><div style="font-size:12px;font-weight:700;color:var(--green);">割安</div><div style="font-size:11px;color:var(--muted);">60-80</div></div>
-      <div><div style="width:18px;height:18px;border-radius:50%;background:#00A550;margin:0 auto 4px;"></div><div style="font-size:12px;font-weight:700;color:#00A550;">超割安</div><div style="font-size:11px;color:var(--muted);">80-100</div></div>
+      <div><div style="width:18px;height:18px;border-radius:50%;background:#FF3B30;margin:0 auto 4px;"></div><div style="font-size:12px;font-weight:700;color:#FF3B30;">見送り</div><div style="font-size:11px;color:var(--muted);">0–20</div></div>
+      <div><div style="width:18px;height:18px;border-radius:50%;background:#FF9500;margin:0 auto 4px;"></div><div style="font-size:12px;font-weight:700;color:#FF9500;">慎重に</div><div style="font-size:11px;color:var(--muted);">20–40</div></div>
+      <div><div style="width:18px;height:18px;border-radius:50%;background:#FFDD00;margin:0 auto 4px;"></div><div style="font-size:12px;font-weight:700;color:#997700;">様子見</div><div style="font-size:11px;color:var(--muted);">40–60</div></div>
+      <div><div style="width:18px;height:18px;border-radius:50%;background:#34C759;margin:0 auto 4px;"></div><div style="font-size:12px;font-weight:700;color:var(--green);">買い検討</div><div style="font-size:11px;color:var(--muted);">60–80</div></div>
+      <div><div style="width:18px;height:18px;border-radius:50%;background:#00A550;margin:0 auto 4px;"></div><div style="font-size:12px;font-weight:700;color:#00A550;">強く推奨</div><div style="font-size:11px;color:var(--muted);">80–100</div></div>
     </div>
   </div>
 </div>
@@ -320,6 +355,58 @@
 </div>
 
 <script>
+// ─── Sector: AI/Tech Growth Score & Reasons ──────────────────────────────
+const SECTOR_TECH = {
+  '半導体':     88,
+  '製薬':       63,
+  '銀行':       52,
+  '通信':       42,
+  '自動車':     65,
+  'エネルギー': 38,
+  '小売':       33,
+  'タバコ':     16,
+  '鉱業':       40,
+  '電力':       58,
+  '広告・PR':   46,
+};
+
+const SECTOR_VALUE_REASON = {
+  '半導体':     ['半導体サイクル低迷期の売られ過ぎ', 'AI需要爆発に対して株価が先行的に織り込めていない', '在庫調整完了で業績回復局面へ'],
+  '製薬':       ['特許崖懸念でバリュエーションが圧縮されすぎ', '高配当（6%超）が下値を支える', 'AI創薬で新薬開発コストが劇的に低下'],
+  '銀行':       ['低金利長期化への過度な悲観', 'PBR0.5〜0.9倍は資産価値より大幅に安い', '金利正常化で利ざや回復が見込める'],
+  '通信':       ['5G投資負担への過剰懸念', '7%超の高配当は株価下支え要因', 'キャッシュフローは安定しているのに割安放置'],
+  '自動車':     ['EV移行コストへの悲観が行き過ぎ', 'PER5〜10倍という歴史的割安水準', 'ICEの利益でEV投資を賄える体力がある'],
+  'エネルギー': ['ESG圧力で機関投資家が保有制限→需給が歪む', 'AI・データセンターの電力需要急増で意外な追い風', '高配当かつ自社株買い継続'],
+  '小売':       ['EC競争への過剰な悲観', '実店舗の安定キャッシュフローは堅固', '高配当で持ちながら回復を待てる'],
+  'タバコ':     ['社会制裁プレミアムで極端に売られている', '実態は安定した高FCFと高配当の銘柄', '加熱式製品への移行で減少ペースは緩やか'],
+  '鉱業':       ['資源価格変動リスクを過大評価している', 'AIデータセンター向けに銅・レアメタル需要が急増', '配当利回り8〜15%は異常値水準'],
+  '電力':       ['再エネ移行コストへの懸念が先行', 'AI・データセンター増設で電力需要が急拡大中', '規制業種として収益の安定性は保証済み'],
+  '広告・PR':   ['AI・プラットフォームへの懸念で過度に売られている', '実際のクライアント基盤と長期契約は非常に堅固', 'デジタルシフト対応が進んでおり付加価値は上昇中'],
+};
+
+const SECTOR_TECH_REASON = {
+  '半導体':     'AIチップ需要が指数関数的に拡大。生成AI・データセンター・自動運転すべてに半導体が必須。最も直接的なAI恩恵セクター。',
+  '製薬':       'AI創薬で研究開発期間を10年→3年に短縮できる可能性。新薬開発コスト削減と成功率向上で収益構造が劇的に改善しうる。',
+  '銀行':       'AIによる審査・リスク管理・コスト削減は大きい。ただしフィンテックとの競争激化もあり、恩恵は限定的・中程度。',
+  '通信':       '5G・AIエッジ基盤としての役割は安定。直接のAI収益化は限定的だが、インフラとしての需要は揺るがない。',
+  '自動車':     '自動運転・EV・ソフトウェア定義車両（SDV）の主役。AIソフトウェアからの収益化が実現すれば株価は大幅に再評価される。',
+  'エネルギー': 'AIデータセンターの電力消費が2030年までに3倍になるという予測。意外なAI恩恵セクター。再エネ転換も長期収益機会。',
+  '小売':       'AI在庫管理・需要予測・個人化推薦で利益率改善の余地あり。ただしAmazon・EC競争の激化リスクが打ち消す部分も大きい。',
+  'タバコ':     'AIの恩恵は最小限。製品自体がAIと無縁で、規制強化・喫煙人口減少というトレンドは変わらない。配当のみが投資理由。',
+  '鉱業':       'AI・データセンター増設に不可欠な銅・コバルト・リチウム需要が急増。採掘効率もAIで向上。資源需要の長期上昇が追い風。',
+  '電力':       'AI普及で電力需要は2030年までに爆発的に増大する見通し。電力会社にとってAIは最大の需要創出ドライバー。',
+  '広告・PR':   'AI活用でクリエイティブ効率化・データ分析の高度化は可能。ただし生成AIで広告主の内製化が進み、代理店の中間機能が縮小するリスクも大きい。',
+};
+
+// Combined verdict text
+function verdictText(combined) {
+  if(combined >= 80) return '強く推奨。割安かつ成長期待も高い。迷わず買いを検討すべき水準。';
+  if(combined >= 65) return '買い検討。割安度・成長期待がともに良好。分割エントリーが合理的。';
+  if(combined >= 50) return '様子見。割安または成長期待のどちらかが弱い。押し目を待ちたい。';
+  if(combined >= 35) return '慎重に。バリュエーションか成長性に問題あり。リスクを十分認識した上で少額検討。';
+  return '見送り推奨。割高かつ成長期待も低い。他の候補を優先すべき。';
+}
+
 // ─── Master Stock Data ────────────────────────────────────────────────────
 // pe/pb/div: approximate trailing values; fairPe: sector historical average
 const STOCKS = [
@@ -441,27 +528,37 @@ let allStocks = [];
 let currentFilter = 'all';
 let currentSort = 'score';
 
-function renderGaugeUI(globalScore) {
-  drawGauge(globalScore);
-  const lbl = scoreLabel(globalScore);
-  const scoreEl = document.getElementById('gaugeScore');
-  const labelEl = document.getElementById('gaugeLabel');
-  scoreEl.textContent = globalScore;
-  scoreEl.style.color = lbl.color;
-  labelEl.textContent = lbl.text;
-  labelEl.style.color = lbl.color;
-  const subs = {
-    'dv': '現在の市場は歴史的な割安水準。バフェット流の「恐怖時に買え」チャンス。',
-    'v':  '選別すれば割安株を見つけやすい環境。優良銘柄を慎重に仕込む局面。',
-    'fair':'全体としては適正水準。個別銘柄の精査が重要。',
-    'rich':'バリュエーションはやや高め。選択的に、押し目を狙う戦略が有効。',
-    'exp': '市場全体が割高。キャッシュ比率を高め、下落に備える局面。',
+function renderGaugeUI(globalValueScore, globalTechScore) {
+  const combined = Math.round(globalValueScore * 0.55 + globalTechScore * 0.45);
+  drawGauge(combined);
+
+  const lbl = scoreLabel(combined);
+  const verdictMap = {
+    'dv':   '🚀 強く推奨',
+    'v':    '✅ 買い検討',
+    'fair': '→ 様子見',
+    'rich': '⚠ 慎重に',
+    'exp':  '❌ 見送り',
   };
-  document.getElementById('gaugeSub').textContent = subs[lbl.cls];
+  document.getElementById('gaugeScore').textContent = combined;
+  document.getElementById('gaugeScore').style.color = lbl.color;
+  document.getElementById('gaugeLabel').textContent = verdictMap[lbl.cls];
+  document.getElementById('gaugeLabel').style.color = lbl.color;
+  document.getElementById('gaugeSub').textContent = verdictText(combined);
+
+  // Mini meters
+  const vlbl = scoreLabel(globalValueScore);
+  const tlbl = scoreLabel(globalTechScore);
+  document.getElementById('dispValueScore').textContent = globalValueScore;
+  document.getElementById('dispValueScore').style.color = vlbl.color;
+  document.getElementById('dotValue').style.left = globalValueScore + '%';
+  document.getElementById('dispTechScore').textContent = globalTechScore;
+  document.getElementById('dispTechScore').style.color = tlbl.color;
+  document.getElementById('dotTech').style.left = globalTechScore + '%';
 }
 
 function renderTopPicks(stocks) {
-  const top5 = [...stocks].sort((a,b) => b.score - a.score).slice(0, 6);
+  const top5 = [...stocks].sort((a,b) => b.combined - a.combined).slice(0, 6);
   document.getElementById('topPicksGrid').innerHTML = top5.map(s => {
     const lbl = scoreLabel(s.score);
     const cur = s.currency || '$';
@@ -485,25 +582,25 @@ function renderTopPicks(stocks) {
 function renderList(stocks) {
   const filtered = currentFilter === 'all' ? stocks : stocks.filter(s => s.region === currentFilter);
   const sorted = [...filtered].sort((a, b) => {
-    if(currentSort === 'score') return b.score - a.score;
-    if(currentSort === 'pe') return (a.pe || 999) - (b.pe || 999);
-    if(currentSort === 'pb') return (a.pb || 999) - (b.pb || 999);
-    if(currentSort === 'div') return b.div - a.div;
+    if(currentSort === 'score') return b.combined - a.combined;
+    if(currentSort === 'pe')    return (a.pe || 999) - (b.pe || 999);
+    if(currentSort === 'pb')    return (a.pb || 999) - (b.pb || 999);
+    if(currentSort === 'div')   return b.div - a.div;
     return 0;
   });
   document.getElementById('stockList').innerHTML = sorted.map((s, i) => {
-    const lbl = scoreLabel(s.score);
-    const cur = s.currency || '$';
-    const pTxt = s.price ? cur + s.price.toLocaleString() : '--';
+    const lbl   = scoreLabel(s.combined);
+    const vlbl  = scoreLabel(s.score);
+    const tlbl  = scoreLabel(s.techScore);
+    const cur   = s.currency || '$';
+    const pTxt  = s.price ? cur + (+s.price.toFixed(s.currency==='¥'?0:2)).toLocaleString() : '--';
     const chTxt = s.ch !== undefined ? (s.ch >= 0 ? '+' : '') + s.ch.toFixed(2) + '%' : '--';
-    const chCls = s.ch >= 0 ? 'up' : 'down';
-    const barW = s.score;
-    const barColor = lbl.color;
+    const chCls = (s.ch ?? 0) >= 0 ? 'up' : 'down';
     return `<div class="stock-row" onclick="openModal('${s.ticker}')">
       <div class="sr-rank">${i+1}</div>
       <div class="sr-flag">${s.flag}</div>
       <div class="sr-info">
-        <div class="sr-ticker">${s.ticker.replace('.NS','')}</div>
+        <div class="sr-ticker">${s.ticker.replace('.NS','').replace('.T','')}</div>
         <div class="sr-name">${s.name}</div>
         <div class="sr-sector">${s.sector}</div>
       </div>
@@ -511,10 +608,16 @@ function renderList(stocks) {
         <div class="sr-price">${pTxt}</div>
         <div class="sr-ch ${chCls}">${chTxt}</div>
       </div>
-      <div class="sr-score-wrap">
-        <div class="sr-score-num" style="color:${barColor};">${s.score}</div>
-        <div class="sr-score-bar"><div class="sr-score-fill" style="width:${barW}%;background:${barColor};"></div></div>
-        <div class="sr-badge" style="color:${barColor};background:${barColor}22;">${lbl.text}</div>
+      <div class="sr-axes">
+        <div class="sr-axis-row">
+          <div class="sr-axis-lbl" style="color:var(--deepgreen);">V</div>
+          <div class="sr-axis-bar"><div class="sr-axis-fill" style="width:${s.score}%;background:${vlbl.color};"></div></div>
+        </div>
+        <div class="sr-axis-row">
+          <div class="sr-axis-lbl" style="color:var(--blue);">T</div>
+          <div class="sr-axis-bar"><div class="sr-axis-fill" style="width:${s.techScore}%;background:${tlbl.color};"></div></div>
+        </div>
+        <div class="sr-combined" style="color:${lbl.color};">${s.combined}</div>
       </div>
     </div>`;
   }).join('');
@@ -657,46 +760,80 @@ function renderHakuhodo(stocks) {
 function openModal(ticker) {
   const s = allStocks.find(x => x.ticker === ticker);
   if(!s) return;
-  const lbl = scoreLabel(s.score);
-  const cur = s.currency || '$';
-  const pTxt = s.price ? cur + s.price.toLocaleString() : 'N/A';
+  const clbl  = scoreLabel(s.combined);
+  const vlbl  = scoreLabel(s.score);
+  const tlbl  = scoreLabel(s.techScore);
+  const cur   = s.currency || '$';
+  const pTxt  = s.price ? cur + (+s.price.toFixed(s.currency==='¥'?0:2)).toLocaleString() : 'N/A';
   const chTxt = s.ch !== undefined ? (s.ch >= 0 ? '+' : '') + s.ch.toFixed(2) + '%' : 'N/A';
   const chCls = (s.ch || 0) >= 0 ? 'up' : 'down';
-  const meterPos = Math.max(5, Math.min(95, 100 - s.score)); // cheap=right, expensive=left
+  const reasons  = SECTOR_VALUE_REASON[s.sector]  || ['業界平均より割安な水準'];
+  const techDesc = SECTOR_TECH_REASON[s.techScore ? s.sector : s.sector] || 'AI・技術進化の影響は中程度。';
 
   document.getElementById('modalContent').innerHTML = `
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
-      <div style="font-size:40px;">${s.flag}</div>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+      <div style="font-size:38px;">${s.flag}</div>
+      <div style="flex:1;">
+        <div style="font-size:26px;font-weight:700;">${s.ticker.replace('.NS','').replace('.T','')}</div>
+        <div style="font-size:16px;color:var(--muted);">${s.name}</div>
+        <div style="font-size:14px;font-weight:600;color:var(--blue);">${s.sector}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:26px;font-weight:700;">${pTxt}</div>
+        <div style="font-size:16px;font-weight:600;" class="${chCls}">${chTxt}</div>
+      </div>
+    </div>
+
+    <!-- Combined verdict -->
+    <div style="text-align:center;padding:14px;background:${clbl.color}18;border-radius:14px;border:1.5px solid ${clbl.color}44;margin-bottom:14px;">
+      <div style="font-size:14px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;">総合投資スコア</div>
+      <div style="font-size:54px;font-weight:700;color:${clbl.color};line-height:1.1;">${s.combined}</div>
+      <div style="font-size:19px;font-weight:700;color:${clbl.color};">${clbl.text}</div>
+      <div style="font-size:15px;color:var(--text2);margin-top:6px;line-height:1.5;">${verdictText(s.combined)}</div>
+    </div>
+
+    <!-- 2-axis meters -->
+    <div style="background:var(--bg);border-radius:12px;padding:12px 14px;margin-bottom:12px;">
+      <div style="margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:600;margin-bottom:4px;">
+          <span>💰 割安度（バリュースコア）</span>
+          <span style="color:${vlbl.color};">${s.score} / 100</span>
+        </div>
+        <div class="mini-meter"><div class="mini-meter-dot" style="left:${s.score}%"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:1px;"><span>割高</span><span>割安</span></div>
+      </div>
       <div>
-        <div style="font-size:28px;font-weight:700;">${s.ticker.replace('.NS','')}</div>
-        <div style="font-size:18px;color:var(--muted);">${s.name}</div>
-        <div style="font-size:16px;font-weight:600;color:var(--blue);">${s.sector}</div>
+        <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:600;margin-bottom:4px;">
+          <span>🤖 AI・技術進化 成長期待</span>
+          <span style="color:${tlbl.color};">${s.techScore} / 100</span>
+        </div>
+        <div class="mini-meter"><div class="mini-meter-dot" style="left:${s.techScore}%"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:1px;"><span>期待小</span><span>期待大</span></div>
       </div>
-      <div style="margin-left:auto;text-align:right;">
-        <div style="font-size:28px;font-weight:700;">${pTxt}</div>
-        <div style="font-size:18px;font-weight:600;" class="${chCls}">${chTxt}</div>
-      </div>
     </div>
-    <div style="text-align:center;padding:12px;background:${lbl.color}15;border-radius:12px;margin-bottom:12px;">
-      <div style="font-size:16px;color:var(--muted);">バリュースコア</div>
-      <div style="font-size:52px;font-weight:700;color:${lbl.color};">${s.score}</div>
-      <div style="font-size:20px;font-weight:600;color:${lbl.color};">${lbl.text}</div>
-    </div>
-    <div style="font-size:17px;color:var(--muted);margin-bottom:4px;">割高 ←───────────→ 割安</div>
-    <div class="meter-track" style="background:linear-gradient(90deg,#FF3B30,#FF9500,#FFDD00,#34C759,#00A550);">
-      <div class="meter-dot" style="left:${100-s.score}%;"></div>
-    </div>
+
+    <!-- Metrics grid -->
     <div class="detail-grid">
-      <div class="dg-cell"><div class="dg-lbl">PER</div><div class="dg-val" style="color:${s.pe && s.pe < s.fairPe ? 'var(--green)' : 'var(--orange)'};">${s.pe ? s.pe+'x' : 'N/A'}</div></div>
-      <div class="dg-cell"><div class="dg-lbl">PBR</div><div class="dg-val" style="color:${s.pb && s.pb < 1.5 ? 'var(--green)' : 'var(--orange)'};">${s.pb ? s.pb+'x' : 'N/A'}</div></div>
-      <div class="dg-cell"><div class="dg-lbl">配当利回り</div><div class="dg-val" style="color:${s.div >= 4 ? 'var(--green)' : 'var(--muted)'};">${s.div}%</div></div>
-      <div class="dg-cell"><div class="dg-lbl">EV/EBITDA</div><div class="dg-val">${s.evEb ? s.evEb+'x' : 'N/A'}</div></div>
+      <div class="dg-cell"><div class="dg-lbl">PER</div><div class="dg-val" style="color:${s.pe && s.pe < s.fairPe ? 'var(--green)':'var(--orange)'};">${s.pe ? s.pe+'x':'N/A'}</div></div>
+      <div class="dg-cell"><div class="dg-lbl">PBR</div><div class="dg-val" style="color:${s.pb && s.pb < 1.5 ? 'var(--green)':'var(--orange)'};">${s.pb ? s.pb+'x':'N/A'}</div></div>
+      <div class="dg-cell"><div class="dg-lbl">配当利回り</div><div class="dg-val" style="color:${(s.div||0)>=4?'var(--green)':'var(--muted)'};">${s.div||0}%</div></div>
+      <div class="dg-cell"><div class="dg-lbl">EV/EBITDA</div><div class="dg-val">${s.evEb ? s.evEb+'x':'N/A'}</div></div>
       <div class="dg-cell"><div class="dg-lbl">適正PER</div><div class="dg-val" style="color:var(--blue);">${s.fairPe}x</div></div>
-      <div class="dg-cell"><div class="dg-lbl">割安度</div><div class="dg-val" style="color:${lbl.color};">${s.pe && s.pe < s.fairPe ? Math.round((1-s.pe/s.fairPe)*100)+'%安' : s.pe ? Math.round((s.pe/s.fairPe-1)*100)+'%高' : '--'}</div></div>
+      <div class="dg-cell"><div class="dg-lbl">割安度</div><div class="dg-val" style="color:${vlbl.color};">${s.pe && s.pe<s.fairPe ? Math.round((1-s.pe/s.fairPe)*100)+'%割安' : s.pe ? Math.round((s.pe/s.fairPe-1)*100)+'%割高':'--'}</div></div>
     </div>
-    <div style="background:var(--bg);border-radius:10px;padding:12px;font-size:17px;color:var(--text2);line-height:1.7;margin-top:4px;">
-      ${getStockComment(s)}
+
+    <!-- Undervaluation reasons -->
+    <div style="margin-top:10px;padding:12px 14px;background:rgba(52,199,89,.06);border-radius:10px;border-left:3px solid var(--green);">
+      <div style="font-size:15px;font-weight:700;color:var(--green);margin-bottom:7px;">💰 割安である理由</div>
+      ${reasons.map(r=>`<div style="display:flex;gap:6px;font-size:15px;color:var(--text2);margin-bottom:5px;line-height:1.5;"><span style="color:var(--green);flex-shrink:0;">✓</span><span>${r}</span></div>`).join('')}
+    </div>
+
+    <!-- Tech opportunity -->
+    <div style="margin-top:8px;padding:12px 14px;background:rgba(0,122,255,.06);border-radius:10px;border-left:3px solid var(--blue);">
+      <div style="font-size:15px;font-weight:700;color:var(--blue);margin-bottom:7px;">🤖 AI・技術進化による値上がり期待</div>
+      <div style="font-size:15px;color:var(--text2);line-height:1.6;">${techDesc}</div>
     </div>`;
+
   document.getElementById('modalOverlay').classList.add('open');
 }
 
@@ -773,13 +910,19 @@ async function loadAll() {
     document.getElementById('demoBadge').style.display = 'inline-block';
   }
 
-  // Re-score after any updates
-  allStocks = allStocks.map(s => ({...s, score: calcScore(s)}));
+  // Re-score after any updates, compute tech + combined
+  allStocks = allStocks.map(s => {
+    const score = calcScore(s);
+    const techScore = SECTOR_TECH[s.sector] ?? 50;
+    const combined = Math.round(score * 0.55 + techScore * 0.45);
+    return {...s, score, techScore, combined};
+  });
 
-  // Global Value Index = average score weighted by equal weight
-  const globalScore = Math.round(allStocks.reduce((a, s) => a + s.score, 0) / allStocks.length);
+  // Global averages
+  const globalScore     = Math.round(allStocks.reduce((a, s) => a + s.score,     0) / allStocks.length);
+  const globalTechScore = Math.round(allStocks.reduce((a, s) => a + s.techScore, 0) / allStocks.length);
 
-  renderGaugeUI(globalScore);
+  renderGaugeUI(globalScore, globalTechScore);
   renderTopPicks(allStocks);
   renderHakuhodo(allStocks);
   renderList(allStocks);
